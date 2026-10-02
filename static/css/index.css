@@ -673,11 +673,11 @@ code {
 }
 
 .project-hero {
-  background: #faf7ef;
+  background: var(--background-primary);
 }
 
 .results-section {
-  background: #faf7ef;
+  background: var(--background-primary);
 }
 
 .hero-note {
