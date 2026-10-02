@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+  <meta name="description" content="A project page for Efficient Validation for LLM-Generated Rendering Optimizations, introducing PRPS, Bayesian trust-guided validation, and distributed LLM-driven shader optimization.">
+  <meta name="keywords" content="rendering optimization, shader optimization, large language models, evolutionary search, PRPS, FLIP, Shadertoy, MaterialX, Godot, high-performance graphics">
+  <meta name="author" content="ADD_FINAL_AUTHOR_LIST">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+  <meta property="og:title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+  <meta property="og:description" content="We optimize rendering programs with LLM-generated mutations, evolutionary search, and a trust-guided Bayesian validation framework over a renderer-agnostic Primary Render Parameters Space.">
+  <meta property="og:image" content="static/images/pipeline_overview.png">
+  <meta property="og:image:alt" content="Main architecture overview for the shader optimization pipeline">
+  <meta property="article:published_time" content="2026-04-01T00:00:00.000Z">
+  <meta property="article:section" content="Research">
+  <meta property="article:tag" content="Rendering">
+  <meta property="article:tag" content="Large Language Models">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+  <meta name="twitter:description" content="LLM-driven shader optimization with PRPS-based validation, trust-guided early stopping, and distributed search across Shadertoy, Godot, and MaterialX.">
+  <meta name="twitter:image" content="static/images/pipeline_overview.png">
+  <meta name="twitter:image:alt" content="Main architecture overview for the shader optimization pipeline">
+
+  <meta name="citation_title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="High-Performance Graphics (HPG '26)">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="msapplication-TileColor" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+
+  <title>Efficient Validation for LLM-Generated Rendering Optimizations</title>
+
+  <link rel="icon" type="image/png" href="static/images/favicon-simple.png">
+  <link rel="apple-touch-icon" href="static/images/favicon-simple.png">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/bulma-slider.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+
+  <noscript>
+    <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  </noscript>
+
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/bulma-carousel.min.js"></script>
+  <script defer src="static/js/bulma-slider.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "Efficient Validation for LLM-Generated Rendering Optimizations",
+    "description": "We present a validation-centered pipeline for LLM-generated rendering optimizations, combining PRPS-based evaluation, Bayesian sequential testing, and trust-guided early stopping.",
+    "datePublished": "2026-04-01",
+    "publisher": {
+      "@type": "Organization",
+      "name": "ACM"
+    },
+    "isPartOf": {
+      "@type": "Periodical",
+      "name": "High-Performance Graphics (HPG '26)"
+    },
+    "keywords": ["rendering optimization", "LLM", "evolutionary search", "shader optimization", "PRPS", "MaterialX", "Godot", "Shadertoy"],
+    "abstract": "We study validation for LLM-generated rendering optimizations. To make approximate shader edits reliable, we define a renderer-agnostic Primary Render Parameters Space, formulate validation as Bayesian sequential classification under an exceedance-rate constraint, and adapt acceptance confidence using both optimization history and trust derived from LLM mutation embeddings.",
+    "mainEntity": {
+      "@type": "WebPage",
+      "@id": "#main-content"
+    }
+  }
+  </script>
+</head>
+<body>
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+    <section class="hero publication-header project-hero">
+      <div class="hero-body">
+        <div class="container is-max-desktop has-text-centered">
+          <h1 class="title is-1 publication-title">Efficient Validation for LLM-Generated Rendering Optimizations</h1>
+
+          <div class="publication-links compact-links">
+            <span class="link-block">
+              <a href="#tldr" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-scroll"></i></span>
+                <span>TL;DR</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#method" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-diagram-project"></i></span>
+                <span>Mutation</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#cases" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-images"></i></span>
+                <span>Results</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#evidence" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-chart-bar"></i></span>
+                <span>Evidence</span>
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hero teaser system-teaser">
+      <div class="hero-body">
+        <div class="container is-max-widescreen showcase-shell">
+          <div class="teaser-frame teaser-frame-wide">
+            <img src="static/images/pipeline_overview.png" alt="Pipeline overview" loading="eager">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="tldr">
+      <div class="container is-max-desktop">
+        <h2 class="title is-3 has-text-centered">TL;DR</h2>
+        <div class="callout-card compact-callout tldr-card">
+          <p>
+            We optimize rendering programs by generating candidate code changes with LLMs, validating them over a renderer-specific parameter space, and evolving only the visually safe ones. The core technical point is not mutation alone but cheap rejection of unsafe candidates through Bayesian sequential validation in PRPS.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="method">
+      <div class="container is-max-widescreen showcase-shell">
+        <h2 class="title is-3 has-text-centered">Mutation</h2>
+        <article class="figure-showcase-card figure-showcase-single">
+          <div class="figure-showcase-copy">
+            <p class="case-kicker">Search dynamics</p>
+            <h3>Accepted ancestry chain</h3>
+            <p>
+              The mutation figure follows one successful run and shows how useful edits accumulate along the accepted lineage instead of appearing as one-shot improvements.
+            </p>
+          </div>
+          <div class="image-panel">
+            <img src="static/images/evolution_figure.png" alt="Mutation evolution figure" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section hero is-light" id="cases">
+      <div class="container is-max-widescreen showcase-shell">
+        <h2 class="title is-3 has-text-centered">Results</h2>
+        <div class="case-study-grid">
+          <article class="case-study-card">
+            <div class="case-study-head">
+              <div>
+                <p class="case-kicker">Shadertoy · traveler.</p>
+                <h3>4ltfDr</h3>
+              </div>
+              <span class="case-boost">+69.0%</span>
+            </div>
+            <div class="case-compare">
+              <figure class="case-frame">
+                <img src="sup/4ltfDr/generation_005/media/first_frame_original.png" alt="Original frame for 4ltfDr" loading="lazy">
+                <figcaption>Original · 7.944 ms</figcaption>
+              </figure>
+              <div class="case-arrow" aria-hidden="true">
+                <div class="case-arrow-glyph">→</div>
+                <div class="case-arrow-text">4.701 ms</div>
+                <div class="case-arrow-meta">saved 3.243 ms on the measured frame</div>
+              </div>
+              <figure class="case-frame">
+                <img src="sup/4ltfDr/generation_005/media/first_frame_optimized.png" alt="Optimized frame for 4ltfDr" loading="lazy">
+                <figcaption>Optimized · 4.701 ms</figcaption>
+              </figure>
+            </div>
+            <div class="case-links">
+              <a href="sup/4ltfDr/live_report.html" target="_blank" rel="noopener">Live report</a>
+              <a href="sup/4ltfDr/mutation_tree.html" target="_blank" rel="noopener">Mutation tree</a>
+            </div>
+          </article>
+
+          <article class="case-study-card">
+            <div class="case-study-head">
+              <div>
+                <p class="case-kicker">Shadertoy · Protean Clouds</p>
+                <h3>NtlSDs</h3>
+              </div>
+              <span class="case-boost">+56.5%</span>
+            </div>
+            <div class="case-compare">
+              <figure class="case-frame">
+                <img src="sup/NtlSDs/generation_005/media/first_frame_original.png" alt="Original frame for NtlSDs" loading="lazy">
+                <figcaption>Original · 7.875 ms</figcaption>
+              </figure>
+              <div class="case-arrow" aria-hidden="true">
+                <div class="case-arrow-glyph">→</div>
+                <div class="case-arrow-text">5.032 ms</div>
+                <div class="case-arrow-meta">saved 2.844 ms on the measured frame</div>
+              </div>
+              <figure class="case-frame">
+                <img src="sup/NtlSDs/generation_005/media/first_frame_optimized.png" alt="Optimized frame for NtlSDs" loading="lazy">
+                <figcaption>Optimized · 5.032 ms</figcaption>
+              </figure>
+            </div>
+            <div class="case-links">
+              <a href="sup/NtlSDs/live_report.html" target="_blank" rel="noopener">Live report</a>
+              <a href="sup/NtlSDs/mutation_tree.html" target="_blank" rel="noopener">Mutation tree</a>
+            </div>
+          </article>
+
+          <article class="case-study-card">
+            <div class="case-study-head">
+              <div>
+                <p class="case-kicker">Godot · SSIL render pass</p>
+                <h3>ssil</h3>
+              </div>
+              <span class="case-boost">+65.9%</span>
+            </div>
+            <div class="case-compare">
+              <figure class="case-frame">
+                <img src="sup/ssil/generation_011/media/first_frame_original.png" alt="Original frame for ssil" loading="lazy">
+                <figcaption>Original · 4.036 ms</figcaption>
+              </figure>
+              <div class="case-arrow" aria-hidden="true">
+                <div class="case-arrow-glyph">→</div>
+                <div class="case-arrow-text">2.433 ms</div>
+                <div class="case-arrow-meta">saved 1.603 ms on the measured frame</div>
+              </div>
+              <figure class="case-frame">
+                <img src="sup/ssil/generation_011/media/first_frame_optimized.png" alt="Optimized frame for ssil" loading="lazy">
+                <figcaption>Optimized · 2.433 ms</figcaption>
+              </figure>
+            </div>
+            <div class="case-links">
+              <a href="sup/ssil/live_report.html" target="_blank" rel="noopener">Live report</a>
+              <a href="sup/ssil/mutation_tree.html" target="_blank" rel="noopener">Mutation tree</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="evidence">
+      <div class="container is-max-widescreen showcase-shell">
+        <h2 class="title is-3 has-text-centered">Evidence</h2>
+        <div class="results-overview-grid">
+          <article class="results-overview-card evidence-figure-card">
+            <div class="results-copy">
+              <p class="case-kicker">PRPS example</p>
+              <h3>Primary Render Parameters Space</h3>
+              <p>
+                Xds3zN is a concrete PRPS example from the paper: validation samples points in a renderer-specific parameter space rather than relying on one screenshot. In the MaterialX setting, this space reaches up to 34 dimensions.
+              </p>
+            </div>
+            <div class="image-panel evidence-image-panel">
+              <img src="static/images/ttttt.png" alt="Xds3zN Primary Render Parameters Space example" loading="lazy">
+            </div>
+          </article>
+
+          <article class="results-overview-card evidence-figure-card">
+            <div class="results-copy">
+              <p class="case-kicker">Validation cost</p>
+              <h3>Borderline bad candidates dominate cost</h3>
+              <p>
+                Most bad candidates are rejected quickly, but candidates near the tolerance boundary need hundreds of frames. Under a conservative 99% policy, those borderline cases force 5-10x more frames on every safe candidate.
+              </p>
+            </div>
+            <div class="image-panel evidence-image-panel">
+              <img src="static/images/exceedance_figure.png" alt="Exceedance-rate distributions of bad candidates across replay sessions" loading="lazy">
+            </div>
+          </article>
+
+          <article class="results-overview-card chart-card">
+            <div class="results-copy">
+              <p class="case-kicker">Local summary</p>
+              <h3>Reported boosts</h3>
+              <p>
+                The chart below is generated directly from the local session summary and shows the measured spread of reported boosts across the reviewer packages.
+              </p>
+            </div>
+            <img src="static/images/supplementary_boosts.svg" alt="Boost chart for the supplementary sessions" class="summary-chart" loading="lazy">
+          </article>
+
+          <article class="results-overview-card session-index-card">
+            <div class="results-copy">
+              <p class="case-kicker">Sessions</p>
+              <h3>Local evidence</h3>
+            </div>
+            <div class="session-index-grid">
+              <a class="session-chip" href="sup/3lsSzf/live_report.html" target="_blank" rel="noopener"><span>3lsSzf</span><small>Happy Jumping · +22.9%</small></a>
+              <a class="session-chip" href="sup/3sc3z4/live_report.html" target="_blank" rel="noopener"><span>3sc3z4</span><small>Shadertoy · +13.6%</small></a>
+              <a class="session-chip" href="sup/4ltfDr/live_report.html" target="_blank" rel="noopener"><span>4ltfDr</span><small>traveler. · +69.0%</small></a>
+              <a class="session-chip" href="sup/4sX3Rn/live_report.html" target="_blank" rel="noopener"><span>4sX3Rn</span><small>Menger Sponge · +10.0%</small></a>
+              <a class="session-chip" href="sup/black_hole_2/live_report.html" target="_blank" rel="noopener"><span>black_hole_2</span><small>Godot · +17.1%</small></a>
+              <a class="session-chip" href="sup/brick/live_report.html" target="_blank" rel="noopener"><span>brick</span><small>MaterialX · +44.4%</small></a>
+              <a class="session-chip" href="sup/carpaint/live_report.html" target="_blank" rel="noopener"><span>carpaint</span><small>MaterialX · +28.3%</small></a>
+              <a class="session-chip" href="sup/lsf3zr/live_report.html" target="_blank" rel="noopener"><span>lsf3zr</span><small>Columns and Lights · +7.6%</small></a>
+              <a class="session-chip" href="sup/Mss3zM/live_report.html" target="_blank" rel="noopener"><span>Mss3zM</span><small>Shadertoy · +11.8%</small></a>
+              <a class="session-chip" href="sup/NtlSDs/live_report.html" target="_blank" rel="noopener"><span>NtlSDs</span><small>Protean Clouds · +56.5%</small></a>
+              <a class="session-chip" href="sup/ssil/live_report.html" target="_blank" rel="noopener"><span>ssil</span><small>Godot · +65.9%</small></a>
+              <a class="session-chip" href="sup/Xds3zN/live_report.html" target="_blank" rel="noopener"><span>Xds3zN</span><small>Shadertoy · +28.2%</small></a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
