@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>black_hole_2 - Generation 11</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.3; background: #f8f9fa; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 15px; }
+        .header { text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { color: #007acc; font-size: 1.8em; margin: 0; }
+        .header .info { color: #666; font-size: 0.9em; margin-top: 5px; }
+        .section { margin-bottom: 20px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .section h2 { color: #333; font-size: 1.2em; margin-bottom: 8px; border-bottom: 1px solid #007acc; padding-bottom: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 8px 0; }
+        .metric-card { background: white; padding: 8px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .metric-card h3 { font-size: 0.9em; margin-bottom: 4px; color: #333; }
+        .metric-value { font-size: 1.4em; font-weight: bold; color: #007acc; }
+        .metric-label { color: #666; font-size: 0.8em; }
+        .improvement { color: #28a745; }
+        .degradation { color: #dc3545; }
+        .neutral { color: #6c757d; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .video-container { text-align: center; margin: 10px 0; }
+        .video-container video { max-width: 100%; height: auto; border-radius: 4px; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .chart-container { width: 100%; height: 280px; position: relative; }
+        canvas { width: 100% !important; height: 100% !important; }
+        .correctness-details { margin-top: 8px; font-size: 0.85em; }
+        .correctness-item { display: flex; justify-content: space-between; margin: 2px 0; }
+        .correctness-label { color: #666; font-weight: 500; }
+        .correctness-value { font-weight: bold; }
+        .spoiler { margin: 10px 0; }
+        .spoiler-toggle { background: #007acc; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .spoiler-toggle:hover { background: #0056b3; }
+        .spoiler-content { display: none; margin-top: 8px; }
+        .spoiler-content.active { display: block; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 12px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; max-height: 300px; overflow: auto; border: 1px solid #4a5568; white-space: pre; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }
+        .code-block-expandable { max-height: 200px; overflow-y: auto; }
+        .code-block-expanded { max-height: 500px; }
+        .code-toggle { background: #4a5568; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-bottom: 5px; }
+        .code-toggle:hover { background: #2d3748; }
+        .code-container { position: relative; max-width: 100%; }
+        .two-column { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 10px; width: 100%; }
+        .left-column { border-right: 1px solid #ddd; padding-right: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .right-column { padding-left: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .compact-section { margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .fps-stats { margin-top: 4px; font-size: 0.8em; }
+        .fps-range { color: #007acc; font-weight: bold; }
+        .fps-std { color: #666; }
+        .improvement-details { margin-top: 4px; font-size: 0.8em; }
+        .improvement-details div { margin: 2px 0; }
+        .optimization-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+        .optimization-table th, .optimization-table td { border: 1px solid #ddd; padding: 8px; text-align: left; max-width: 400px; }
+        .optimization-table th { background: #f8f9fa; font-weight: bold; }
+        .optimization-table tr:nth-child(even) { background: #f9f9f9; }
+        .function-name { font-size: 0.85em; color: #666; margin-bottom: 4px; font-weight: 500; }
+        .function-name code { background: #f1f3f5; padding: 2px 6px; border-radius: 3px; color: #495057; font-family: 'Courier New', monospace; }
+        .optimization-types { display: flex; flex-wrap: wrap; gap: 4px; }
+        .optimization-type { background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 1.05em; }
+        .analysis-subcolumn { display: flex; flex-direction: column; gap: 8px; }
+        .explanation-text { font-size: 0.9em; line-height: 1.4; color: #333; }
+        .optimization-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+        .summary-card { background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .summary-value { font-size: 1.2em; font-weight: bold; color: #007acc; }
+        .summary-label { color: #666; font-size: 0.8em; }
+        .copy-button { background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-left: 5px; }
+        .copy-button:hover { background: #218838; }
+        .shader-header { display: flex; align-items: center; justify-content: space-between; }
+        .shader-title { flex: 1; }
+        .config-section { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; margin: 8px 0; }
+        .config-section pre { background: #2d3748; color: #e2e8f0; padding: 8px; border-radius: 4px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 10px; }
+        .file-links { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+        .file-link { background: #007acc; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; font-size: 0.8em; }
+        .file-link:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f9fa; color: #333; padding: 8px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #007acc; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f0f7ff; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .plot-container.narrow-plot { max-width: 33%; margin: 0 auto; }
+        .performance-plot { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 4px; object-fit: contain; }
+        .frame-comparison { display: flex; gap: 10px; margin: 10px 0; }
+        .frame-slider-container { margin: 10px 0; }
+        .frame-slider { width: 100%; }
+        .frame-images { display: flex; gap: 10px; }
+        .frame-image { max-width: 48%; border-radius: 4px; }
+        .frame-label { text-align: center; font-weight: bold; margin: 5px 0; font-size: 0.9em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 8px 0; }
+        .stat-item { background: white; padding: 6px; border-radius: 4px; border-left: 3px solid #28a745; text-align: center; }
+        .stat-value { font-size: 1.1em; font-weight: bold; color: #28a745; }
+        .stat-label { color: #666; font-size: 0.7em; }
+        .waiting-message { text-align: center; padding: 60px 20px; color: #666; font-size: 1.4em; }
+        .waiting-message .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #e9ecef; border-top: 4px solid #007acc; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Optimization Report - black_hole_2</h1>
+            <div class="info">Generation 11 | +17.1% Boost | 2026-04-04 12:03:21 | <span style="color: #28a745;">LLM: $1.79</span> | <span style="color: #fd7e14;">GPU: $0.85</span> | <span style="font-weight: bold;">Total: $2.65</span> | <a href="https://www.shadertoy.com/view/black_hole_2" target="_blank" style="color: #007acc; text-decoration: none;">Shadertoy</a></div>
+        </div>
+
+        
+
+        <div class="compact-section">
+            <div class="two-column">
+                <div class="left-column">
+                    
+        <h2>Performance Summary</h2>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Original</h3>
+                <div class="metric-value">5.598 ms</div>
+                <div class="metric-label">(178.6 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">41.5-17857.1 FPS</div>
+                    <div class="fps-std">0.1-24.1 ms</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Optimized</h3>
+                <div class="metric-value">4.780 ms</div>
+                <div class="metric-label">(209.2 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">47.9-17762.0 FPS</div>
+                    <div class="fps-std">0.1-20.9 ms</div>
+                </div>
+            </div>
+        </div>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Improvement</h3>
+                <div class="metric-value improvement">
+                    +0.819 ms
+                </div>
+                <div class="metric-label">(+14.6% | +30.6 FPS)</div>
+                <div class="improvement-details">
+                    <div>Mean: +0.8ms (+14.6%)</div>
+                    <div>Std: +0.6ms (+17.4%)</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Status</h3>
+                <div class="metric-value success">
+                    &#x2705; SUCCESS
+                </div>
+                <div class="correctness-details">
+                    <div class="correctness-item">
+                        <span class="correctness-label">Original Error:</span>
+                        <span class="correctness-value">0.000000</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Optimized Error:</span>
+                        <span class="correctness-value">0.087836</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Correctness:</span>
+                        <span class="correctness-value success">
+                            &#x2705; MAINTAINED
+                        </span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Difference:</span>
+                        <span class="correctness-value success">
+                            +0.087836
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+                <div class="right-column">
+            <h2>Performance Statistics</h2>
+            <div class="chart-container">
+                <canvas id="perfChart"></canvas>
+            </div>
+        </div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Video Comparison at the worst Primary Render Parameter Space sample</h2>
+            <div style="margin-bottom:12px;"><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Original</div><img src="generation_011/media/first_frame_original.png" style="max-width:400px; border:1px solid #333;"></div><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Optimized</div><img src="generation_011/media/first_frame_optimized.png" style="max-width:400px; border:1px solid #333;"></div></div>
+            <div class="video-container">
+                <video controls autoplay loop muted>
+                    <source src="generation_011/media/worst_merged.mp4?v=1775297000" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+        </div>
+
+        <div class="compact-section">
+            <h2>FLIP Error Distribution</h2>
+            <div class="chart-container" style="height: 320px;">
+                <canvas id="errorDistChart"></canvas>
+            </div>
+        </div>
+
+        
+
+        
+
+        <div class="compact-section">
+            <h2>Mutation Tree</h2>
+            <iframe id="mutation-tree-iframe" src="mutation_tree.html"
+                    style="width: 100%; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;"
+                    scrolling="no"></iframe>
+            <script>
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'mutation-tree-resize') {
+                    var iframe = document.getElementById('mutation-tree-iframe');
+                    if (!iframe) return;
+                    var newH = e.data.height, curH = parseInt(iframe.style.height) || 0;
+                    if (newH >= curH) {
+                        iframe.style.height = newH + 'px';
+                        clearTimeout(iframe._shrinkT);
+                    } else {
+                        clearTimeout(iframe._shrinkT);
+                        iframe._shrinkT = setTimeout(function() { iframe.style.height = newH + 'px'; }, 300);
+                    }
+                }
+            });
+            </script>
+        </div>
+
+        <div class="compact-section">
+            <h2>Optimization Diff</h2>
+            <div class="code-block" style="max-height:500px;overflow:auto;font-size:11px;line-height:1.5">
+<pre><span style="color:#586e75;font-weight:bold">--- black_hole_2_canonical_0.gdshader</span>
+<span style="color:#586e75;font-weight:bold">+++ black_hole_2_best_gen_011_0.gdshader</span>
+<span style="color:#268bd2;font-weight:bold">@@ -55,13 +55,13 @@</span>
+<span> #define SPIN_AXIS vec3(0.0, 1.0, 0.0)</span>
+<span> </span>
+<span> float accretion_density(float l, float ang, float y) {</span>
+<span style="color:#dc3545;background:#ffeef0">-    float n = texture(noise, vec2(0.5 * ang / PI + TIME * 0.2, log(l) * 1.5)).r;</span>
+<span style="color:#28a745;background:#e6ffed">+    float n = texture(noise, vec2(0.159155 * ang + TIME * 0.2, log(max(l, 0.01)) * 1.5)).r;</span>
+<span>     float d0 = pow(max(1.0 - l / R, 0.0) * clamp((l - R0) / fade + 1.0, 0.0, 1.0), 1.5);</span>
+<span>     return d0 * exp(-y * y * 400.0) * 13.0 * (n + max(0.0, n - 0.65) * 1.5);</span>
+<span> }</span>
+<span> </span>
+<span> vec3 temperature_color(float l, float r, float d, float ang) {</span>
+<span style="color:#dc3545;background:#ffeef0">-    float turb_x = 0.5 * ang / PI + TIME * turbulence_speed;</span>
+<span style="color:#28a745;background:#e6ffed">+    float turb_x = 0.159155 * ang + TIME * turbulence_speed;</span>
+<span>     float turb_y = log(max(l, 0.01)) * turbulence_scale;</span>
+<span>     float n1 = texture(noise, vec2(turb_x * 0.7 + 0.3, turb_y * 0.5)).r;</span>
+<span>     float n2 = texture(noise, vec2(turb_x * 1.3 + 0.6, turb_y * 1.1 + 0.4)).r;</span>
+<span style="color:#268bd2;font-weight:bold">@@ -74,20 +74,28 @@</span>
+<span>     vec3 c4 = color_outer * brightness_outer;</span>
+<span>     vec3 c5 = color_edge  * brightness_edge;</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-    float s0 = gradient_stop0;</span>
+<span style="color:#dc3545;background:#ffeef0">-    float s1 = gradient_stop1;</span>
+<span style="color:#dc3545;background:#ffeef0">-    float s2 = gradient_stop2;</span>
+<span style="color:#dc3545;background:#ffeef0">-    float s3 = gradient_stop3;</span>
+<span style="color:#28a745;background:#e6ffed">+    float inv_s0 = 1.0 / max(gradient_stop0, 0.0001);</span>
+<span style="color:#28a745;background:#e6ffed">+    float inv_s01 = 1.0 / max(gradient_stop1 - gradient_stop0, 0.0001);</span>
+<span style="color:#28a745;background:#e6ffed">+    float inv_s12 = 1.0 / max(gradient_stop2 - gradient_stop1, 0.0001);</span>
+<span style="color:#28a745;background:#e6ffed">+    float inv_s23 = 1.0 / max(gradient_stop3 - gradient_stop2, 0.0001);</span>
+<span style="color:#28a745;background:#e6ffed">+    float inv_s34 = 1.0 / max(1.0 - gradient_stop3, 0.0001);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-    vec3 col = t &lt; s0 ? mix(c0, c1, t / max(s0, 0.001)) :</span>
+<span style="color:#dc3545;background:#ffeef0">-               t &lt; s1 ? mix(c1, c2, (t - s0) / max(s1 - s0, 0.001)) :</span>
+<span style="color:#dc3545;background:#ffeef0">-               t &lt; s2 ? mix(c2, c3, (t - s1) / max(s2 - s1, 0.001)) :</span>
+<span style="color:#dc3545;background:#ffeef0">-               t &lt; s3 ? mix(c3, c4, (t - s2) / max(s3 - s2, 0.001)) :</span>
+<span style="color:#dc3545;background:#ffeef0">-                        mix(c4, c5, (t - s3) / max(1.0 - s3, 0.001));</span>
+<span style="color:#28a745;background:#e6ffed">+    vec3 col;</span>
+<span style="color:#28a745;background:#e6ffed">+    if (t &lt; gradient_stop0) {</span>
+<span style="color:#28a745;background:#e6ffed">+        col = mix(c0, c1, t * inv_s0);</span>
+<span style="color:#28a745;background:#e6ffed">+    } else if (t &lt; gradient_stop1) {</span>
+<span style="color:#28a745;background:#e6ffed">+        col = mix(c1, c2, (t - gradient_stop0) * inv_s01);</span>
+<span style="color:#28a745;background:#e6ffed">+    } else if (t &lt; gradient_stop2) {</span>
+<span style="color:#28a745;background:#e6ffed">+        col = mix(c2, c3, (t - gradient_stop1) * inv_s12);</span>
+<span style="color:#28a745;background:#e6ffed">+    } else if (t &lt; gradient_stop3) {</span>
+<span style="color:#28a745;background:#e6ffed">+        col = mix(c3, c4, (t - gradient_stop2) * inv_s23);</span>
+<span style="color:#28a745;background:#e6ffed">+    } else {</span>
+<span style="color:#28a745;background:#e6ffed">+        col = mix(c4, c5, (t - gradient_stop3) * inv_s34);</span>
+<span style="color:#28a745;background:#e6ffed">+    }</span>
+<span> </span>
+<span>     col *= 1.0 + density_heat_strength * pow(clamp(d * 0.125, 0.0, 1.0), density_heat_power);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-    float redshift_t = 1.0 - 1.0 / (1.0 + grav_redshift_strength * rs / (2.0 * max(r, rs * 0.6)));</span>
+<span style="color:#28a745;background:#e6ffed">+    float redshift_t = grav_redshift_strength * rs * 0.5 / (max(r, rs * 0.6) + grav_redshift_strength * rs * 0.5);</span>
+<span>     col *= vec3(1.0 + redshift_t * 0.9, 1.0 - redshift_t * 0.4, 1.0 - redshift_t * 0.8);</span>
+<span> </span>
+<span>     float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));</span>
+<span style="color:#268bd2;font-weight:bold">@@ -119,12 +127,12 @@</span>
+<span>     float T = 1.0;</span>
+<span>     vec3 L = vec3(0.0);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-    for (int i = 0; i &lt; 200; i++) {</span>
+<span style="color:#28a745;background:#e6ffed">+    for (int i = 0; i &lt; 180; i++) {</span>
+<span>         step_size *= 1.005;</span>
+<span>         lp += ld * step_size;</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-        float r = length(lp);</span>
+<span style="color:#dc3545;background:#ffeef0">-        float r2 = r * r;</span>
+<span style="color:#28a745;background:#e6ffed">+        float r2 = dot(lp, lp);</span>
+<span style="color:#28a745;background:#e6ffed">+        float r = sqrt(r2);</span>
+<span>         float l = length(lp.xz);</span>
+<span> </span>
+<span>         vec3 lp_n = lp / r;</span>
+<span style="color:#268bd2;font-weight:bold">@@ -136,13 +144,14 @@</span>
+<span>         float ang = atan(lp.z, lp.x);</span>
+<span>         float d = accretion_density(l, ang, lp.y);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-        float polar_proj = dot(lp_n, SPIN_AXIS);</span>
+<span style="color:#28a745;background:#e6ffed">+        float polar_proj = lp.y / r;</span>
+<span>         float effective_rs = rs_oblate_base * (1.0 + spin * shadow_asymmetry * 0.18 * dot(lp_n, prograde))</span>
+<span>                            + spin * shadow_oblateness * 0.12 * rs * polar_proj * polar_proj;</span>
+<span>         T *= exp(-(d + 10.0 * clamp((effective_rs - r) * 2.0 + 1.0, 0.0, 1.0)) * step_size);</span>
+<span> </span>
+<span>         float beta = clamp(sqrt(rs / max(l, rs)) * 0.7, 0.0, 0.85) * doppler_beaming;</span>
+<span style="color:#dc3545;background:#ffeef0">-        float beaming = pow(max(1.0 + beta * dot(normalize(vec3(-lp.z, 0.0, lp.x)), -cam_dir), 0.01), 4.0);</span>
+<span style="color:#28a745;background:#e6ffed">+        vec3 prograde_dir = vec3(-lp.z, 0.0, lp.x);</span>
+<span style="color:#28a745;background:#e6ffed">+        float beaming = pow(max(1.0 + beta * dot(prograde_dir / l, -cam_dir), 0.01), 4.0);</span>
+<span>         L += T * d * temperature_color(l, r, d, ang) * beaming * step_size;</span>
+<span> </span>
+<span>         in_bounds = r &lt; scaled_radius;</span>
+<span style="color:#268bd2;font-weight:bold">@@ -151,6 +160,6 @@</span>
+<span>     }</span>
+<span> </span>
+<span>     vec2 deflection = ((INV_VIEW_MATRIX * vec4(ld, 0.0)).xyz - (INV_VIEW_MATRIX * vec4(ld_orig, 0.0)).xyz).xy * 0.5;</span>
+<span style="color:#dc3545;background:#ffeef0">-    vec2 final_uv = clamp(SCREEN_UV + deflection * warp_weight * warp_strength, vec2(0.001), vec2(0.999));</span>
+<span style="color:#28a745;background:#e6ffed">+    vec2 final_uv = clamp(SCREEN_UV + deflection * warp_weight * warp_strength, 0.001, 0.999);</span>
+<span>     ALBEDO = L + T * texture(SCREEN_TEXTURE, final_uv).rgb;</span>
+<span> }</span></pre>
+</div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Shader Code</h2>
+            <div class="two-column">
+                <div class="left-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('original-code')">
+                    <span class="shader-title">Original Shader</span>
+                </button>
+                <div id="original-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('original-code-content')">Copy</button>
+                    <div class="code-block" id="original-code-content"><pre><code class="language-glsl">// Shader by HyperJragon (https://godotshaders.com/shader/black-hole-extended/)
+// Slightly modified (scale)
+
+shader_type spatial;
+render_mode unshaded, cull_back;
+
+//uniform float time;
+uniform float radius;
+uniform sampler2D noise : filter_nearest;
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
+
+uniform float scale : hint_range(0.01, 100.0) = 1.0;
+
+uniform float spin : hint_range(0.0, 1.0) = 0.4;
+uniform float shadow_asymmetry : hint_range(0.0, 1.0) = 0.5;
+uniform float shadow_oblateness : hint_range(0.0, 1.0) = 0.5;
+uniform float frame_drag_strength : hint_range(0.0, 1.0) = 0.5;
+uniform float doppler_beaming = 0.5;
+uniform float warp_falloff : hint_range(0.5, 8.0) = 2.5;
+uniform float warp_strength : hint_range(0.0, 2.0) = 1.0;
+uniform float warp_inner_edge : hint_range(0.0, 0.9) = 0.3;
+
+uniform vec3 color_core : source_color = vec3(0.88, 0.96, 1.00);
+uniform float brightness_core : hint_range(0.0, 40.0) = 22.0;
+uniform vec3 color_hot : source_color = vec3(0.20, 0.60, 1.00);
+uniform float brightness_hot : hint_range(0.0, 20.0) = 10.0;
+uniform vec3 color_mid : source_color = vec3(0.05, 0.35, 1.00);
+uniform float brightness_mid : hint_range(0.0, 15.0) = 6.5;
+uniform vec3 color_cool : source_color = vec3(0.10, 0.45, 0.95);
+uniform float brightness_cool : hint_range(0.0, 10.0) = 4.0;
+uniform vec3 color_outer : source_color = vec3(0.95, 0.55, 0.15);
+uniform float brightness_outer : hint_range(0.0, 10.0) = 2.2;
+uniform vec3 color_edge : source_color = vec3(0.7, 0.08, 0.02);
+uniform float brightness_edge : hint_range(0.0, 5.0) = 1.1;
+
+uniform float gradient_stop0 : hint_range(0.0, 1.0) = 0.08;
+uniform float gradient_stop1 : hint_range(0.0, 1.0) = 0.25;
+uniform float gradient_stop2 : hint_range(0.0, 1.0) = 0.55;
+uniform float gradient_stop3 : hint_range(0.0, 1.0) = 0.80;
+uniform float color_saturation : hint_range(0.0, 3.0) = 1.5;
+
+uniform float grav_redshift_strength : hint_range(0.0, 2.0) = 0.85;
+uniform float turbulence_strength : hint_range(0.0, 1.0) = 0.28;
+uniform float turbulence_scale : hint_range(0.5, 8.0) = 2.5;
+uniform float turbulence_speed : hint_range(0.0, 2.0) = 0.35;
+uniform float density_heat_strength : hint_range(0.0, 1.0) = 0.55;
+uniform float density_heat_power : hint_range(0.1, 1.0) = 0.3;
+
+uniform float rs : hint_range(0.1, 3.0) = 0.7;
+
+#define fade 0.15
+#define R 7.0
+#define R0 1.75
+#define R_INV 0.18868
+#define SPIN_AXIS vec3(0.0, 1.0, 0.0)
+
+float accretion_density(float l, float ang, float y) {
+    float n = texture(noise, vec2(0.5 * ang / PI + TIME * 0.2, log(l) * 1.5)).r;
+    float d0 = pow(max(1.0 - l / R, 0.0) * clamp((l - R0) / fade + 1.0, 0.0, 1.0), 1.5);
+    return d0 * exp(-y * y * 400.0) * 13.0 * (n + max(0.0, n - 0.65) * 1.5);
+}
+
+vec3 temperature_color(float l, float r, float d, float ang) {
+    float turb_x = 0.5 * ang / PI + TIME * turbulence_speed;
+    float turb_y = log(max(l, 0.01)) * turbulence_scale;
+    float n1 = texture(noise, vec2(turb_x * 0.7 + 0.3, turb_y * 0.5)).r;
+    float n2 = texture(noise, vec2(turb_x * 1.3 + 0.6, turb_y * 1.1 + 0.4)).r;
+    float t = clamp((l - R0) * R_INV + (n1 * 0.6 + n2 * 0.4 - 0.5) * turbulence_strength, 0.0, 1.0);
+
+    vec3 c0 = color_core  * brightness_core;
+    vec3 c1 = color_hot   * brightness_hot;
+    vec3 c2 = color_mid   * brightness_mid;
+    vec3 c3 = color_cool  * brightness_cool;
+    vec3 c4 = color_outer * brightness_outer;
+    vec3 c5 = color_edge  * brightness_edge;
+
+    float s0 = gradient_stop0;
+    float s1 = gradient_stop1;
+    float s2 = gradient_stop2;
+    float s3 = gradient_stop3;
+
+    vec3 col = t &lt; s0 ? mix(c0, c1, t / max(s0, 0.001)) :
+               t &lt; s1 ? mix(c1, c2, (t - s0) / max(s1 - s0, 0.001)) :
+               t &lt; s2 ? mix(c2, c3, (t - s1) / max(s2 - s1, 0.001)) :
+               t &lt; s3 ? mix(c3, c4, (t - s2) / max(s3 - s2, 0.001)) :
+                        mix(c4, c5, (t - s3) / max(1.0 - s3, 0.001));
+
+    col *= 1.0 + density_heat_strength * pow(clamp(d * 0.125, 0.0, 1.0), density_heat_power);
+
+    float redshift_t = 1.0 - 1.0 / (1.0 + grav_redshift_strength * rs / (2.0 * max(r, rs * 0.6)));
+    col *= vec3(1.0 + redshift_t * 0.9, 1.0 - redshift_t * 0.4, 1.0 - redshift_t * 0.8);
+
+    float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
+    return mix(vec3(lum), col, color_saturation);
+}
+
+void fragment() {
+    float inv_scale = 1.0 / scale;
+
+    mat4 inv_view_model = inverse(MODEL_MATRIX) * INV_VIEW_MATRIX;
+    vec3 campos = (inv_view_model * vec4(0.0, 0.0, 0.0, 1.0)).xyz * inv_scale;
+    vec3 ld = -normalize((inv_view_model * vec4(VIEW, 0.0)).xyz);
+    vec3 ld_orig = ld;
+    vec3 lp = (inv_view_model * vec4(VERTEX, 1.0)).xyz * inv_scale;
+    vec3 cam_dir = normalize(campos);
+
+    vec3 normal_local = normalize((inv_view_model * vec4(NORMAL, 0.0)).xyz);
+    float face_amount = clamp(dot(normal_local, normalize(campos - lp)), 0.0, 1.0);
+    float warp_weight = pow(face_amount, warp_falloff) * smoothstep(0.0, warp_inner_edge, face_amount);
+
+    vec3 prograde = normalize(cross(SPIN_AXIS, cam_dir));
+    float spin_rs = spin * rs;
+    float rs_oblate_base = rs * (1.0 - spin * shadow_oblateness * 0.12);
+
+    float scaled_radius = radius * inv_scale;
+
+    bool in_bounds = false, prev_in_bounds = false;
+    float step_size = 0.05;
+    float T = 1.0;
+    vec3 L = vec3(0.0);
+
+    for (int i = 0; i &lt; 200; i++) {
+        step_size *= 1.005;
+        lp += ld * step_size;
+
+        float r = length(lp);
+        float r2 = r * r;
+        float l = length(lp.xz);
+
+        vec3 lp_n = lp / r;
+        float ld_dot = dot(lp_n, ld);
+        float r_clamp = clamp(2.0 - 0.5 * r, 0.0, 1.0);
+        vec3 la = (-1.5 * rs * pow(1.0 + ld_dot, 3.0) * r_clamp * r_clamp) / (r2 * r2) * lp;
+        ld = normalize(ld + (la + frame_drag_strength * spin_rs * cross(SPIN_AXIS, lp) / (max(r, rs) * max(r2, rs * rs))) * step_size);
+
+        float ang = atan(lp.z, lp.x);
+        float d = accretion_density(l, ang, lp.y);
+
+        float polar_proj = dot(lp_n, SPIN_AXIS);
+        float effective_rs = rs_oblate_base * (1.0 + spin * shadow_asymmetry * 0.18 * dot(lp_n, prograde))
+                           + spin * shadow_oblateness * 0.12 * rs * polar_proj * polar_proj;
+        T *= exp(-(d + 10.0 * clamp((effective_rs - r) * 2.0 + 1.0, 0.0, 1.0)) * step_size);
+
+        float beta = clamp(sqrt(rs / max(l, rs)) * 0.7, 0.0, 0.85) * doppler_beaming;
+        float beaming = pow(max(1.0 + beta * dot(normalize(vec3(-lp.z, 0.0, lp.x)), -cam_dir), 0.01), 4.0);
+        L += T * d * temperature_color(l, r, d, ang) * beaming * step_size;
+
+        in_bounds = r &lt; scaled_radius;
+        if (T &lt;= 0.005 || (!in_bounds &amp;&amp; prev_in_bounds)) break;
+        prev_in_bounds = in_bounds;
+    }
+
+    vec2 deflection = ((INV_VIEW_MATRIX * vec4(ld, 0.0)).xyz - (INV_VIEW_MATRIX * vec4(ld_orig, 0.0)).xyz).xy * 0.5;
+    vec2 final_uv = clamp(SCREEN_UV + deflection * warp_weight * warp_strength, vec2(0.001), vec2(0.999));
+    ALBEDO = L + T * texture(SCREEN_TEXTURE, final_uv).rgb;
+}</code></pre></div>
+                </div>
+            </div></div>
+                <div class="right-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('optimized-code')">
+                    <span class="shader-title">Optimized Shader</span>
+                </button>
+                <div id="optimized-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('optimized-code-content')">Copy</button>
+                    <div class="code-block" id="optimized-code-content"><pre><code class="language-glsl">// Shader by HyperJragon (https://godotshaders.com/shader/black-hole-extended/)
+// Slightly modified (scale)
+
+shader_type spatial;
+render_mode unshaded, cull_back;
+
+//uniform float time;
+uniform float radius;
+uniform sampler2D noise : filter_nearest;
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
+
+uniform float scale : hint_range(0.01, 100.0) = 1.0;
+
+uniform float spin : hint_range(0.0, 1.0) = 0.4;
+uniform float shadow_asymmetry : hint_range(0.0, 1.0) = 0.5;
+uniform float shadow_oblateness : hint_range(0.0, 1.0) = 0.5;
+uniform float frame_drag_strength : hint_range(0.0, 1.0) = 0.5;
+uniform float doppler_beaming = 0.5;
+uniform float warp_falloff : hint_range(0.5, 8.0) = 2.5;
+uniform float warp_strength : hint_range(0.0, 2.0) = 1.0;
+uniform float warp_inner_edge : hint_range(0.0, 0.9) = 0.3;
+
+uniform vec3 color_core : source_color = vec3(0.88, 0.96, 1.00);
+uniform float brightness_core : hint_range(0.0, 40.0) = 22.0;
+uniform vec3 color_hot : source_color = vec3(0.20, 0.60, 1.00);
+uniform float brightness_hot : hint_range(0.0, 20.0) = 10.0;
+uniform vec3 color_mid : source_color = vec3(0.05, 0.35, 1.00);
+uniform float brightness_mid : hint_range(0.0, 15.0) = 6.5;
+uniform vec3 color_cool : source_color = vec3(0.10, 0.45, 0.95);
+uniform float brightness_cool : hint_range(0.0, 10.0) = 4.0;
+uniform vec3 color_outer : source_color = vec3(0.95, 0.55, 0.15);
+uniform float brightness_outer : hint_range(0.0, 10.0) = 2.2;
+uniform vec3 color_edge : source_color = vec3(0.7, 0.08, 0.02);
+uniform float brightness_edge : hint_range(0.0, 5.0) = 1.1;
+
+uniform float gradient_stop0 : hint_range(0.0, 1.0) = 0.08;
+uniform float gradient_stop1 : hint_range(0.0, 1.0) = 0.25;
+uniform float gradient_stop2 : hint_range(0.0, 1.0) = 0.55;
+uniform float gradient_stop3 : hint_range(0.0, 1.0) = 0.80;
+uniform float color_saturation : hint_range(0.0, 3.0) = 1.5;
+
+uniform float grav_redshift_strength : hint_range(0.0, 2.0) = 0.85;
+uniform float turbulence_strength : hint_range(0.0, 1.0) = 0.28;
+uniform float turbulence_scale : hint_range(0.5, 8.0) = 2.5;
+uniform float turbulence_speed : hint_range(0.0, 2.0) = 0.35;
+uniform float density_heat_strength : hint_range(0.0, 1.0) = 0.55;
+uniform float density_heat_power : hint_range(0.1, 1.0) = 0.3;
+
+uniform float rs : hint_range(0.1, 3.0) = 0.7;
+
+#define fade 0.15
+#define R 7.0
+#define R0 1.75
+#define R_INV 0.18868
+#define SPIN_AXIS vec3(0.0, 1.0, 0.0)
+
+float accretion_density(float l, float ang, float y) {
+    float n = texture(noise, vec2(0.159155 * ang + TIME * 0.2, log(max(l, 0.01)) * 1.5)).r;
+    float d0 = pow(max(1.0 - l / R, 0.0) * clamp((l - R0) / fade + 1.0, 0.0, 1.0), 1.5);
+    return d0 * exp(-y * y * 400.0) * 13.0 * (n + max(0.0, n - 0.65) * 1.5);
+}
+
+vec3 temperature_color(float l, float r, float d, float ang) {
+    float turb_x = 0.159155 * ang + TIME * turbulence_speed;
+    float turb_y = log(max(l, 0.01)) * turbulence_scale;
+    float n1 = texture(noise, vec2(turb_x * 0.7 + 0.3, turb_y * 0.5)).r;
+    float n2 = texture(noise, vec2(turb_x * 1.3 + 0.6, turb_y * 1.1 + 0.4)).r;
+    float t = clamp((l - R0) * R_INV + (n1 * 0.6 + n2 * 0.4 - 0.5) * turbulence_strength, 0.0, 1.0);
+
+    vec3 c0 = color_core  * brightness_core;
+    vec3 c1 = color_hot   * brightness_hot;
+    vec3 c2 = color_mid   * brightness_mid;
+    vec3 c3 = color_cool  * brightness_cool;
+    vec3 c4 = color_outer * brightness_outer;
+    vec3 c5 = color_edge  * brightness_edge;
+
+    float inv_s0 = 1.0 / max(gradient_stop0, 0.0001);
+    float inv_s01 = 1.0 / max(gradient_stop1 - gradient_stop0, 0.0001);
+    float inv_s12 = 1.0 / max(gradient_stop2 - gradient_stop1, 0.0001);
+    float inv_s23 = 1.0 / max(gradient_stop3 - gradient_stop2, 0.0001);
+    float inv_s34 = 1.0 / max(1.0 - gradient_stop3, 0.0001);
+
+    vec3 col;
+    if (t &lt; gradient_stop0) {
+        col = mix(c0, c1, t * inv_s0);
+    } else if (t &lt; gradient_stop1) {
+        col = mix(c1, c2, (t - gradient_stop0) * inv_s01);
+    } else if (t &lt; gradient_stop2) {
+        col = mix(c2, c3, (t - gradient_stop1) * inv_s12);
+    } else if (t &lt; gradient_stop3) {
+        col = mix(c3, c4, (t - gradient_stop2) * inv_s23);
+    } else {
+        col = mix(c4, c5, (t - gradient_stop3) * inv_s34);
+    }
+
+    col *= 1.0 + density_heat_strength * pow(clamp(d * 0.125, 0.0, 1.0), density_heat_power);
+
+    float redshift_t = grav_redshift_strength * rs * 0.5 / (max(r, rs * 0.6) + grav_redshift_strength * rs * 0.5);
+    col *= vec3(1.0 + redshift_t * 0.9, 1.0 - redshift_t * 0.4, 1.0 - redshift_t * 0.8);
+
+    float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
+    return mix(vec3(lum), col, color_saturation);
+}
+
+void fragment() {
+    float inv_scale = 1.0 / scale;
+
+    mat4 inv_view_model = inverse(MODEL_MATRIX) * INV_VIEW_MATRIX;
+    vec3 campos = (inv_view_model * vec4(0.0, 0.0, 0.0, 1.0)).xyz * inv_scale;
+    vec3 ld = -normalize((inv_view_model * vec4(VIEW, 0.0)).xyz);
+    vec3 ld_orig = ld;
+    vec3 lp = (inv_view_model * vec4(VERTEX, 1.0)).xyz * inv_scale;
+    vec3 cam_dir = normalize(campos);
+
+    vec3 normal_local = normalize((inv_view_model * vec4(NORMAL, 0.0)).xyz);
+    float face_amount = clamp(dot(normal_local, normalize(campos - lp)), 0.0, 1.0);
+    float warp_weight = pow(face_amount, warp_falloff) * smoothstep(0.0, warp_inner_edge, face_amount);
+
+    vec3 prograde = normalize(cross(SPIN_AXIS, cam_dir));
+    float spin_rs = spin * rs;
+    float rs_oblate_base = rs * (1.0 - spin * shadow_oblateness * 0.12);
+
+    float scaled_radius = radius * inv_scale;
+
+    bool in_bounds = false, prev_in_bounds = false;
+    float step_size = 0.05;
+    float T = 1.0;
+    vec3 L = vec3(0.0);
+
+    for (int i = 0; i &lt; 180; i++) {
+        step_size *= 1.005;
+        lp += ld * step_size;
+
+        float r2 = dot(lp, lp);
+        float r = sqrt(r2);
+        float l = length(lp.xz);
+
+        vec3 lp_n = lp / r;
+        float ld_dot = dot(lp_n, ld);
+        float r_clamp = clamp(2.0 - 0.5 * r, 0.0, 1.0);
+        vec3 la = (-1.5 * rs * pow(1.0 + ld_dot, 3.0) * r_clamp * r_clamp) / (r2 * r2) * lp;
+        ld = normalize(ld + (la + frame_drag_strength * spin_rs * cross(SPIN_AXIS, lp) / (max(r, rs) * max(r2, rs * rs))) * step_size);
+
+        float ang = atan(lp.z, lp.x);
+        float d = accretion_density(l, ang, lp.y);
+
+        float polar_proj = lp.y / r;
+        float effective_rs = rs_oblate_base * (1.0 + spin * shadow_asymmetry * 0.18 * dot(lp_n, prograde))
+                           + spin * shadow_oblateness * 0.12 * rs * polar_proj * polar_proj;
+        T *= exp(-(d + 10.0 * clamp((effective_rs - r) * 2.0 + 1.0, 0.0, 1.0)) * step_size);
+
+        float beta = clamp(sqrt(rs / max(l, rs)) * 0.7, 0.0, 0.85) * doppler_beaming;
+        vec3 prograde_dir = vec3(-lp.z, 0.0, lp.x);
+        float beaming = pow(max(1.0 + beta * dot(prograde_dir / l, -cam_dir), 0.01), 4.0);
+        L += T * d * temperature_color(l, r, d, ang) * beaming * step_size;
+
+        in_bounds = r &lt; scaled_radius;
+        if (T &lt;= 0.005 || (!in_bounds &amp;&amp; prev_in_bounds)) break;
+        prev_in_bounds = in_bounds;
+    }
+
+    vec2 deflection = ((INV_VIEW_MATRIX * vec4(ld, 0.0)).xyz - (INV_VIEW_MATRIX * vec4(ld_orig, 0.0)).xyz).xy * 0.5;
+    vec2 final_uv = clamp(SCREEN_UV + deflection * warp_weight * warp_strength, 0.001, 0.999);
+    ALBEDO = L + T * texture(SCREEN_TEXTURE, final_uv).rgb;
+}</code></pre></div>
+                </div>
+            </div></div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Generation History</h2>
+            <table>
+            <thead><tr><th>Gen</th><th>Render Time (ms)</th><th>Relative Time</th><th>Speedup</th><th>Max Error</th><th>Media</th></tr></thead>
+            <tbody><tr><td>11</td><td>4.7796</td><td>0.8538</td><td>1.17x</td><td>0.087836</td><td>Yes</td></tr><tr><td>10</td><td>4.7796</td><td>0.8538</td><td>1.17x</td><td>0.087836</td><td>Yes</td></tr><tr><td>9</td><td>4.0662</td><td>0.8628</td><td>1.16x</td><td>0.077017</td><td>Yes</td></tr><tr><td>8</td><td>4.0662</td><td>0.8628</td><td>1.16x</td><td>0.077017</td><td>Yes</td></tr><tr><td>7</td><td>3.7956</td><td>0.8805</td><td>1.14x</td><td>0.088228</td><td>Yes</td></tr><tr><td>6</td><td>3.7956</td><td>0.8805</td><td>1.14x</td><td>0.088228</td><td>Yes</td></tr><tr><td>5</td><td>3.7956</td><td>0.8805</td><td>1.14x</td><td>0.088228</td><td>Yes</td></tr><tr><td>4</td><td>4.7514</td><td>0.9285</td><td>1.08x</td><td>0.004410</td><td>Yes</td></tr><tr><td>3</td><td>4.8427</td><td>0.9597</td><td>1.04x</td><td>0.006110</td><td>Yes</td></tr><tr><td>2</td><td>4.7779</td><td>0.9672</td><td>1.03x</td><td>0.000130</td><td>Yes</td></tr></tbody>
+        </table>
+        </div>
+    </div>
+
+    <script>
+    // ========== Utility Functions ==========
+    function toggleCode(elementId) {
+        var element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle('code-block-expanded');
+        }
+    }
+
+    function toggleSpoiler(id) {
+        var content = document.getElementById(id);
+        if (content) {
+            content.classList.toggle('active');
+        }
+    }
+
+    function copyToClipboard(elementId) {
+        var element = document.getElementById(elementId);
+        if (!element) return;
+        var text = element.textContent || element.innerText;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                showCopySuccess(event.target);
+            }).catch(function() {
+                fallbackCopy(text, event.target);
+            });
+        } else {
+            fallbackCopy(text, event.target);
+        }
+    }
+
+    function showCopySuccess(button) {
+        var orig = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#28a745';
+        setTimeout(function() { button.textContent = orig; }, 2000);
+    }
+
+    function fallbackCopy(text, button) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { if (document.execCommand('copy') && button) showCopySuccess(button); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    // ========== Performance Distribution Chart ==========
+    (function() {
+        var data = {"original": {"bin_edges": [-1.1461, -0.2646, 0.617, 1.4986, 2.3801, 3.2617, 4.1433, 5.0248, 5.9064, 6.788, 7.6695, 8.5511, 9.4327, 10.3142, 11.1958, 12.0773, 12.9589, 13.8405, 14.722, 15.6036, 16.4852, 17.3667, 18.2483, 19.1299, 20.0114, 20.893, 21.7746, 22.6561, 23.5377, 24.4193, 25.3008], "density": [0.0, 5.1167, 0.8, 6.3333, 13.2667, 14.6833, 13.2333, 11.25, 7.9833, 6.0833, 4.6167, 3.75, 3.0, 2.0, 1.7333, 1.3, 1.15, 0.7333, 0.7333, 0.45, 0.4333, 0.3667, 0.2, 0.2, 0.1333, 0.1667, 0.1333, 0.1167, 0.0333, 0.0], "mean": 5.5983, "std": 3.6399, "n": 6000}, "optimized": {"bin_edges": [-1.1461, -0.2646, 0.617, 1.4986, 2.3801, 3.2617, 4.1433, 5.0248, 5.9064, 6.788, 7.6695, 8.5511, 9.4327, 10.3142, 11.1958, 12.0773, 12.9589, 13.8405, 14.722, 15.6036, 16.4852, 17.3667, 18.2483, 19.1299, 20.0114, 20.893, 21.7746, 22.6561, 23.5377, 24.4193, 25.3008], "density": [0.0, 4.7667, 1.4833, 10.4333, 17.3333, 16.3833, 13.45, 10.0667, 6.5833, 5.2333, 3.7333, 2.8333, 1.95, 1.2, 1.4667, 0.9, 0.5333, 0.55, 0.25, 0.2333, 0.1833, 0.1833, 0.1833, 0.0167, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0], "mean": 4.7796, "std": 3.0065, "n": 6000}};
+        var canvas = document.getElementById('perfChart');
+        if (!canvas || !data || !data.original || !data.original.bin_edges || !data.original.bin_edges.length) {
+            if (canvas) {
+                var ctx = canvas.getContext('2d');
+                var rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.fillStyle = '#999';
+                ctx.font = '13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No performance data available yet', rect.width / 2, rect.height / 2);
+            }
+            return;
+        }
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 20, right: 20, bottom: 40, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        // X range from bin edges
+        var allEdges = data.original.bin_edges.concat(data.optimized.bin_edges || []);
+        var xMin = Math.min.apply(null, allEdges);
+        var xMax = Math.max.apply(null, allEdges);
+        var xRange = xMax - xMin || 1;
+
+        // Y range from density values
+        var allDens = data.original.density.concat(data.optimized.density || []);
+        var yMax = Math.max.apply(null, allDens) * 1.15;
+        var yRange = yMax || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toY(v) { return pad.top + plotH - (v / yRange) * plotH; }
+
+        // Draw histogram bars
+        function drawHist(series, fillColor, strokeColor) {
+            var edges = series.bin_edges, dens = series.density;
+            if (!edges || !dens || dens.length === 0) return;
+
+            // Semi-transparent fill
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = fillColor;
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]), yBot = toY(0);
+                ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            }
+
+            // Bold border
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            var baseline = toY(0);
+            ctx.moveTo(toX(edges[0]), baseline);
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]);
+                ctx.lineTo(x1, yTop);
+                ctx.lineTo(x2, yTop);
+            }
+            ctx.lineTo(toX(edges[edges.length - 1]), baseline);
+            ctx.stroke();
+        }
+
+        // Draw mean line
+        function drawMean(series, color, label, yOffset) {
+            if (!series.mean) return;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.globalAlpha = 0.9;
+            var mx = toX(series.mean);
+            ctx.beginPath();
+            ctx.moveTo(mx, pad.top);
+            ctx.lineTo(mx, pad.top + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Label
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(series.mean.toFixed(2) + ' ms', mx, pad.top + yOffset);
+        }
+
+        var C_ORIG = '#8856a7', C_OPT = '#43a2ca', C_ARROW = '#2E7D32';
+
+        // Draw original behind optimized
+        drawHist(data.original, C_ORIG, C_ORIG);
+        drawHist(data.optimized, C_OPT, C_OPT);
+        drawMean(data.original, C_ORIG, 'Original', 12);
+        drawMean(data.optimized, C_OPT, 'Optimized', 24);
+
+        // Speedup arrow
+        if (data.original.mean && data.optimized.mean && data.original.mean > data.optimized.mean) {
+            var speedup = (data.original.mean / data.optimized.mean).toFixed(1);
+            var arrowY = pad.top + plotH * 0.25;
+            var x1 = toX(data.original.mean), x2 = toX(data.optimized.mean);
+            // Dashed arrow line
+            ctx.strokeStyle = C_ARROW;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.moveTo(x1, arrowY);
+            ctx.lineTo(x2 + 6, arrowY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Arrowhead
+            ctx.fillStyle = C_ARROW;
+            ctx.beginPath();
+            ctx.moveTo(x2, arrowY);
+            ctx.lineTo(x2 + 10, arrowY - 5);
+            ctx.lineTo(x2 + 10, arrowY + 5);
+            ctx.closePath();
+            ctx.fill();
+            // Label
+            var midX = (x1 + x2) / 2;
+            ctx.fillStyle = C_ARROW;
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(speedup + 'x', midX, arrowY - 8);
+        }
+
+        // Axes - left and bottom spines
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (density)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var numYTicks = 5;
+        for (var i = 0; i <= numYTicks; i++) {
+            var val = (yRange / numYTicks) * i;
+            var gy = pad.top + plotH - (plotH / numYTicks) * i;
+            ctx.fillText(val.toFixed(2), pad.left - 4, gy + 3);
+        }
+
+        // X-axis labels (render time ms)
+        ctx.textAlign = 'center';
+        var numXTicks = 6;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(Math.round(val), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Render Time (ms)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Legend
+        ctx.font = '11px sans-serif';
+        var legX = W - pad.right - 130, legY = pad.top + 14;
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_ORIG;
+        ctx.fillRect(legX, legY - 8, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_ORIG;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(legX, legY - 8, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText('Original (n=' + (data.original.n || '?') + ')', legX + 22, legY + 2);
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_OPT;
+        ctx.fillRect(legX, legY + 10, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_OPT;
+        ctx.strokeRect(legX, legY + 10, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.fillText('Optimized (n=' + (data.optimized.n || '?') + ')', legX + 22, legY + 20);
+    })();
+
+    // ========== Validation Frames Chart ==========
+    
+
+    // ========== Error Distribution Chart ==========
+    (function() {
+        var data = {"bin_edges": [0.0, 0.00375, 0.0075, 0.01125, 0.015, 0.01875, 0.0225, 0.02625, 0.03, 0.03375, 0.0375, 0.04125, 0.045, 0.04875, 0.0525, 0.05625, 0.06, 0.06375, 0.0675, 0.07125, 0.075, 0.07875, 0.0825, 0.08625, 0.09, 0.09375, 0.0975, 0.10125, 0.105, 0.10875, 0.1125, 0.11625, 0.12, 0.12375, 0.1275, 0.13125, 0.135, 0.13875, 0.1425, 0.14625, 0.15], "counts": [7.1895, 3.268, 35.2941, 18.9542, 9.3682, 7.6253, 4.5752, 3.7037, 2.3965, 2.8322, 0.2179, 1.0893, 0.4357, 0.6536, 0.2179, 0.6536, 0.2179, 0.6536, 0.0, 0.0, 0.0, 0.2179, 0.0, 0.4357, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "threshold": 0.1, "exceedance_rate": 0.01, "n_total": 459, "k_exceedances": 0, "max_error": 0.087836, "mean_error": 0.015738};
+        var canvas = document.getElementById('errorDistChart');
+        if (!canvas || !data || !data.bin_edges || !data.bin_edges.length) return;
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 25, right: 20, bottom: 45, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        var edges = data.bin_edges;
+        var counts = data.counts;
+        var threshold = data.threshold;
+        var exRate = data.exceedance_rate;
+        var ratePct = exRate * 100;
+
+        // X range
+        var xMin = edges[0], xMax = edges[edges.length - 1];
+        var xRange = xMax - xMin || 1;
+
+        // Y range (log scale) — find min non-zero count for log floor
+        var minNonZero = Infinity;
+        for (var i = 0; i < counts.length; i++) {
+            if (counts[i] > 0 && counts[i] < minNonZero) minNonZero = counts[i];
+        }
+        if (minNonZero === Infinity) minNonZero = 0.1;
+        var yFloor = minNonZero * 0.3;
+        var yMax = 110; // slightly above 100%
+        var logMin = Math.log10(yFloor);
+        var logMax = Math.log10(yMax);
+        var logRange = logMax - logMin || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toLogY(v) {
+            if (v <= 0) return pad.top + plotH;
+            var lv = Math.log10(Math.max(v, yFloor));
+            return pad.top + plotH - ((lv - logMin) / logRange) * plotH;
+        }
+
+        var C_SAFE = '#43a2ca';
+        var C_EXCEED = '#dc3545';
+        var C_THRESH = '#e6550d';
+
+        // Draw histogram bars
+        for (var i = 0; i < counts.length; i++) {
+            var binLeft = edges[i], binRight = edges[i + 1];
+            var binMid = (binLeft + binRight) / 2;
+            var x1 = toX(binLeft), x2 = toX(binRight);
+            var yBot = pad.top + plotH;
+            var yTop = toLogY(counts[i]);
+            if (counts[i] <= 0) continue;
+
+            // Color: red if bin center >= threshold
+            var isExceed = binMid >= threshold;
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x1, yTop, x2 - x1, yBot - yTop);
+        }
+
+        // Rejection zone rectangle (threshold to xMax, ratePct to 100)
+        var rzX = toX(threshold);
+        var rzY = toLogY(100);
+        var rzW = toX(xMax) - rzX;
+        var rzH = toLogY(ratePct) - rzY;
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = C_EXCEED;
+        ctx.fillRect(rzX, rzY, rzW, rzH);
+        ctx.globalAlpha = 1.0;
+
+        // Threshold vertical line
+        ctx.strokeStyle = C_THRESH;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        ctx.moveTo(toX(threshold), pad.top);
+        ctx.lineTo(toX(threshold), pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Threshold label
+        ctx.fillStyle = C_THRESH;
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('FLIP Threshold = ' + threshold.toFixed(3), toX(threshold) + 4, pad.top + 12);
+
+        // Exceedance rate horizontal line
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        var rateY = toLogY(ratePct);
+        ctx.moveTo(toX(threshold), rateY);
+        ctx.lineTo(pad.left + plotW, rateY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(ratePct.toFixed(0) + '% exceedance rate', pad.left + plotW - 4, rateY - 4);
+
+        // Axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (log scale)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var yTicks = [0.01, 0.1, 1, 10, 100];
+        for (var i = 0; i < yTicks.length; i++) {
+            var val = yTicks[i];
+            if (val < yFloor || val > yMax) continue;
+            var gy = toLogY(val);
+            ctx.fillText(val < 1 ? val.toFixed(2) + '%' : val.toFixed(0) + '%', pad.left - 4, gy + 3);
+            // Grid line
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, gy);
+            ctx.lineTo(pad.left + plotW, gy);
+            ctx.stroke();
+        }
+
+        // X-axis labels
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        var numXTicks = 8;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(3), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('FLIP Error (p99)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Stats legend
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#333';
+        var legX = pad.left + 8, legY = pad.top + plotH - 40;
+        ctx.fillText('n=' + data.n_total + ', k=' + data.k_exceedances +
+            ', max=' + data.max_error.toFixed(4) +
+            ', mean=' + data.mean_error.toFixed(4), legX, legY);
+    })();
+    </script>
+</body>
+</html>

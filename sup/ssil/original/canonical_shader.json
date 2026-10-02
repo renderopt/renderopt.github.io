@@ -1,0 +1,236 @@
+{
+  "render_type": "godot_internal",
+  "uniforms": {
+    "uniforms": [
+      {
+        "class_type": "ShaderUniformVec",
+        "name": "camera_position",
+        "value": [
+          -25.834060668945312,
+          -14.755197525024414,
+          -25.11932945251465
+        ],
+        "primary_value": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "distribution": {
+          "type": "UniformVecDistribution",
+          "mins": [
+            -25.834060668945312,
+            -14.755197525024414,
+            -25.11932945251465
+          ],
+          "maxs": [
+            93.34371948242188,
+            6.229923248291016,
+            77.79380798339844
+          ]
+        },
+        "mins": [
+          -25.834060668945312,
+          -14.755197525024414,
+          -25.11932945251465
+        ],
+        "maxs": [
+          93.34371948242188,
+          6.229923248291016,
+          77.79380798339844
+        ],
+        "fixed_sample": [
+          -25.834060668945312,
+          -14.755197525024414,
+          -25.11932945251465
+        ],
+        "fixed_primary": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "constraints": {
+          "smin": [
+            -25.8340606689453,
+            -14.7551975250244,
+            -25.1193294525146
+          ],
+          "smax": [
+            93.3437194824219,
+            6.22992324829102,
+            77.7938079833984
+          ],
+          "value": [
+            -4.05000019073486,
+            -1.12999999523163,
+            4.0
+          ]
+        }
+      },
+      {
+        "class_type": "ShaderUniformVec",
+        "name": "camera_look_direction",
+        "value": [
+          0.0,
+          -1.5707999467849731
+        ],
+        "primary_value": [
+          0.0,
+          0.0
+        ],
+        "distribution": {
+          "type": "UniformVecDistribution",
+          "mins": [
+            0.0,
+            -1.5707999467849731
+          ],
+          "maxs": [
+            6.283199787139893,
+            1.5707999467849731
+          ]
+        },
+        "mins": [
+          0.0,
+          -1.5707999467849731
+        ],
+        "maxs": [
+          6.283199787139893,
+          1.5707999467849731
+        ],
+        "fixed_sample": [
+          0.0,
+          -1.5707999467849731
+        ],
+        "fixed_primary": [
+          0.0,
+          0.0
+        ],
+        "constraints": {
+          "smin": [
+            0.0,
+            -1.57079994678497
+          ],
+          "smax": [
+            6.28319978713989,
+            1.57079994678497
+          ],
+          "value": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      {
+        "class_type": "ShaderUniformVec",
+        "name": "camera_volume_selector",
+        "value": [
+          0.0
+        ],
+        "primary_value": [
+          0.0
+        ],
+        "distribution": {
+          "type": "UniformVecDistribution",
+          "mins": [
+            0.0
+          ],
+          "maxs": [
+            1.0
+          ]
+        },
+        "mins": [
+          0.0
+        ],
+        "maxs": [
+          1.0
+        ],
+        "fixed_sample": [
+          0.0
+        ],
+        "fixed_primary": [
+          0.0
+        ],
+        "constraints": {
+          "smin": [
+            0.0
+          ],
+          "smax": [
+            1.0
+          ],
+          "value": [
+            0.0
+          ]
+        }
+      },
+      {
+        "class_type": "ShaderUniformTime",
+        "name": "time",
+        "value": [
+          0.0
+        ],
+        "primary_value": [
+          0.0
+        ],
+        "distribution": {
+          "type": "UniformVecDistribution",
+          "mins": [
+            0.0
+          ],
+          "maxs": [
+            30.0
+          ]
+        },
+        "mins": [
+          0.0
+        ],
+        "maxs": [
+          30.0
+        ],
+        "fixed_sample": [
+          0.0
+        ],
+        "fixed_primary": [
+          0.0
+        ],
+        "constraints": {
+          "smin": [
+            0.0
+          ],
+          "smax": [
+            30.0
+          ],
+          "value": [
+            0.0
+          ]
+        },
+        "per_frame_time": 0.016
+      }
+    ]
+  },
+  "stages": [
+    {
+      "shader": {
+        "source": "///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// Copyright (c) 2016, Intel Corporation\n// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated\n// documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation\n// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to\n// permit persons to whom the Software is furnished to do so, subject to the following conditions:\n// The above copyright notice and this permission notice shall be included in all copies or substantial portions of\n// the Software.\n// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO\n// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\n// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n// SOFTWARE.\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// File changes (yyyy-mm-dd)\n// 2016-09-07: filip.strugar@intel.com: first commit\n// 2020-12-05: clayjohn: convert to Vulkan and Godot\n// 2021-05-27: clayjohn: convert SSAO to SSIL\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n\n#[compute]\n\n#version 450\n\n#VERSION_DEFINES\n\n#define SSIL_MAIN_DISK_SAMPLE_COUNT (32)\nconst vec4 sample_pattern[SSIL_MAIN_DISK_SAMPLE_COUNT] = {\n\tvec4(0.78488064, 0.56661671, 1.500000, -0.126083), vec4(0.26022232, -0.29575172, 1.500000, -1.064030), vec4(0.10459357, 0.08372527, 1.110000, -2.730563), vec4(-0.68286800, 0.04963045, 1.090000, -0.498827),\n\tvec4(-0.13570161, -0.64190155, 1.250000, -0.532765), vec4(-0.26193795, -0.08205118, 0.670000, -1.783245), vec4(-0.61177456, 0.66664219, 0.710000, -0.044234), vec4(0.43675563, 0.25119025, 0.610000, -1.167283),\n\tvec4(0.07884444, 0.86618668, 0.640000, -0.459002), vec4(-0.12790935, -0.29869005, 0.600000, -1.729424), vec4(-0.04031125, 0.02413622, 0.600000, -4.792042), vec4(0.16201244, -0.52851415, 0.790000, -1.067055),\n\tvec4(-0.70991218, 0.47301072, 0.640000, -0.335236), vec4(0.03277707, -0.22349690, 0.600000, -1.982384), vec4(0.68921727, 0.36800742, 0.630000, -0.266718), vec4(0.29251814, 0.37775412, 0.610000, -1.422520),\n\tvec4(-0.12224089, 0.96582592, 0.600000, -0.426142), vec4(0.11071457, -0.16131058, 0.600000, -2.165947), vec4(0.46562141, -0.59747696, 0.600000, -0.189760), vec4(-0.51548797, 0.11804193, 0.600000, -1.246800),\n\tvec4(0.89141309, -0.42090443, 0.600000, 0.028192), vec4(-0.32402530, -0.01591529, 0.600000, -1.543018), vec4(0.60771245, 0.41635221, 0.600000, -0.605411), vec4(0.02379565, -0.08239821, 0.600000, -3.809046),\n\tvec4(0.48951152, -0.23657045, 0.600000, -1.189011), vec4(-0.17611565, -0.81696892, 0.600000, -0.513724), vec4(-0.33930185, -0.20732205, 0.600000, -1.698047), vec4(-0.91974425, 0.05403209, 0.600000, 0.062246),\n\tvec4(-0.15064627, -0.14949332, 0.600000, -1.896062), vec4(0.53180975, -0.35210401, 0.600000, -0.758838), vec4(0.41487166, 0.81442589, 0.600000, -0.505648), vec4(-0.24106961, -0.32721516, 0.600000, -1.665244)\n};\n\n// these values can be changed (up to SSIL_MAX_TAPS) with no changes required elsewhere; values for 4th and 5th preset are ignored but array needed to avoid compilation errors\n// the actual number of texture samples is two times this value (each \"tap\" has two symmetrical depth texture samples)\nconst int num_taps[5] = { 3, 5, 12, 0, 0 };\n\n#define SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET (99) // to disable simply set to 99 or similar\n#define SSIL_TILT_SAMPLES_AMOUNT (0.4)\n//\n#define SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET (1) // to disable simply set to 99 or similar\n#define SSIL_HALOING_REDUCTION_AMOUNT (0.8) // values from 0.0 - 1.0, 1.0 means max weighting (will cause artifacts, 0.8 is more reasonable)\n//\n#define SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)\n#define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically\n//\n// WARNING: The edge handling is hard-coded to 'disabled' on quality level 0, and enabled above,\n// on the C++ side; while toggling it here will work for testing purposes, it will not yield\n// performance gains (or correct results).\n#define SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)\n//\n#define SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)\n\n#define SSIL_MAX_TAPS 32\n#define SSIL_ADAPTIVE_TAP_BASE_COUNT 5\n#define SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT (SSIL_MAX_TAPS - SSIL_ADAPTIVE_TAP_BASE_COUNT)\n#define SSIL_DEPTH_MIP_LEVELS 4\n\nlayout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;\n\nlayout(set = 0, binding = 0) uniform sampler2DArray source_depth_mipmaps;\nlayout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;\nlayout(set = 0, binding = 2) uniform Constants { //get into a lower set\n\tvec4 rotation_matrices[20];\n}\nconstants;\n\n#ifdef ADAPTIVE\nlayout(rgba16, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;\nlayout(set = 1, binding = 1) uniform sampler2D source_importance;\nlayout(set = 1, binding = 2, std430) buffer Counter {\n\tuint sum;\n}\ncounter;\n#endif\n\nlayout(rgba16, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;\nlayout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;\n\nlayout(set = 3, binding = 0) uniform sampler2D last_frame;\nlayout(set = 3, binding = 1) uniform ProjectionConstants {\n\tmat4 reprojection;\n}\nprojection_constants;\n\nlayout(push_constant, std430) uniform Params {\n\tivec2 screen_size;\n\tint pass;\n\tint quality;\n\n\tvec2 half_screen_pixel_size;\n\tvec2 half_screen_pixel_size_x025;\n\n\tvec2 NDC_to_view_mul;\n\tvec2 NDC_to_view_add;\n\n\tvec2 pad2;\n\tfloat z_near;\n\tfloat z_far;\n\n\tfloat radius;\n\tfloat intensity;\n\tint size_multiplier;\n\tint pad;\n\n\tfloat fade_out_mul;\n\tfloat fade_out_add;\n\tfloat normal_rejection_amount;\n\tfloat inv_radius_near_limit;\n\n\tbool is_orthogonal;\n\tfloat neg_inv_radius;\n\tfloat load_counter_avg_div;\n\tfloat adaptive_sample_limit;\n\n\tivec2 pass_coord_offset;\n\tvec2 pass_uv_offset;\n}\nparams;\n\nfloat pack_edges(vec4 p_edgesLRTB) {\n\tp_edgesLRTB = round(clamp(p_edgesLRTB, 0.0, 1.0) * 3.05);\n\treturn dot(p_edgesLRTB, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));\n}\n\nvec3 NDC_to_view_space(vec2 p_pos, float p_viewspace_depth) {\n\tif (params.is_orthogonal) {\n\t\treturn vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add), p_viewspace_depth);\n\t} else {\n\t\treturn vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add) * p_viewspace_depth, p_viewspace_depth);\n\t}\n}\n\n// calculate effect radius and fit our screen sampling pattern inside it\nvoid calculate_radius_parameters(const float p_pix_center_length, const vec2 p_pixel_size_at_center, out float r_lookup_radius, out float r_radius, out float r_fallof_sq) {\n\tr_radius = params.radius;\n\n\t// when too close, on-screen sampling disk will grow beyond screen size; limit this to avoid closeup temporal artifacts\n\tconst float too_close_limit = clamp(p_pix_center_length * params.inv_radius_near_limit, 0.0, 1.0) * 0.8 + 0.2;\n\n\tr_radius *= too_close_limit;\n\n\t// 0.85 is to reduce the radius to allow for more samples on a slope to still stay within influence\n\tr_lookup_radius = (0.85 * r_radius) / p_pixel_size_at_center.x;\n\n\t// used to calculate falloff (both for AO samples and per-sample weights)\n\tr_fallof_sq = -1.0 / (r_radius * r_radius);\n}\n\nvec4 calculate_edges(const float p_center_z, const float p_left_z, const float p_right_z, const float p_top_z, const float p_bottom_z) {\n\t// slope-sensitive depth-based edge detection\n\tvec4 edgesLRTB = vec4(p_left_z, p_right_z, p_top_z, p_bottom_z) - p_center_z;\n\tvec4 edgesLRTB_slope_adjusted = edgesLRTB + edgesLRTB.yxwz;\n\tedgesLRTB = min(abs(edgesLRTB), abs(edgesLRTB_slope_adjusted));\n\treturn clamp((1.3 - edgesLRTB / (p_center_z * 0.040)), 0.0, 1.0);\n}\n\nvec3 load_normal(ivec2 p_pos) {\n\tvec3 encoded_normal = normalize(imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0);\n\tencoded_normal.z = -encoded_normal.z;\n\treturn encoded_normal;\n}\n\nvec3 load_normal(ivec2 p_pos, ivec2 p_offset) {\n\tvec3 encoded_normal = normalize(imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0);\n\tencoded_normal.z = -encoded_normal.z;\n\treturn encoded_normal;\n}\n\n// all vectors in viewspace\nfloat calculate_pixel_obscurance(vec3 p_pixel_normal, vec3 p_hit_delta, float p_fallof_sq) {\n\tfloat length_sq = dot(p_hit_delta, p_hit_delta);\n\tfloat NdotD = dot(p_pixel_normal, p_hit_delta) / sqrt(length_sq);\n\n\tfloat falloff_mult = max(0.0, length_sq * p_fallof_sq + 1.0);\n\n\treturn max(0, NdotD - 0.05) * falloff_mult;\n}\n\nvoid SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const vec2 p_sampling_uv, const float p_mip_level, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const float p_fallof_sq, const float p_weight_mod) {\n\t// get depth at sample\n\tfloat viewspace_sample_z = textureLod(source_depth_mipmaps, vec3(p_sampling_uv, params.pass), p_mip_level).x;\n\tvec3 sample_normal = load_normal(ivec2(p_sampling_uv * vec2(params.screen_size)));\n\n\t// convert to viewspace\n\tvec3 hit_pos = NDC_to_view_space(p_sampling_uv.xy, viewspace_sample_z);\n\tvec3 hit_delta = hit_pos - p_pix_center_pos;\n\n\tfloat obscurance = calculate_pixel_obscurance(p_pixel_normal, hit_delta, p_fallof_sq);\n\tfloat weight = 1.0;\n\n\tif (p_quality_level >= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {\n\t\tfloat reduce = max(0, -hit_delta.z);\n\t\treduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);\n\t\tweight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);\n\t}\n\n\t// Translate sampling_uv to last screen's coordinates\n\tconst vec4 sample_pos = projection_constants.reprojection * vec4(p_sampling_uv * 2.0 - 1.0, (viewspace_sample_z - params.z_near) / (params.z_far - params.z_near) * 2.0 - 1.0, 1.0);\n\tvec2 reprojected_sampling_uv = (sample_pos.xy / sample_pos.w) * 0.5 + 0.5;\n\n\tweight *= p_weight_mod;\n\n\tr_obscurance_sum += obscurance * weight;\n\n\tvec3 sample_color = textureLod(last_frame, reprojected_sampling_uv, 5.0).rgb;\n\t// Reduce impact of fireflies by tonemapping before averaging: http://graphicrants.blogspot.com/2013/12/tone-mapping.html\n\tsample_color /= (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));\n\tr_color_sum += sample_color * obscurance * weight * mix(1.0, smoothstep(0.0, 0.1, -dot(sample_normal, normalize(hit_delta))), params.normal_rejection_amount);\n\tr_weight_sum += weight;\n}\n\nvoid SSILTap(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const int p_tap_index, const mat2 p_rot_scale, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const vec2 p_normalized_screen_pos, const float p_mip_offset, const float p_fallof_sq, float p_weight_mod, vec2 p_norm_xy, float p_norm_xy_length) {\n\tvec2 sample_offset;\n\tfloat sample_pow_2_len;\n\n\t// patterns\n\t{\n\t\tvec4 new_sample = sample_pattern[p_tap_index];\n\t\tsample_offset = new_sample.xy * p_rot_scale;\n\t\tsample_pow_2_len = new_sample.w; // precalculated, same as: sample_pow_2_len = log2( length( new_sample.xy ) );\n\t\tp_weight_mod *= new_sample.z;\n\t}\n\n\t// snap to pixel center (more correct obscurance math, avoids artifacts)\n\tsample_offset = round(sample_offset);\n\n\t// calculate MIP based on the sample distance from the center, similar to as described\n\t// in http://graphics.cs.williams.edu/papers/SAOHPG12/.\n\tfloat mip_level = (p_quality_level < SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (sample_pow_2_len + p_mip_offset);\n\n\tvec2 sampling_uv = sample_offset * params.half_screen_pixel_size + p_normalized_screen_pos;\n\n\tSSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);\n\n\t// for the second tap, just use the mirrored offset\n\tvec2 sample_offset_mirrored_uv = -sample_offset;\n\n\t// tilt the second set of samples so that the disk is effectively rotated by the normal\n\t// effective at removing one set of artifacts, but too expensive for lower quality settings\n\tif (p_quality_level >= SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET) {\n\t\tfloat dot_norm = dot(sample_offset_mirrored_uv, p_norm_xy);\n\t\tsample_offset_mirrored_uv -= dot_norm * p_norm_xy_length * p_norm_xy;\n\t\tsample_offset_mirrored_uv = round(sample_offset_mirrored_uv);\n\t}\n\n\t// snap to pixel center (more correct obscurance math, avoids artifacts)\n\tvec2 sampling_mirrored_uv = sample_offset_mirrored_uv * params.half_screen_pixel_size + p_normalized_screen_pos;\n\n\tSSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_mirrored_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);\n}\n\nvoid generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, out float r_weight, const vec2 p_pos, int p_quality_level, bool p_adaptive_base) {\n\tvec2 pos_rounded = trunc(p_pos);\n\tuvec2 upos = uvec2(pos_rounded);\n\n\tconst int number_of_taps = (p_adaptive_base) ? (SSIL_ADAPTIVE_TAP_BASE_COUNT) : (num_taps[p_quality_level]);\n\tfloat pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;\n\n\tvec4 valuesUL = textureGather(source_depth_mipmaps, vec3(pos_rounded * params.half_screen_pixel_size, params.pass));\n\tvec4 valuesBR = textureGather(source_depth_mipmaps, vec3((pos_rounded + vec2(1.0)) * params.half_screen_pixel_size, params.pass));\n\n\t// get this pixel's viewspace depth\n\tpix_z = valuesUL.y;\n\n\t// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)\n\tpix_left_z = valuesUL.x;\n\tpix_top_z = valuesUL.z;\n\tpix_right_z = valuesBR.z;\n\tpix_bottom_z = valuesBR.x;\n\n\tvec2 normalized_screen_pos = pos_rounded * params.half_screen_pixel_size + params.half_screen_pixel_size_x025;\n\tvec3 pix_center_pos = NDC_to_view_space(normalized_screen_pos, pix_z);\n\n\t// Load this pixel's viewspace normal\n\tuvec2 full_res_coord = upos * 2 * params.size_multiplier + params.pass_coord_offset.xy;\n\tvec3 pixel_normal = load_normal(ivec2(full_res_coord));\n\n\tconst vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size, pix_center_pos.z).xy - pix_center_pos.xy;\n\n\tfloat pixel_lookup_radius;\n\tfloat fallof_sq;\n\n\t// calculate effect radius and fit our screen sampling pattern inside it\n\tfloat viewspace_radius;\n\tcalculate_radius_parameters(length(pix_center_pos), pixel_size_at_center, pixel_lookup_radius, viewspace_radius, fallof_sq);\n\n\t// calculate samples rotation/scaling\n\tmat2 rot_scale_matrix;\n\tuint pseudo_random_index;\n\n\t{\n\t\tvec4 rotation_scale;\n\t\t// reduce effect radius near the screen edges slightly; ideally, one would render a larger depth buffer (5% on each side) instead\n\t\tif (!p_adaptive_base && (p_quality_level >= SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET)) {\n\t\t\tfloat near_screen_border = min(min(normalized_screen_pos.x, 1.0 - normalized_screen_pos.x), min(normalized_screen_pos.y, 1.0 - normalized_screen_pos.y));\n\t\t\tnear_screen_border = clamp(10.0 * near_screen_border + 0.6, 0.0, 1.0);\n\t\t\tpixel_lookup_radius *= near_screen_border;\n\t\t}\n\n\t\t// load & update pseudo-random rotation matrix\n\t\tpseudo_random_index = uint(pos_rounded.y * 2 + pos_rounded.x) % 5;\n\t\trotation_scale = constants.rotation_matrices[params.pass * 5 + pseudo_random_index];\n\t\trot_scale_matrix = mat2(rotation_scale.x * pixel_lookup_radius, rotation_scale.y * pixel_lookup_radius, rotation_scale.z * pixel_lookup_radius, rotation_scale.w * pixel_lookup_radius);\n\t}\n\n\t// the main obscurance & sample weight storage\n\tvec3 color_sum = vec3(0.0);\n\tfloat obscurance_sum = 0.0;\n\tfloat weight_sum = 0.0;\n\n\t// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to \"no edge\" (1 is no edge, 0 is edge)\n\tvec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);\n\n\t// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.\n\tpix_center_pos *= 0.99;\n\n\tif (!p_adaptive_base && (p_quality_level >= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {\n\t\tedgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);\n\t}\n\n\tconst float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;\n\tfloat mip_offset = (p_quality_level < SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (log2(pixel_lookup_radius) + global_mip_offset);\n\n\t// Used to tilt the second set of samples so that the disk is effectively rotated by the normal\n\t// effective at removing one set of artifacts, but too expensive for lower quality settings\n\tvec2 norm_xy = vec2(pixel_normal.x, pixel_normal.y);\n\tfloat norm_xy_length = length(norm_xy);\n\tnorm_xy /= vec2(norm_xy_length, -norm_xy_length);\n\tnorm_xy_length *= SSIL_TILT_SAMPLES_AMOUNT;\n\n\t// standard, non-adaptive approach\n\tif ((p_quality_level != 3) || p_adaptive_base) {\n\t\tfor (int i = 0; i < number_of_taps; i++) {\n\t\t\tSSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);\n\t\t}\n\t}\n#ifdef ADAPTIVE\n\telse {\n\t\t// add new ones if needed\n\t\tvec2 full_res_uv = normalized_screen_pos + params.pass_uv_offset.xy;\n\t\tfloat importance = textureLod(source_importance, full_res_uv, 0.0).x;\n\n\t\t//Need to store obscurance from base pass\n\t\t// load existing base values\n\t\tvec4 base_values = imageLoad(source_ssil, ivec3(upos, params.pass));\n\t\tweight_sum += imageLoad(edges_weights_image, ivec2(upos)).r * float(SSIL_ADAPTIVE_TAP_BASE_COUNT * 4.0);\n\t\tcolor_sum += (base_values.rgb) * weight_sum;\n\t\tobscurance_sum += (base_values.a) * weight_sum;\n\n\t\t// increase importance around edges\n\t\tfloat edge_count = dot(1.0 - edgesLRTB, vec4(1.0, 1.0, 1.0, 1.0));\n\n\t\tfloat avg_total_importance = float(counter.sum) * params.load_counter_avg_div;\n\n\t\tfloat importance_limiter = clamp(params.adaptive_sample_limit / avg_total_importance, 0.0, 1.0);\n\t\timportance *= importance_limiter;\n\n\t\tfloat additional_sample_count = SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT * importance;\n\n\t\tconst float blend_range = 3.0;\n\t\tconst float blend_range_inv = 1.0 / blend_range;\n\n\t\tadditional_sample_count += 0.5;\n\t\tuint additional_samples = uint(additional_sample_count);\n\t\tuint additional_samples_to = min(SSIL_MAX_TAPS, additional_samples + SSIL_ADAPTIVE_TAP_BASE_COUNT);\n\n\t\tfor (uint i = SSIL_ADAPTIVE_TAP_BASE_COUNT; i < additional_samples_to; i++) {\n\t\t\tadditional_sample_count -= 1.0f;\n\t\t\tfloat weight_mod = clamp(additional_sample_count * blend_range_inv, 0.0, 1.0);\n\t\t\tSSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);\n\t\t}\n\t}\n#endif\n\n\t// Early out for adaptive base\n\tif (p_adaptive_base) {\n\t\tvec3 color = color_sum / weight_sum;\n\n\t\tr_color = color;\n\t\tr_edges = vec4(0.0);\n\t\tr_obscurance = obscurance_sum / weight_sum;\n\t\tr_weight = weight_sum;\n\t\treturn;\n\t}\n\n\t// Calculate weighted average\n\tvec3 color = color_sum / weight_sum;\n\tcolor /= 1.0 - dot(color, vec3(0.299, 0.587, 0.114));\n\n\t// Calculate fadeout (1 close, gradient, 0 far)\n\tfloat fade_out = clamp(pix_center_pos.z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);\n\n\t// Reduce the SSIL if we're on the edge to remove artifacts on edges (we don't care for the lower quality one)\n\tif (!p_adaptive_base && (p_quality_level >= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {\n\t\t// when there's more than 2 opposite edges, start fading out the occlusion to reduce aliasing artifacts\n\t\tfloat edge_fadeout_factor = clamp((1.0 - edgesLRTB.x - edgesLRTB.y) * 0.35, 0.0, 1.0) + clamp((1.0 - edgesLRTB.z - edgesLRTB.w) * 0.35, 0.0, 1.0);\n\n\t\tfade_out *= clamp(1.0 - edge_fadeout_factor, 0.0, 1.0);\n\t}\n\n\tcolor = params.intensity * color;\n\n\tcolor *= fade_out;\n\n\t// outputs!\n\tr_color = color;\n\tr_edges = edgesLRTB; // These are used to prevent blurring across edges, 1 means no edge, 0 means edge, 0.5 means half way there, etc.\n\tr_obscurance = clamp((obscurance_sum / weight_sum) * params.intensity, 0.0, 1.0);\n\tr_weight = weight_sum;\n}\n\nvoid main() {\n\tvec3 out_color;\n\tfloat out_obscurance;\n\tfloat out_weight;\n\tvec4 out_edges;\n\tivec2 ssC = ivec2(gl_GlobalInvocationID.xy);\n\tif (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing\n\t\treturn;\n\t}\n\n\tvec2 uv = vec2(gl_GlobalInvocationID) + vec2(0.5);\n#ifdef SSIL_BASE\n\tgenerate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, true);\n\n\timageStore(dest_image, ssC, vec4(out_color, out_obscurance));\n\timageStore(edges_weights_image, ssC, vec4(out_weight / (float(SSIL_ADAPTIVE_TAP_BASE_COUNT) * 4.0)));\n#else\n\tgenerate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, false); // pass in quality levels\n\n\timageStore(dest_image, ssC, vec4(out_color, out_obscurance));\n\timageStore(edges_weights_image, ssC, vec4(pack_edges(out_edges)));\n#endif\n}\n",
+        "name": "ssil"
+      }
+    },
+    {
+      "shader": {
+        "source": "///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// Copyright (c) 2016, Intel Corporation\n// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated\n// documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation\n// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to\n// permit persons to whom the Software is furnished to do so, subject to the following conditions:\n// The above copyright notice and this permission notice shall be included in all copies or substantial portions of\n// the Software.\n// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO\n// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\n// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n// SOFTWARE.\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// File changes (yyyy-mm-dd)\n// 2016-09-07: filip.strugar@intel.com: first commit\n// 2020-12-05: clayjohn: convert to Vulkan and Godot\n// 2021-05-27: clayjohn: convert SSAO to SSIL\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n\n#[compute]\n\n#version 450\n\n#VERSION_DEFINES\n\nlayout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;\n\nlayout(set = 0, binding = 0) uniform sampler2D source_ssil;\n\nlayout(rgba16, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;\n\nlayout(r8, set = 2, binding = 0) uniform restrict readonly image2D source_edges;\n\nlayout(push_constant, std430) uniform Params {\n\tfloat edge_sharpness;\n\tfloat pad;\n\tvec2 half_screen_pixel_size;\n}\nparams;\n\nvec4 unpack_edges(float p_packed_val) {\n\tuint packed_val = uint(p_packed_val * 255.5);\n\tvec4 edgesLRTB;\n\tedgesLRTB.x = float((packed_val >> 6) & 0x03) / 3.0;\n\tedgesLRTB.y = float((packed_val >> 4) & 0x03) / 3.0;\n\tedgesLRTB.z = float((packed_val >> 2) & 0x03) / 3.0;\n\tedgesLRTB.w = float((packed_val >> 0) & 0x03) / 3.0;\n\n\treturn clamp(edgesLRTB + params.edge_sharpness, 0.0, 1.0);\n}\n\nvoid add_sample(vec4 p_ssil_value, float p_edge_value, inout vec4 r_sum, inout float r_sum_weight) {\n\tfloat weight = p_edge_value;\n\n\tr_sum += (weight * p_ssil_value);\n\tr_sum_weight += weight;\n}\n\n#ifdef MODE_WIDE\nvec4 sample_blurred_wide(ivec2 p_pos, vec2 p_coord) {\n\tvec4 ssil_value = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));\n\tvec4 ssil_valueL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-2, 0));\n\tvec4 ssil_valueT = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, -2));\n\tvec4 ssil_valueR = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(2, 0));\n\tvec4 ssil_valueB = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 2));\n\n\tvec4 edgesLRTB = unpack_edges(imageLoad(source_edges, p_pos).r);\n\tedgesLRTB.x *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(-2, 0)).r).y;\n\tedgesLRTB.z *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(0, -2)).r).w;\n\tedgesLRTB.y *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(2, 0)).r).x;\n\tedgesLRTB.w *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(0, 2)).r).z;\n\n\tfloat sum_weight = 0.8;\n\tvec4 sum = ssil_value * sum_weight;\n\n\tadd_sample(ssil_valueL, edgesLRTB.x, sum, sum_weight);\n\tadd_sample(ssil_valueR, edgesLRTB.y, sum, sum_weight);\n\tadd_sample(ssil_valueT, edgesLRTB.z, sum, sum_weight);\n\tadd_sample(ssil_valueB, edgesLRTB.w, sum, sum_weight);\n\n\tvec4 ssil_avg = sum / sum_weight;\n\n\tssil_value = ssil_avg;\n\n\treturn ssil_value;\n}\n#endif\n\n#ifdef MODE_SMART\nvec4 sample_blurred(ivec2 p_pos, vec2 p_coord) {\n\tvec4 vC = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));\n\tvec4 vL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-1, 0));\n\tvec4 vT = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, -1));\n\tvec4 vR = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(1, 0));\n\tvec4 vB = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 1));\n\n\tfloat packed_edges = imageLoad(source_edges, p_pos).r;\n\tvec4 edgesLRTB = unpack_edges(packed_edges);\n\n\tfloat sum_weight = 0.5;\n\tvec4 sum = vC * sum_weight;\n\n\tadd_sample(vL, edgesLRTB.x, sum, sum_weight);\n\tadd_sample(vR, edgesLRTB.y, sum, sum_weight);\n\tadd_sample(vT, edgesLRTB.z, sum, sum_weight);\n\tadd_sample(vB, edgesLRTB.w, sum, sum_weight);\n\n\tvec4 ssil_avg = sum / sum_weight;\n\n\tvec4 ssil_value = ssil_avg;\n\n\treturn ssil_value;\n}\n#endif\n\nvoid main() {\n\t// Pixel being shaded\n\tivec2 ssC = ivec2(gl_GlobalInvocationID.xy);\n\n#ifdef MODE_NON_SMART\n\n\tvec2 half_pixel = params.half_screen_pixel_size * 0.5;\n\n\tvec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size;\n\n\tvec4 center = textureLod(source_ssil, uv, 0.0);\n\n\tvec4 value = textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x * 3, -half_pixel.y)), 0.0) * 0.2;\n\tvalue += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x, -half_pixel.y * 3)), 0.0) * 0.2;\n\tvalue += textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x, +half_pixel.y * 3)), 0.0) * 0.2;\n\tvalue += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x * 3, +half_pixel.y)), 0.0) * 0.2;\n\n\tvec4 sampled = value + center * 0.2;\n\n#else\n#ifdef MODE_SMART\n\tvec4 sampled = sample_blurred(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);\n#else // MODE_WIDE\n\tvec4 sampled = sample_blurred_wide(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);\n#endif\n#endif // MODE_NON_SMART\n\timageStore(dest_image, ssC, sampled);\n}\n",
+        "name": "ssil_blur"
+      }
+    },
+    {
+      "shader": {
+        "source": "///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// Copyright (c) 2016, Intel Corporation\n// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated\n// documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation\n// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to\n// permit persons to whom the Software is furnished to do so, subject to the following conditions:\n// The above copyright notice and this permission notice shall be included in all copies or substantial portions of\n// the Software.\n// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO\n// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\n// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n// SOFTWARE.\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// File changes (yyyy-mm-dd)\n// 2016-09-07: filip.strugar@intel.com: first commit\n// 2020-12-05: clayjohn: convert to Vulkan and Godot\n// 2021-05-27: clayjohn: convert SSAO to SSIL\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n\n#[compute]\n\n#version 450\n\n#VERSION_DEFINES\n\nlayout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;\n\nlayout(rgba16, set = 0, binding = 0) uniform restrict writeonly image2D dest_image;\nlayout(set = 1, binding = 0) uniform sampler2DArray source_texture;\nlayout(r8, set = 2, binding = 0) uniform restrict readonly image2DArray source_edges;\n\nlayout(push_constant, std430) uniform Params {\n\tfloat inv_sharpness;\n\tuint size_modifier;\n\tvec2 pixel_size;\n}\nparams;\n\nvec4 unpack_edges(float p_packed_val) {\n\tuint packed_val = uint(p_packed_val * 255.5);\n\tvec4 edgesLRTB;\n\tedgesLRTB.x = float((packed_val >> 6) & 0x03) / 3.0;\n\tedgesLRTB.y = float((packed_val >> 4) & 0x03) / 3.0;\n\tedgesLRTB.z = float((packed_val >> 2) & 0x03) / 3.0;\n\tedgesLRTB.w = float((packed_val >> 0) & 0x03) / 3.0;\n\n\treturn clamp(edgesLRTB + params.inv_sharpness, 0.0, 1.0);\n}\n\nvoid main() {\n\tivec2 ssC = ivec2(gl_GlobalInvocationID.xy);\n\tif (any(greaterThanEqual(ssC, ivec2(1.0 / params.pixel_size)))) { //too large, do nothing\n\t\treturn;\n\t}\n\n#ifdef MODE_SMART\n\tuvec2 pix_pos = uvec2(gl_GlobalInvocationID.xy);\n\tvec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5)) * params.pixel_size;\n\n\t// calculate index in the four deinterleaved source array texture\n\tint mx = int(pix_pos.x % 2);\n\tint my = int(pix_pos.y % 2);\n\tint index_center = mx + my * 2; // center index\n\tint index_horizontal = (1 - mx) + my * 2; // neighboring, horizontal\n\tint index_vertical = mx + (1 - my) * 2; // neighboring, vertical\n\tint index_diagonal = (1 - mx) + (1 - my) * 2; // diagonal\n\n\tvec4 color = texelFetch(source_texture, ivec3(pix_pos / uvec2(params.size_modifier), index_center), 0);\n\n\tvec4 edgesLRTB = unpack_edges(imageLoad(source_edges, ivec3(pix_pos / uvec2(params.size_modifier), index_center)).r);\n\n\t// convert index shifts to sampling offsets\n\tfloat fmx = float(mx);\n\tfloat fmy = float(my);\n\n\t// in case of an edge, push sampling offsets away from the edge (towards pixel center)\n\tfloat fmxe = (edgesLRTB.y - edgesLRTB.x);\n\tfloat fmye = (edgesLRTB.w - edgesLRTB.z);\n\n\t// calculate final sampling offsets and sample using bilinear filter\n\tvec2 uv_horizontal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx + fmxe - 0.5, 0.5 - fmy)) * params.pixel_size;\n\tvec4 color_horizontal = textureLod(source_texture, vec3(uv_horizontal, index_horizontal), 0.0);\n\tvec2 uv_vertical = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(0.5 - fmx, fmy - 0.5 + fmye)) * params.pixel_size;\n\tvec4 color_vertical = textureLod(source_texture, vec3(uv_vertical, index_vertical), 0.0);\n\tvec2 uv_diagonal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx - 0.5 + fmxe, fmy - 0.5 + fmye)) * params.pixel_size;\n\tvec4 color_diagonal = textureLod(source_texture, vec3(uv_diagonal, index_diagonal), 0.0);\n\n\t// reduce weight for samples near edge - if the edge is on both sides, weight goes to 0\n\tvec4 blendWeights;\n\tblendWeights.x = 1.0;\n\tblendWeights.y = (edgesLRTB.x + edgesLRTB.y) * 0.5;\n\tblendWeights.z = (edgesLRTB.z + edgesLRTB.w) * 0.5;\n\tblendWeights.w = (blendWeights.y + blendWeights.z) * 0.5;\n\n\t// calculate weighted average\n\tfloat blendWeightsSum = dot(blendWeights, vec4(1.0, 1.0, 1.0, 1.0));\n\tcolor += color_horizontal * blendWeights.y;\n\tcolor += color_vertical * blendWeights.z;\n\tcolor += color_diagonal * blendWeights.w;\n\tcolor /= blendWeightsSum;\n\n\timageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), color);\n#else // !MODE_SMART\n\n\tvec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5)) * params.pixel_size;\n#ifdef MODE_HALF\n\tvec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);\n\tvec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);\n\tvec4 avg = (a + d) * 0.5;\n\n#else\n\tvec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);\n\tvec4 b = textureLod(source_texture, vec3(uv, 1), 0.0);\n\tvec4 c = textureLod(source_texture, vec3(uv, 2), 0.0);\n\tvec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);\n\tvec4 avg = (a + b + c + d) * 0.25;\n\n#endif\n\timageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), avg);\n#endif\n}\n",
+        "name": "ssil_interleave"
+      }
+    },
+    {
+      "shader": {
+        "source": "///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// Copyright (c) 2016, Intel Corporation\n// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated\n// documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation\n// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to\n// permit persons to whom the Software is furnished to do so, subject to the following conditions:\n// The above copyright notice and this permission notice shall be included in all copies or substantial portions of\n// the Software.\n// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO\n// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\n// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n// SOFTWARE.\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// File changes (yyyy-mm-dd)\n// 2016-09-07: filip.strugar@intel.com: first commit\n// 2020-12-05: clayjohn: convert to Vulkan and Godot\n// 2021-05-27: clayjohn: convert SSAO to SSIL\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n\n#[compute]\n\n#version 450\n\n#VERSION_DEFINES\n\nlayout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;\n\n#ifdef GENERATE_MAP\nlayout(set = 0, binding = 0) uniform sampler2DArray source_texture;\n#else\nlayout(set = 0, binding = 0) uniform sampler2D source_importance;\n#endif\nlayout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;\n\n#ifdef PROCESS_MAPB\nlayout(set = 2, binding = 0, std430) buffer Counter {\n\tuint sum;\n}\ncounter;\n#endif\n\nlayout(push_constant, std430) uniform Params {\n\tvec2 half_screen_pixel_size;\n\tfloat intensity;\n\tfloat pad;\n}\nparams;\n\nvoid main() {\n\t// Pixel being shaded\n\tivec2 ssC = ivec2(gl_GlobalInvocationID.xy);\n\n#ifdef GENERATE_MAP\n\t// importance map stuff\n\tuvec2 base_position = ssC * 2;\n\n\tfloat avg = 0.0;\n\tfloat minV = 1.0;\n\tfloat maxV = 0.0;\n\tfor (int i = 0; i < 4; i++) {\n\t\tvec3 value_a = texelFetch(source_texture, ivec3(base_position, i), 0).rgb * params.intensity;\n\t\tvec3 value_b = texelFetch(source_texture, ivec3(base_position, i) + ivec3(0, 1, 0), 0).rgb * params.intensity;\n\t\tvec3 value_c = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 0, 0), 0).rgb * params.intensity;\n\t\tvec3 value_d = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 1, 0), 0).rgb * params.intensity;\n\n\t\t// Calculate luminance (black and white value)\n\t\tfloat a = dot(value_a, vec3(0.2125, 0.7154, 0.0721));\n\t\tfloat b = dot(value_b, vec3(0.2125, 0.7154, 0.0721));\n\t\tfloat c = dot(value_c, vec3(0.2125, 0.7154, 0.0721));\n\t\tfloat d = dot(value_d, vec3(0.2125, 0.7154, 0.0721));\n\n\t\tmaxV = max(maxV, max(max(a, b), max(c, d)));\n\t\tminV = min(minV, min(min(a, b), min(c, d)));\n\t}\n\n\tfloat min_max_diff = maxV - minV;\n\n\timageStore(dest_image, ssC, vec4(pow(clamp(min_max_diff * 2.0, 0.0, 1.0), 0.6)));\n#endif\n\n#ifdef PROCESS_MAPA\n\tvec2 uv = (vec2(ssC) + 0.5) * params.half_screen_pixel_size * 2.0;\n\n\tfloat center = textureLod(source_importance, uv, 0.0).x;\n\n\tvec2 half_pixel = params.half_screen_pixel_size;\n\n\tvec4 vals;\n\tvals.x = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, -half_pixel.y), 0.0).x;\n\tvals.y = textureLod(source_importance, uv + vec2(+half_pixel.x, -half_pixel.y * 3), 0.0).x;\n\tvals.z = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, +half_pixel.y), 0.0).x;\n\tvals.w = textureLod(source_importance, uv + vec2(-half_pixel.x, +half_pixel.y * 3), 0.0).x;\n\n\tfloat avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));\n\n\timageStore(dest_image, ssC, vec4(avg));\n#endif\n\n#ifdef PROCESS_MAPB\n\tvec2 uv = (vec2(ssC) + 0.5f) * params.half_screen_pixel_size * 2.0;\n\n\tfloat center = textureLod(source_importance, uv, 0.0).x;\n\n\tvec2 half_pixel = params.half_screen_pixel_size;\n\n\tvec4 vals;\n\tvals.x = textureLod(source_importance, uv + vec2(-half_pixel.x, -half_pixel.y * 3), 0.0).x;\n\tvals.y = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, -half_pixel.y), 0.0).x;\n\tvals.z = textureLod(source_importance, uv + vec2(+half_pixel.x, +half_pixel.y * 3), 0.0).x;\n\tvals.w = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, +half_pixel.y), 0.0).x;\n\n\tfloat avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));\n\n\timageStore(dest_image, ssC, vec4(avg));\n\n\t// sum the average; to avoid overflowing we assume max AO resolution is not bigger than 16384x16384; so quarter res (used here) will be 4096x4096, which leaves us with 8 bits per pixel\n\tuint sum = uint(clamp(avg, 0.0, 1.0) * 255.0 + 0.5);\n\n\t// save every 9th to avoid InterlockedAdd congestion - since we're blurring, this is good enough; compensated by multiplying load_counter_avg_div by 9\n\tif (((ssC.x % 3) + (ssC.y % 3)) == 0) {\n\t\tatomicAdd(counter.sum, sum);\n\t}\n#endif\n}\n",
+        "name": "ssil_importance_map"
+      }
+    }
+  ],
+  "shader_id": "ssil"
+}

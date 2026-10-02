@@ -1,0 +1,146 @@
+{
+  "uniforms": [
+    {
+      "class_type": "ShaderUniformTime",
+      "name": "iTime",
+      "value": [
+        118.0280372200538
+      ],
+      "primary_value": [
+        0.9442242977604304
+      ],
+      "distribution": {
+        "type": "UniformVecDistribution",
+        "mins": [
+          0.0
+        ],
+        "maxs": [
+          125.0
+        ]
+      },
+      "mins": [
+        0.0
+      ],
+      "maxs": [
+        125.0
+      ],
+      "fixed_sample": [
+        0.0
+      ],
+      "fixed_primary": [
+        0.0
+      ],
+      "constraints": {
+        "smin": [
+          0.0
+        ],
+        "smax": [
+          125.0
+        ],
+        "per_frame_time": 0.033
+      },
+      "per_frame_time": 0.033
+    },
+    {
+      "class_type": "ShaderUniformMouse",
+      "name": "iMouse",
+      "value": [
+        0.02534851311554509,
+        0.041000958277152444,
+        0.22439013643409012,
+        0.8072097753856402
+      ],
+      "primary_value": [
+        0.02534851311554509,
+        0.041000958277152444,
+        0.6121950682170451,
+        0.9036048876928201
+      ],
+      "distribution": {
+        "type": "UniformVecDistribution",
+        "mins": [
+          0.0,
+          0.0,
+          -1.0,
+          -1.0
+        ],
+        "maxs": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "mins": [
+        0.0,
+        0.0,
+        -1.0,
+        -1.0
+      ],
+      "maxs": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fixed_sample": [
+        0.0,
+        0.0,
+        -1.0,
+        -1.0
+      ],
+      "fixed_primary": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "constraints": {
+        "smin": [
+          0.0,
+          0.0,
+          -1.0,
+          -1.0
+        ],
+        "smax": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "movement_types": [
+          "linear"
+        ],
+        "click_patterns": [
+          "hold",
+          "click",
+          "drag"
+        ],
+        "speed_range": [
+          0.1,
+          0.2
+        ],
+        "radius_range": [
+          0.05,
+          0.15
+        ]
+      },
+      "available_movement_types": [
+        "linear"
+      ],
+      "available_click_patterns": [
+        "hold",
+        "click",
+        "drag"
+      ],
+      "speed_range": [
+        0.1,
+        0.2
+      ],
+      "radius_range": [
+        0.05,
+        0.15
+      ]
+    }
+  ]
+}

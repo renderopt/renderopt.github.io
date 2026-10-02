@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>ssil - Generation 11</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.3; background: #f8f9fa; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 15px; }
+        .header { text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { color: #007acc; font-size: 1.8em; margin: 0; }
+        .header .info { color: #666; font-size: 0.9em; margin-top: 5px; }
+        .section { margin-bottom: 20px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .section h2 { color: #333; font-size: 1.2em; margin-bottom: 8px; border-bottom: 1px solid #007acc; padding-bottom: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 8px 0; }
+        .metric-card { background: white; padding: 8px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .metric-card h3 { font-size: 0.9em; margin-bottom: 4px; color: #333; }
+        .metric-value { font-size: 1.4em; font-weight: bold; color: #007acc; }
+        .metric-label { color: #666; font-size: 0.8em; }
+        .improvement { color: #28a745; }
+        .degradation { color: #dc3545; }
+        .neutral { color: #6c757d; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .video-container { text-align: center; margin: 10px 0; }
+        .video-container video { max-width: 100%; height: auto; border-radius: 4px; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .chart-container { width: 100%; height: 280px; position: relative; }
+        canvas { width: 100% !important; height: 100% !important; }
+        .correctness-details { margin-top: 8px; font-size: 0.85em; }
+        .correctness-item { display: flex; justify-content: space-between; margin: 2px 0; }
+        .correctness-label { color: #666; font-weight: 500; }
+        .correctness-value { font-weight: bold; }
+        .spoiler { margin: 10px 0; }
+        .spoiler-toggle { background: #007acc; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .spoiler-toggle:hover { background: #0056b3; }
+        .spoiler-content { display: none; margin-top: 8px; }
+        .spoiler-content.active { display: block; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 12px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; max-height: 300px; overflow: auto; border: 1px solid #4a5568; white-space: pre; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }
+        .code-block-expandable { max-height: 200px; overflow-y: auto; }
+        .code-block-expanded { max-height: 500px; }
+        .code-toggle { background: #4a5568; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-bottom: 5px; }
+        .code-toggle:hover { background: #2d3748; }
+        .code-container { position: relative; max-width: 100%; }
+        .two-column { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 10px; width: 100%; }
+        .left-column { border-right: 1px solid #ddd; padding-right: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .right-column { padding-left: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .compact-section { margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .fps-stats { margin-top: 4px; font-size: 0.8em; }
+        .fps-range { color: #007acc; font-weight: bold; }
+        .fps-std { color: #666; }
+        .improvement-details { margin-top: 4px; font-size: 0.8em; }
+        .improvement-details div { margin: 2px 0; }
+        .optimization-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+        .optimization-table th, .optimization-table td { border: 1px solid #ddd; padding: 8px; text-align: left; max-width: 400px; }
+        .optimization-table th { background: #f8f9fa; font-weight: bold; }
+        .optimization-table tr:nth-child(even) { background: #f9f9f9; }
+        .function-name { font-size: 0.85em; color: #666; margin-bottom: 4px; font-weight: 500; }
+        .function-name code { background: #f1f3f5; padding: 2px 6px; border-radius: 3px; color: #495057; font-family: 'Courier New', monospace; }
+        .optimization-types { display: flex; flex-wrap: wrap; gap: 4px; }
+        .optimization-type { background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 1.05em; }
+        .analysis-subcolumn { display: flex; flex-direction: column; gap: 8px; }
+        .explanation-text { font-size: 0.9em; line-height: 1.4; color: #333; }
+        .optimization-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+        .summary-card { background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .summary-value { font-size: 1.2em; font-weight: bold; color: #007acc; }
+        .summary-label { color: #666; font-size: 0.8em; }
+        .copy-button { background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-left: 5px; }
+        .copy-button:hover { background: #218838; }
+        .shader-header { display: flex; align-items: center; justify-content: space-between; }
+        .shader-title { flex: 1; }
+        .config-section { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; margin: 8px 0; }
+        .config-section pre { background: #2d3748; color: #e2e8f0; padding: 8px; border-radius: 4px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 10px; }
+        .file-links { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+        .file-link { background: #007acc; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; font-size: 0.8em; }
+        .file-link:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f9fa; color: #333; padding: 8px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #007acc; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f0f7ff; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .plot-container.narrow-plot { max-width: 33%; margin: 0 auto; }
+        .performance-plot { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 4px; object-fit: contain; }
+        .frame-comparison { display: flex; gap: 10px; margin: 10px 0; }
+        .frame-slider-container { margin: 10px 0; }
+        .frame-slider { width: 100%; }
+        .frame-images { display: flex; gap: 10px; }
+        .frame-image { max-width: 48%; border-radius: 4px; }
+        .frame-label { text-align: center; font-weight: bold; margin: 5px 0; font-size: 0.9em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 8px 0; }
+        .stat-item { background: white; padding: 6px; border-radius: 4px; border-left: 3px solid #28a745; text-align: center; }
+        .stat-value { font-size: 1.1em; font-weight: bold; color: #28a745; }
+        .stat-label { color: #666; font-size: 0.7em; }
+        .waiting-message { text-align: center; padding: 60px 20px; color: #666; font-size: 1.4em; }
+        .waiting-message .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #e9ecef; border-top: 4px solid #007acc; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Optimization Report - ssil</h1>
+            <div class="info">Generation 11 | +65.9% Boost | 2026-04-06 07:52:21 | <span style="color: #28a745;">LLM: $3.58</span> | <span style="color: #fd7e14;">GPU: $1.20</span> | <span style="font-weight: bold;">Total: $4.78</span> | <a href="https://www.shadertoy.com/view/ssil" target="_blank" style="color: #007acc; text-decoration: none;">Shadertoy</a></div>
+        </div>
+
+        
+
+        <div class="compact-section">
+            <div class="two-column">
+                <div class="left-column">
+                    
+        <h2>Performance Summary</h2>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Original</h3>
+                <div class="metric-value">4.036 ms</div>
+                <div class="metric-label">(247.8 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">115.8-329.0 FPS</div>
+                    <div class="fps-std">3.0-8.6 ms</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Optimized</h3>
+                <div class="metric-value">2.433 ms</div>
+                <div class="metric-label">(411.0 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">328.4-559.1 FPS</div>
+                    <div class="fps-std">1.8-3.0 ms</div>
+                </div>
+            </div>
+        </div>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Improvement</h3>
+                <div class="metric-value improvement">
+                    +1.603 ms
+                </div>
+                <div class="metric-label">(+39.7% | +163.2 FPS)</div>
+                <div class="improvement-details">
+                    <div>Mean: +1.7ms (+41.0%)</div>
+                    <div>Std: +0.4ms (+64.0%)</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Status</h3>
+                <div class="metric-value success">
+                    &#x2705; SUCCESS
+                </div>
+                <div class="correctness-details">
+                    <div class="correctness-item">
+                        <span class="correctness-label">Original Error:</span>
+                        <span class="correctness-value">0.000000</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Optimized Error:</span>
+                        <span class="correctness-value">0.106474</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Correctness:</span>
+                        <span class="correctness-value success">
+                            &#x2705; MAINTAINED
+                        </span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Difference:</span>
+                        <span class="correctness-value success">
+                            +0.106474
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+                <div class="right-column">
+            <h2>Performance Statistics</h2>
+            <div class="chart-container">
+                <canvas id="perfChart"></canvas>
+            </div>
+        </div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Video Comparison at the worst Primary Render Parameter Space sample</h2>
+            <div style="margin-bottom:12px;"><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Original</div><img src="generation_011/media/first_frame_original.png" style="max-width:400px; border:1px solid #333;"></div><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Optimized</div><img src="generation_011/media/first_frame_optimized.png" style="max-width:400px; border:1px solid #333;"></div></div>
+            <div class="video-container">
+                <video controls autoplay loop muted>
+                    <source src="generation_011/media/worst_merged.mp4?v=1775454739" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+        </div>
+
+        <div class="compact-section">
+            <h2>FLIP Error Distribution</h2>
+            <div class="chart-container" style="height: 320px;">
+                <canvas id="errorDistChart"></canvas>
+            </div>
+        </div>
+
+        
+
+        
+
+        <div class="compact-section">
+            <h2>Mutation Tree</h2>
+            <iframe id="mutation-tree-iframe" src="mutation_tree.html"
+                    style="width: 100%; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;"
+                    scrolling="no"></iframe>
+            <script>
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'mutation-tree-resize') {
+                    var iframe = document.getElementById('mutation-tree-iframe');
+                    if (!iframe) return;
+                    var newH = e.data.height, curH = parseInt(iframe.style.height) || 0;
+                    if (newH >= curH) {
+                        iframe.style.height = newH + 'px';
+                        clearTimeout(iframe._shrinkT);
+                    } else {
+                        clearTimeout(iframe._shrinkT);
+                        iframe._shrinkT = setTimeout(function() { iframe.style.height = newH + 'px'; }, 300);
+                    }
+                }
+            });
+            </script>
+        </div>
+
+        <div class="compact-section">
+            <h2>Optimization Diff</h2>
+            <div class="code-block" style="max-height:500px;overflow:auto;font-size:11px;line-height:1.5">
+<pre><span style="color:#586e75;font-weight:bold">--- ssil_canonical_0.glsl</span>
+<span style="color:#586e75;font-weight:bold">+++ ssil_best_gen_011_0.glsl</span>
+<span style="color:#268bd2;font-weight:bold">@@ -38,7 +38,7 @@</span>
+<span> </span>
+<span> // these values can be changed (up to SSIL_MAX_TAPS) with no changes required elsewhere; values for 4th and 5th preset are ignored but array needed to avoid compilation errors</span>
+<span> // the actual number of texture samples is two times this value (each &quot;tap&quot; has two symmetrical depth texture samples)</span>
+<span style="color:#dc3545;background:#ffeef0">-const int num_taps[5] = { 3, 5, 12, 0, 0 };</span>
+<span style="color:#28a745;background:#e6ffed">+const int num_taps[5] = { 2, 3, 6, 0, 0 };</span>
+<span> </span>
+<span> #define SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET (99) // to disable simply set to 99 or similar</span>
+<span> #define SSIL_TILT_SAMPLES_AMOUNT (0.4)</span>
+<span style="color:#268bd2;font-weight:bold">@@ -161,15 +161,15 @@</span>
+<span> }</span>
+<span> </span>
+<span> vec3 load_normal(ivec2 p_pos) {</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	vec3 encoded_normal = imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0;</span>
+<span> 	encoded_normal.z = -encoded_normal.z;</span>
+<span style="color:#dc3545;background:#ffeef0">-	return encoded_normal;</span>
+<span style="color:#28a745;background:#e6ffed">+	return normalize(encoded_normal);</span>
+<span> }</span>
+<span> </span>
+<span> vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	vec3 encoded_normal = imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0;</span>
+<span> 	encoded_normal.z = -encoded_normal.z;</span>
+<span style="color:#dc3545;background:#ffeef0">-	return encoded_normal;</span>
+<span style="color:#28a745;background:#e6ffed">+	return normalize(encoded_normal);</span>
+<span> }</span>
+<span> </span>
+<span> // all vectors in viewspace</span>
+<span style="color:#268bd2;font-weight:bold">@@ -179,7 +179,7 @@</span>
+<span> </span>
+<span> 	float falloff_mult = max(0.0, length_sq * p_fallof_sq + 1.0);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	return max(0, NdotD - 0.05) * falloff_mult;</span>
+<span style="color:#28a745;background:#e6ffed">+	return max(0.0, NdotD - 0.05) * falloff_mult;</span>
+<span> }</span>
+<span> </span>
+<span> void SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const vec2 p_sampling_uv, const float p_mip_level, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const float p_fallof_sq, const float p_weight_mod) {</span>
+<span style="color:#268bd2;font-weight:bold">@@ -195,8 +195,7 @@</span>
+<span> 	float weight = 1.0;</span>
+<span> </span>
+<span> 	if (p_quality_level &gt;= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {</span>
+<span style="color:#dc3545;background:#ffeef0">-		float reduce = max(0, -hit_delta.z);</span>
+<span style="color:#dc3545;background:#ffeef0">-		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);</span>
+<span style="color:#28a745;background:#e6ffed">+		float reduce = clamp(-hit_delta.z * params.neg_inv_radius + 2.0, 0.0, 1.0);</span>
+<span> 		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);</span>
+<span> 	}</span>
+<span> </span>
+<span style="color:#268bd2;font-weight:bold">@@ -209,49 +208,34 @@</span>
+<span> 	r_obscurance_sum += obscurance * weight;</span>
+<span> </span>
+<span> 	vec3 sample_color = textureLod(last_frame, reprojected_sampling_uv, 5.0).rgb;</span>
+<span style="color:#dc3545;background:#ffeef0">-	// Reduce impact of fireflies by tonemapping before averaging: http://graphicrants.blogspot.com/2013/12/tone-mapping.html</span>
+<span style="color:#dc3545;background:#ffeef0">-	sample_color /= (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));</span>
+<span style="color:#dc3545;background:#ffeef0">-	r_color_sum += sample_color * obscurance * weight * mix(1.0, smoothstep(0.0, 0.1, -dot(sample_normal, normalize(hit_delta))), params.normal_rejection_amount);</span>
+<span style="color:#28a745;background:#e6ffed">+	// Reduce impact of fireflies by tonemapping before averaging</span>
+<span style="color:#28a745;background:#e6ffed">+	sample_color *= 1.0 / (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));</span>
+<span style="color:#28a745;background:#e6ffed">+	float n_dot_h = dot(sample_normal, normalize(hit_delta));</span>
+<span style="color:#28a745;background:#e6ffed">+	r_color_sum += sample_color * obscurance * weight * clamp(1.0 - (1.0 - smoothstep(0.0, 0.1, -n_dot_h)) * params.normal_rejection_amount, 0.0, 1.0);</span>
+<span> 	r_weight_sum += weight;</span>
+<span> }</span>
+<span> </span>
+<span> void SSILTap(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const int p_tap_index, const mat2 p_rot_scale, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const vec2 p_normalized_screen_pos, const float p_mip_offset, const float p_fallof_sq, float p_weight_mod, vec2 p_norm_xy, float p_norm_xy_length) {</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec2 sample_offset;</span>
+<span style="color:#dc3545;background:#ffeef0">-	float sample_pow_2_len;</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-	// patterns</span>
+<span style="color:#dc3545;background:#ffeef0">-	{</span>
+<span style="color:#dc3545;background:#ffeef0">-		vec4 new_sample = sample_pattern[p_tap_index];</span>
+<span style="color:#dc3545;background:#ffeef0">-		sample_offset = new_sample.xy * p_rot_scale;</span>
+<span style="color:#dc3545;background:#ffeef0">-		sample_pow_2_len = new_sample.w; // precalculated, same as: sample_pow_2_len = log2( length( new_sample.xy ) );</span>
+<span style="color:#dc3545;background:#ffeef0">-		p_weight_mod *= new_sample.z;</span>
+<span style="color:#dc3545;background:#ffeef0">-	}</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-	// snap to pixel center (more correct obscurance math, avoids artifacts)</span>
+<span style="color:#28a745;background:#e6ffed">+	vec4 new_sample = sample_pattern[p_tap_index];</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span style="color:#28a745;background:#e6ffed">+	vec2 sample_offset = new_sample.xy * p_rot_scale;</span>
+<span> 	sample_offset = round(sample_offset);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	// calculate MIP based on the sample distance from the center, similar to as described</span>
+<span style="color:#dc3545;background:#ffeef0">-	// in http://graphics.cs.williams.edu/papers/SAOHPG12/.</span>
+<span style="color:#dc3545;background:#ffeef0">-	float mip_level = (p_quality_level &lt; SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (sample_pow_2_len + p_mip_offset);</span>
+<span style="color:#28a745;background:#e6ffed">+	p_weight_mod *= new_sample.z;</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span style="color:#28a745;background:#e6ffed">+	float mip_level = (p_quality_level &lt; SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? 0.0 : (new_sample.w + p_mip_offset);</span>
+<span> </span>
+<span> 	vec2 sampling_uv = sample_offset * params.half_screen_pixel_size + p_normalized_screen_pos;</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span> 	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	// for the second tap, just use the mirrored offset</span>
+<span> 	vec2 sample_offset_mirrored_uv = -sample_offset;</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-	// tilt the second set of samples so that the disk is effectively rotated by the normal</span>
+<span style="color:#dc3545;background:#ffeef0">-	// effective at removing one set of artifacts, but too expensive for lower quality settings</span>
+<span> 	if (p_quality_level &gt;= SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET) {</span>
+<span> 		float dot_norm = dot(sample_offset_mirrored_uv, p_norm_xy);</span>
+<span> 		sample_offset_mirrored_uv -= dot_norm * p_norm_xy_length * p_norm_xy;</span>
+<span> 		sample_offset_mirrored_uv = round(sample_offset_mirrored_uv);</span>
+<span> 	}</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	// snap to pixel center (more correct obscurance math, avoids artifacts)</span>
+<span> 	vec2 sampling_mirrored_uv = sample_offset_mirrored_uv * params.half_screen_pixel_size + p_normalized_screen_pos;</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span> 	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_mirrored_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);</span>
+<span> }</span>
+<span> </span>
+<span style="color:#268bd2;font-weight:bold">@@ -277,9 +261,7 @@</span>
+<span> 	vec2 normalized_screen_pos = pos_rounded * params.half_screen_pixel_size + params.half_screen_pixel_size_x025;</span>
+<span> 	vec3 pix_center_pos = NDC_to_view_space(normalized_screen_pos, pix_z);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	// Load this pixel&#x27;s viewspace normal</span>
+<span style="color:#dc3545;background:#ffeef0">-	uvec2 full_res_coord = upos * 2 * params.size_multiplier + params.pass_coord_offset.xy;</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec3 pixel_normal = load_normal(ivec2(full_res_coord));</span>
+<span style="color:#28a745;background:#e6ffed">+	vec3 pixel_normal = load_normal(ivec2(upos * 2 * params.size_multiplier + params.pass_coord_offset.xy));</span>
+<span> </span>
+<span> 	const vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size, pix_center_pos.z).xy - pix_center_pos.xy;</span>
+<span> </span>
+<span style="color:#268bd2;font-weight:bold">@@ -327,11 +309,9 @@</span>
+<span> 	const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;</span>
+<span> 	float mip_offset = (p_quality_level &lt; SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (log2(pixel_lookup_radius) + global_mip_offset);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	// Used to tilt the second set of samples so that the disk is effectively rotated by the normal</span>
+<span style="color:#dc3545;background:#ffeef0">-	// effective at removing one set of artifacts, but too expensive for lower quality settings</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec2 norm_xy = vec2(pixel_normal.x, pixel_normal.y);</span>
+<span style="color:#28a745;background:#e6ffed">+	vec2 norm_xy = pixel_normal.xy;</span>
+<span> 	float norm_xy_length = length(norm_xy);</span>
+<span style="color:#dc3545;background:#ffeef0">-	norm_xy /= vec2(norm_xy_length, -norm_xy_length);</span>
+<span style="color:#28a745;background:#e6ffed">+	norm_xy /= norm_xy_length;</span>
+<span> 	norm_xy_length *= SSIL_TILT_SAMPLES_AMOUNT;</span>
+<span> </span>
+<span> 	// standard, non-adaptive approach</span>
+<span style="color:#268bd2;font-weight:bold">@@ -391,7 +371,8 @@</span>
+<span> </span>
+<span> 	// Calculate weighted average</span>
+<span> 	vec3 color = color_sum / weight_sum;</span>
+<span style="color:#dc3545;background:#ffeef0">-	color /= 1.0 - dot(color, vec3(0.299, 0.587, 0.114));</span>
+<span style="color:#28a745;background:#e6ffed">+	const vec3 lum = vec3(0.299, 0.587, 0.114);</span>
+<span style="color:#28a745;background:#e6ffed">+	color /= max(1.0 - dot(color, lum), 0.01);</span>
+<span> </span>
+<span> 	// Calculate fadeout (1 close, gradient, 0 far)</span>
+<span> 	float fade_out = clamp(pix_center_pos.z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);</span>
+
+<span style="color:#586e75;font-weight:bold">--- ssil_canonical_1.glsl</span>
+<span style="color:#586e75;font-weight:bold">+++ ssil_best_gen_011_1.glsl</span>
+<span style="color:#268bd2;font-weight:bold">@@ -41,13 +41,12 @@</span>
+<span> </span>
+<span> vec4 unpack_edges(float p_packed_val) {</span>
+<span> 	uint packed_val = uint(p_packed_val * 255.5);</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec4 edgesLRTB;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.x = float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.y = float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.z = float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.w = float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-	return clamp(edgesLRTB + params.edge_sharpness, 0.0, 1.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	return clamp(vec4(</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0,</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0,</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0,</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0</span>
+<span style="color:#28a745;background:#e6ffed">+	) + params.edge_sharpness, 0.0, 1.0);</span>
+<span> }</span>
+<span> </span>
+<span> void add_sample(vec4 p_ssil_value, float p_edge_value, inout vec4 r_sum, inout float r_sum_weight) {</span>
+<span style="color:#268bd2;font-weight:bold">@@ -115,30 +114,29 @@</span>
+<span> #endif</span>
+<span> </span>
+<span> void main() {</span>
+<span style="color:#dc3545;background:#ffeef0">-	// Pixel being shaded</span>
+<span> 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-#ifdef MODE_NON_SMART</span>
+<span style="color:#28a745;background:#e6ffed">+#if defined(MODE_NON_SMART)</span>
+<span> </span>
+<span style="color:#28a745;background:#e6ffed">+	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5)) * params.half_screen_pixel_size;</span>
+<span> 	vec2 half_pixel = params.half_screen_pixel_size * 0.5;</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size;</span>
+<span style="color:#28a745;background:#e6ffed">+	vec4 center = textureLod(source_ssil, uv, 0.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	vec4 value = textureLod(source_ssil, uv + vec2(-half_pixel.x * 3.0, -half_pixel.y), 0.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	value += textureLod(source_ssil, uv + vec2(half_pixel.x, -half_pixel.y * 3.0), 0.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	value += textureLod(source_ssil, uv + vec2(-half_pixel.x, half_pixel.y * 3.0), 0.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	value += textureLod(source_ssil, uv + vec2(half_pixel.x * 3.0, half_pixel.y), 0.0);</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	vec4 center = textureLod(source_ssil, uv, 0.0);</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec4 value = textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x * 3, -half_pixel.y)), 0.0) * 0.2;</span>
+<span style="color:#dc3545;background:#ffeef0">-	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x, -half_pixel.y * 3)), 0.0) * 0.2;</span>
+<span style="color:#dc3545;background:#ffeef0">-	value += textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x, +half_pixel.y * 3)), 0.0) * 0.2;</span>
+<span style="color:#dc3545;background:#ffeef0">-	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x * 3, +half_pixel.y)), 0.0) * 0.2;</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec4 sampled = value + center * 0.2;</span>
+<span style="color:#28a745;background:#e6ffed">+	imageStore(dest_image, ssC, (value + center) * 0.2);</span>
+<span> </span>
+<span> #else</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span> #ifdef MODE_SMART</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec4 sampled = sample_blurred(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);</span>
+<span style="color:#dc3545;background:#ffeef0">-#else // MODE_WIDE</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec4 sampled = sample_blurred_wide(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);</span>
+<span style="color:#28a745;background:#e6ffed">+	vec4 sampled = sample_blurred(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5)) * params.half_screen_pixel_size);</span>
+<span style="color:#28a745;background:#e6ffed">+#else</span>
+<span style="color:#28a745;background:#e6ffed">+	vec4 sampled = sample_blurred_wide(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5)) * params.half_screen_pixel_size);</span>
+<span> #endif</span>
+<span style="color:#dc3545;background:#ffeef0">-#endif // MODE_NON_SMART</span>
+<span> 	imageStore(dest_image, ssC, sampled);</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span style="color:#28a745;background:#e6ffed">+#endif</span>
+<span> }</span>
+
+<span style="color:#586e75;font-weight:bold">--- ssil_canonical_2.glsl</span>
+<span style="color:#586e75;font-weight:bold">+++ ssil_best_gen_011_2.glsl</span>
+<span style="color:#268bd2;font-weight:bold">@@ -39,13 +39,12 @@</span>
+<span> </span>
+<span> vec4 unpack_edges(float p_packed_val) {</span>
+<span> 	uint packed_val = uint(p_packed_val * 255.5);</span>
+<span style="color:#dc3545;background:#ffeef0">-	vec4 edgesLRTB;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.x = float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.y = float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.z = float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-	edgesLRTB.w = float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-	return clamp(edgesLRTB + params.inv_sharpness, 0.0, 1.0);</span>
+<span style="color:#28a745;background:#e6ffed">+	return clamp(vec4(</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0,</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0,</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0,</span>
+<span style="color:#28a745;background:#e6ffed">+		float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0</span>
+<span style="color:#28a745;background:#e6ffed">+	) + params.inv_sharpness, 0.0, 1.0);</span>
+<span> }</span>
+<span> </span>
+<span> void main() {</span>
+
+<span style="color:#586e75;font-weight:bold">--- ssil_canonical_3.glsl</span>
+<span style="color:#586e75;font-weight:bold">+++ ssil_best_gen_011_3.glsl</span>
+<span style="color:#268bd2;font-weight:bold">@@ -92,7 +92,7 @@</span>
+<span> 	vals.z = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, +half_pixel.y), 0.0).x;</span>
+<span> 	vals.w = textureLod(source_importance, uv + vec2(-half_pixel.x, +half_pixel.y * 3), 0.0).x;</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	float avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));</span>
+<span style="color:#28a745;background:#e6ffed">+	float avg = (vals.x + vals.y + vals.z + vals.w) * 0.25;</span>
+<span> </span>
+<span> 	imageStore(dest_image, ssC, vec4(avg));</span>
+<span> #endif</span>
+<span style="color:#268bd2;font-weight:bold">@@ -110,15 +110,14 @@</span>
+<span> 	vals.z = textureLod(source_importance, uv + vec2(+half_pixel.x, +half_pixel.y * 3), 0.0).x;</span>
+<span> 	vals.w = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, +half_pixel.y), 0.0).x;</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-	float avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));</span>
+<span style="color:#28a745;background:#e6ffed">+	float avg = (vals.x + vals.y + vals.z + vals.w) * 0.25;</span>
+<span> </span>
+<span> 	imageStore(dest_image, ssC, vec4(avg));</span>
+<span> </span>
+<span> 	// sum the average; to avoid overflowing we assume max AO resolution is not bigger than 16384x16384; so quarter res (used here) will be 4096x4096, which leaves us with 8 bits per pixel</span>
+<span style="color:#dc3545;background:#ffeef0">-	uint sum = uint(clamp(avg, 0.0, 1.0) * 255.0 + 0.5);</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span> 	// save every 9th to avoid InterlockedAdd congestion - since we&#x27;re blurring, this is good enough; compensated by multiplying load_counter_avg_div by 9</span>
+<span> 	if (((ssC.x % 3) + (ssC.y % 3)) == 0) {</span>
+<span style="color:#28a745;background:#e6ffed">+		uint sum = uint(clamp(avg, 0.0, 1.0) * 255.0 + 0.5);</span>
+<span> 		atomicAdd(counter.sum, sum);</span>
+<span> 	}</span>
+<span> #endif</span></pre>
+</div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Shader Code</h2>
+            <div style="margin-bottom: 12px;">
+                <h3 style="margin: 8px 0 4px;">Pass: ssil</h3>
+                <div class="two-column">
+                    <div class="left-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('canon-pass-0')">
+                        <span class="shader-title">Original — ssil</span>
+                    </button>
+                    <div id="canon-pass-0" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('canon-pass-code-0')">Copy</button>
+                        <div class="code-block" id="canon-pass-code-0"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+#define SSIL_MAIN_DISK_SAMPLE_COUNT (32)
+const vec4 sample_pattern[SSIL_MAIN_DISK_SAMPLE_COUNT] = {
+	vec4(0.78488064, 0.56661671, 1.500000, -0.126083), vec4(0.26022232, -0.29575172, 1.500000, -1.064030), vec4(0.10459357, 0.08372527, 1.110000, -2.730563), vec4(-0.68286800, 0.04963045, 1.090000, -0.498827),
+	vec4(-0.13570161, -0.64190155, 1.250000, -0.532765), vec4(-0.26193795, -0.08205118, 0.670000, -1.783245), vec4(-0.61177456, 0.66664219, 0.710000, -0.044234), vec4(0.43675563, 0.25119025, 0.610000, -1.167283),
+	vec4(0.07884444, 0.86618668, 0.640000, -0.459002), vec4(-0.12790935, -0.29869005, 0.600000, -1.729424), vec4(-0.04031125, 0.02413622, 0.600000, -4.792042), vec4(0.16201244, -0.52851415, 0.790000, -1.067055),
+	vec4(-0.70991218, 0.47301072, 0.640000, -0.335236), vec4(0.03277707, -0.22349690, 0.600000, -1.982384), vec4(0.68921727, 0.36800742, 0.630000, -0.266718), vec4(0.29251814, 0.37775412, 0.610000, -1.422520),
+	vec4(-0.12224089, 0.96582592, 0.600000, -0.426142), vec4(0.11071457, -0.16131058, 0.600000, -2.165947), vec4(0.46562141, -0.59747696, 0.600000, -0.189760), vec4(-0.51548797, 0.11804193, 0.600000, -1.246800),
+	vec4(0.89141309, -0.42090443, 0.600000, 0.028192), vec4(-0.32402530, -0.01591529, 0.600000, -1.543018), vec4(0.60771245, 0.41635221, 0.600000, -0.605411), vec4(0.02379565, -0.08239821, 0.600000, -3.809046),
+	vec4(0.48951152, -0.23657045, 0.600000, -1.189011), vec4(-0.17611565, -0.81696892, 0.600000, -0.513724), vec4(-0.33930185, -0.20732205, 0.600000, -1.698047), vec4(-0.91974425, 0.05403209, 0.600000, 0.062246),
+	vec4(-0.15064627, -0.14949332, 0.600000, -1.896062), vec4(0.53180975, -0.35210401, 0.600000, -0.758838), vec4(0.41487166, 0.81442589, 0.600000, -0.505648), vec4(-0.24106961, -0.32721516, 0.600000, -1.665244)
+};
+
+// these values can be changed (up to SSIL_MAX_TAPS) with no changes required elsewhere; values for 4th and 5th preset are ignored but array needed to avoid compilation errors
+// the actual number of texture samples is two times this value (each &quot;tap&quot; has two symmetrical depth texture samples)
+const int num_taps[5] = { 3, 5, 12, 0, 0 };
+
+#define SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET (99) // to disable simply set to 99 or similar
+#define SSIL_TILT_SAMPLES_AMOUNT (0.4)
+//
+#define SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET (1) // to disable simply set to 99 or similar
+#define SSIL_HALOING_REDUCTION_AMOUNT (0.8) // values from 0.0 - 1.0, 1.0 means max weighting (will cause artifacts, 0.8 is more reasonable)
+//
+#define SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)
+#define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically
+//
+// WARNING: The edge handling is hard-coded to &#x27;disabled&#x27; on quality level 0, and enabled above,
+// on the C++ side; while toggling it here will work for testing purposes, it will not yield
+// performance gains (or correct results).
+#define SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)
+//
+#define SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)
+
+#define SSIL_MAX_TAPS 32
+#define SSIL_ADAPTIVE_TAP_BASE_COUNT 5
+#define SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT (SSIL_MAX_TAPS - SSIL_ADAPTIVE_TAP_BASE_COUNT)
+#define SSIL_DEPTH_MIP_LEVELS 4
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2DArray source_depth_mipmaps;
+layout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;
+layout(set = 0, binding = 2) uniform Constants { //get into a lower set
+	vec4 rotation_matrices[20];
+}
+constants;
+
+#ifdef ADAPTIVE
+layout(rgba16, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
+layout(set = 1, binding = 1) uniform sampler2D source_importance;
+layout(set = 1, binding = 2, std430) buffer Counter {
+	uint sum;
+}
+counter;
+#endif
+
+layout(rgba16, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
+
+layout(set = 3, binding = 0) uniform sampler2D last_frame;
+layout(set = 3, binding = 1) uniform ProjectionConstants {
+	mat4 reprojection;
+}
+projection_constants;
+
+layout(push_constant, std430) uniform Params {
+	ivec2 screen_size;
+	int pass;
+	int quality;
+
+	vec2 half_screen_pixel_size;
+	vec2 half_screen_pixel_size_x025;
+
+	vec2 NDC_to_view_mul;
+	vec2 NDC_to_view_add;
+
+	vec2 pad2;
+	float z_near;
+	float z_far;
+
+	float radius;
+	float intensity;
+	int size_multiplier;
+	int pad;
+
+	float fade_out_mul;
+	float fade_out_add;
+	float normal_rejection_amount;
+	float inv_radius_near_limit;
+
+	bool is_orthogonal;
+	float neg_inv_radius;
+	float load_counter_avg_div;
+	float adaptive_sample_limit;
+
+	ivec2 pass_coord_offset;
+	vec2 pass_uv_offset;
+}
+params;
+
+float pack_edges(vec4 p_edgesLRTB) {
+	p_edgesLRTB = round(clamp(p_edgesLRTB, 0.0, 1.0) * 3.05);
+	return dot(p_edgesLRTB, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));
+}
+
+vec3 NDC_to_view_space(vec2 p_pos, float p_viewspace_depth) {
+	if (params.is_orthogonal) {
+		return vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add), p_viewspace_depth);
+	} else {
+		return vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add) * p_viewspace_depth, p_viewspace_depth);
+	}
+}
+
+// calculate effect radius and fit our screen sampling pattern inside it
+void calculate_radius_parameters(const float p_pix_center_length, const vec2 p_pixel_size_at_center, out float r_lookup_radius, out float r_radius, out float r_fallof_sq) {
+	r_radius = params.radius;
+
+	// when too close, on-screen sampling disk will grow beyond screen size; limit this to avoid closeup temporal artifacts
+	const float too_close_limit = clamp(p_pix_center_length * params.inv_radius_near_limit, 0.0, 1.0) * 0.8 + 0.2;
+
+	r_radius *= too_close_limit;
+
+	// 0.85 is to reduce the radius to allow for more samples on a slope to still stay within influence
+	r_lookup_radius = (0.85 * r_radius) / p_pixel_size_at_center.x;
+
+	// used to calculate falloff (both for AO samples and per-sample weights)
+	r_fallof_sq = -1.0 / (r_radius * r_radius);
+}
+
+vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p_right_z, const float p_top_z, const float p_bottom_z) {
+	// slope-sensitive depth-based edge detection
+	vec4 edgesLRTB = vec4(p_left_z, p_right_z, p_top_z, p_bottom_z) - p_center_z;
+	vec4 edgesLRTB_slope_adjusted = edgesLRTB + edgesLRTB.yxwz;
+	edgesLRTB = min(abs(edgesLRTB), abs(edgesLRTB_slope_adjusted));
+	return clamp((1.3 - edgesLRTB / (p_center_z * 0.040)), 0.0, 1.0);
+}
+
+vec3 load_normal(ivec2 p_pos) {
+	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0);
+	encoded_normal.z = -encoded_normal.z;
+	return encoded_normal;
+}
+
+vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {
+	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0);
+	encoded_normal.z = -encoded_normal.z;
+	return encoded_normal;
+}
+
+// all vectors in viewspace
+float calculate_pixel_obscurance(vec3 p_pixel_normal, vec3 p_hit_delta, float p_fallof_sq) {
+	float length_sq = dot(p_hit_delta, p_hit_delta);
+	float NdotD = dot(p_pixel_normal, p_hit_delta) / sqrt(length_sq);
+
+	float falloff_mult = max(0.0, length_sq * p_fallof_sq + 1.0);
+
+	return max(0, NdotD - 0.05) * falloff_mult;
+}
+
+void SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const vec2 p_sampling_uv, const float p_mip_level, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const float p_fallof_sq, const float p_weight_mod) {
+	// get depth at sample
+	float viewspace_sample_z = textureLod(source_depth_mipmaps, vec3(p_sampling_uv, params.pass), p_mip_level).x;
+	vec3 sample_normal = load_normal(ivec2(p_sampling_uv * vec2(params.screen_size)));
+
+	// convert to viewspace
+	vec3 hit_pos = NDC_to_view_space(p_sampling_uv.xy, viewspace_sample_z);
+	vec3 hit_delta = hit_pos - p_pix_center_pos;
+
+	float obscurance = calculate_pixel_obscurance(p_pixel_normal, hit_delta, p_fallof_sq);
+	float weight = 1.0;
+
+	if (p_quality_level &gt;= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
+		float reduce = max(0, -hit_delta.z);
+		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);
+		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
+	}
+
+	// Translate sampling_uv to last screen&#x27;s coordinates
+	const vec4 sample_pos = projection_constants.reprojection * vec4(p_sampling_uv * 2.0 - 1.0, (viewspace_sample_z - params.z_near) / (params.z_far - params.z_near) * 2.0 - 1.0, 1.0);
+	vec2 reprojected_sampling_uv = (sample_pos.xy / sample_pos.w) * 0.5 + 0.5;
+
+	weight *= p_weight_mod;
+
+	r_obscurance_sum += obscurance * weight;
+
+	vec3 sample_color = textureLod(last_frame, reprojected_sampling_uv, 5.0).rgb;
+	// Reduce impact of fireflies by tonemapping before averaging: http://graphicrants.blogspot.com/2013/12/tone-mapping.html
+	sample_color /= (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));
+	r_color_sum += sample_color * obscurance * weight * mix(1.0, smoothstep(0.0, 0.1, -dot(sample_normal, normalize(hit_delta))), params.normal_rejection_amount);
+	r_weight_sum += weight;
+}
+
+void SSILTap(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const int p_tap_index, const mat2 p_rot_scale, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const vec2 p_normalized_screen_pos, const float p_mip_offset, const float p_fallof_sq, float p_weight_mod, vec2 p_norm_xy, float p_norm_xy_length) {
+	vec2 sample_offset;
+	float sample_pow_2_len;
+
+	// patterns
+	{
+		vec4 new_sample = sample_pattern[p_tap_index];
+		sample_offset = new_sample.xy * p_rot_scale;
+		sample_pow_2_len = new_sample.w; // precalculated, same as: sample_pow_2_len = log2( length( new_sample.xy ) );
+		p_weight_mod *= new_sample.z;
+	}
+
+	// snap to pixel center (more correct obscurance math, avoids artifacts)
+	sample_offset = round(sample_offset);
+
+	// calculate MIP based on the sample distance from the center, similar to as described
+	// in http://graphics.cs.williams.edu/papers/SAOHPG12/.
+	float mip_level = (p_quality_level &lt; SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (sample_pow_2_len + p_mip_offset);
+
+	vec2 sampling_uv = sample_offset * params.half_screen_pixel_size + p_normalized_screen_pos;
+
+	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);
+
+	// for the second tap, just use the mirrored offset
+	vec2 sample_offset_mirrored_uv = -sample_offset;
+
+	// tilt the second set of samples so that the disk is effectively rotated by the normal
+	// effective at removing one set of artifacts, but too expensive for lower quality settings
+	if (p_quality_level &gt;= SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET) {
+		float dot_norm = dot(sample_offset_mirrored_uv, p_norm_xy);
+		sample_offset_mirrored_uv -= dot_norm * p_norm_xy_length * p_norm_xy;
+		sample_offset_mirrored_uv = round(sample_offset_mirrored_uv);
+	}
+
+	// snap to pixel center (more correct obscurance math, avoids artifacts)
+	vec2 sampling_mirrored_uv = sample_offset_mirrored_uv * params.half_screen_pixel_size + p_normalized_screen_pos;
+
+	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_mirrored_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);
+}
+
+void generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, out float r_weight, const vec2 p_pos, int p_quality_level, bool p_adaptive_base) {
+	vec2 pos_rounded = trunc(p_pos);
+	uvec2 upos = uvec2(pos_rounded);
+
+	const int number_of_taps = (p_adaptive_base) ? (SSIL_ADAPTIVE_TAP_BASE_COUNT) : (num_taps[p_quality_level]);
+	float pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;
+
+	vec4 valuesUL = textureGather(source_depth_mipmaps, vec3(pos_rounded * params.half_screen_pixel_size, params.pass));
+	vec4 valuesBR = textureGather(source_depth_mipmaps, vec3((pos_rounded + vec2(1.0)) * params.half_screen_pixel_size, params.pass));
+
+	// get this pixel&#x27;s viewspace depth
+	pix_z = valuesUL.y;
+
+	// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)
+	pix_left_z = valuesUL.x;
+	pix_top_z = valuesUL.z;
+	pix_right_z = valuesBR.z;
+	pix_bottom_z = valuesBR.x;
+
+	vec2 normalized_screen_pos = pos_rounded * params.half_screen_pixel_size + params.half_screen_pixel_size_x025;
+	vec3 pix_center_pos = NDC_to_view_space(normalized_screen_pos, pix_z);
+
+	// Load this pixel&#x27;s viewspace normal
+	uvec2 full_res_coord = upos * 2 * params.size_multiplier + params.pass_coord_offset.xy;
+	vec3 pixel_normal = load_normal(ivec2(full_res_coord));
+
+	const vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size, pix_center_pos.z).xy - pix_center_pos.xy;
+
+	float pixel_lookup_radius;
+	float fallof_sq;
+
+	// calculate effect radius and fit our screen sampling pattern inside it
+	float viewspace_radius;
+	calculate_radius_parameters(length(pix_center_pos), pixel_size_at_center, pixel_lookup_radius, viewspace_radius, fallof_sq);
+
+	// calculate samples rotation/scaling
+	mat2 rot_scale_matrix;
+	uint pseudo_random_index;
+
+	{
+		vec4 rotation_scale;
+		// reduce effect radius near the screen edges slightly; ideally, one would render a larger depth buffer (5% on each side) instead
+		if (!p_adaptive_base &amp;&amp; (p_quality_level &gt;= SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET)) {
+			float near_screen_border = min(min(normalized_screen_pos.x, 1.0 - normalized_screen_pos.x), min(normalized_screen_pos.y, 1.0 - normalized_screen_pos.y));
+			near_screen_border = clamp(10.0 * near_screen_border + 0.6, 0.0, 1.0);
+			pixel_lookup_radius *= near_screen_border;
+		}
+
+		// load &amp; update pseudo-random rotation matrix
+		pseudo_random_index = uint(pos_rounded.y * 2 + pos_rounded.x) % 5;
+		rotation_scale = constants.rotation_matrices[params.pass * 5 + pseudo_random_index];
+		rot_scale_matrix = mat2(rotation_scale.x * pixel_lookup_radius, rotation_scale.y * pixel_lookup_radius, rotation_scale.z * pixel_lookup_radius, rotation_scale.w * pixel_lookup_radius);
+	}
+
+	// the main obscurance &amp; sample weight storage
+	vec3 color_sum = vec3(0.0);
+	float obscurance_sum = 0.0;
+	float weight_sum = 0.0;
+
+	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to &quot;no edge&quot; (1 is no edge, 0 is edge)
+	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
+
+	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
+	pix_center_pos *= 0.99;
+
+	if (!p_adaptive_base &amp;&amp; (p_quality_level &gt;= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
+		edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
+	}
+
+	const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;
+	float mip_offset = (p_quality_level &lt; SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (log2(pixel_lookup_radius) + global_mip_offset);
+
+	// Used to tilt the second set of samples so that the disk is effectively rotated by the normal
+	// effective at removing one set of artifacts, but too expensive for lower quality settings
+	vec2 norm_xy = vec2(pixel_normal.x, pixel_normal.y);
+	float norm_xy_length = length(norm_xy);
+	norm_xy /= vec2(norm_xy_length, -norm_xy_length);
+	norm_xy_length *= SSIL_TILT_SAMPLES_AMOUNT;
+
+	// standard, non-adaptive approach
+	if ((p_quality_level != 3) || p_adaptive_base) {
+		for (int i = 0; i &lt; number_of_taps; i++) {
+			SSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);
+		}
+	}
+#ifdef ADAPTIVE
+	else {
+		// add new ones if needed
+		vec2 full_res_uv = normalized_screen_pos + params.pass_uv_offset.xy;
+		float importance = textureLod(source_importance, full_res_uv, 0.0).x;
+
+		//Need to store obscurance from base pass
+		// load existing base values
+		vec4 base_values = imageLoad(source_ssil, ivec3(upos, params.pass));
+		weight_sum += imageLoad(edges_weights_image, ivec2(upos)).r * float(SSIL_ADAPTIVE_TAP_BASE_COUNT * 4.0);
+		color_sum += (base_values.rgb) * weight_sum;
+		obscurance_sum += (base_values.a) * weight_sum;
+
+		// increase importance around edges
+		float edge_count = dot(1.0 - edgesLRTB, vec4(1.0, 1.0, 1.0, 1.0));
+
+		float avg_total_importance = float(counter.sum) * params.load_counter_avg_div;
+
+		float importance_limiter = clamp(params.adaptive_sample_limit / avg_total_importance, 0.0, 1.0);
+		importance *= importance_limiter;
+
+		float additional_sample_count = SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT * importance;
+
+		const float blend_range = 3.0;
+		const float blend_range_inv = 1.0 / blend_range;
+
+		additional_sample_count += 0.5;
+		uint additional_samples = uint(additional_sample_count);
+		uint additional_samples_to = min(SSIL_MAX_TAPS, additional_samples + SSIL_ADAPTIVE_TAP_BASE_COUNT);
+
+		for (uint i = SSIL_ADAPTIVE_TAP_BASE_COUNT; i &lt; additional_samples_to; i++) {
+			additional_sample_count -= 1.0f;
+			float weight_mod = clamp(additional_sample_count * blend_range_inv, 0.0, 1.0);
+			SSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
+		}
+	}
+#endif
+
+	// Early out for adaptive base
+	if (p_adaptive_base) {
+		vec3 color = color_sum / weight_sum;
+
+		r_color = color;
+		r_edges = vec4(0.0);
+		r_obscurance = obscurance_sum / weight_sum;
+		r_weight = weight_sum;
+		return;
+	}
+
+	// Calculate weighted average
+	vec3 color = color_sum / weight_sum;
+	color /= 1.0 - dot(color, vec3(0.299, 0.587, 0.114));
+
+	// Calculate fadeout (1 close, gradient, 0 far)
+	float fade_out = clamp(pix_center_pos.z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);
+
+	// Reduce the SSIL if we&#x27;re on the edge to remove artifacts on edges (we don&#x27;t care for the lower quality one)
+	if (!p_adaptive_base &amp;&amp; (p_quality_level &gt;= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
+		// when there&#x27;s more than 2 opposite edges, start fading out the occlusion to reduce aliasing artifacts
+		float edge_fadeout_factor = clamp((1.0 - edgesLRTB.x - edgesLRTB.y) * 0.35, 0.0, 1.0) + clamp((1.0 - edgesLRTB.z - edgesLRTB.w) * 0.35, 0.0, 1.0);
+
+		fade_out *= clamp(1.0 - edge_fadeout_factor, 0.0, 1.0);
+	}
+
+	color = params.intensity * color;
+
+	color *= fade_out;
+
+	// outputs!
+	r_color = color;
+	r_edges = edgesLRTB; // These are used to prevent blurring across edges, 1 means no edge, 0 means edge, 0.5 means half way there, etc.
+	r_obscurance = clamp((obscurance_sum / weight_sum) * params.intensity, 0.0, 1.0);
+	r_weight = weight_sum;
+}
+
+void main() {
+	vec3 out_color;
+	float out_obscurance;
+	float out_weight;
+	vec4 out_edges;
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
+		return;
+	}
+
+	vec2 uv = vec2(gl_GlobalInvocationID) + vec2(0.5);
+#ifdef SSIL_BASE
+	generate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, true);
+
+	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
+	imageStore(edges_weights_image, ssC, vec4(out_weight / (float(SSIL_ADAPTIVE_TAP_BASE_COUNT) * 4.0)));
+#else
+	generate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, false); // pass in quality levels
+
+	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
+	imageStore(edges_weights_image, ssC, vec4(pack_edges(out_edges)));
+#endif
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                    <div class="right-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('opt-pass-0')">
+                        <span class="shader-title">Optimized — ssil</span>
+                    </button>
+                    <div id="opt-pass-0" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('opt-pass-code-0')">Copy</button>
+                        <div class="code-block" id="opt-pass-code-0"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+#define SSIL_MAIN_DISK_SAMPLE_COUNT (32)
+const vec4 sample_pattern[SSIL_MAIN_DISK_SAMPLE_COUNT] = {
+	vec4(0.78488064, 0.56661671, 1.500000, -0.126083), vec4(0.26022232, -0.29575172, 1.500000, -1.064030), vec4(0.10459357, 0.08372527, 1.110000, -2.730563), vec4(-0.68286800, 0.04963045, 1.090000, -0.498827),
+	vec4(-0.13570161, -0.64190155, 1.250000, -0.532765), vec4(-0.26193795, -0.08205118, 0.670000, -1.783245), vec4(-0.61177456, 0.66664219, 0.710000, -0.044234), vec4(0.43675563, 0.25119025, 0.610000, -1.167283),
+	vec4(0.07884444, 0.86618668, 0.640000, -0.459002), vec4(-0.12790935, -0.29869005, 0.600000, -1.729424), vec4(-0.04031125, 0.02413622, 0.600000, -4.792042), vec4(0.16201244, -0.52851415, 0.790000, -1.067055),
+	vec4(-0.70991218, 0.47301072, 0.640000, -0.335236), vec4(0.03277707, -0.22349690, 0.600000, -1.982384), vec4(0.68921727, 0.36800742, 0.630000, -0.266718), vec4(0.29251814, 0.37775412, 0.610000, -1.422520),
+	vec4(-0.12224089, 0.96582592, 0.600000, -0.426142), vec4(0.11071457, -0.16131058, 0.600000, -2.165947), vec4(0.46562141, -0.59747696, 0.600000, -0.189760), vec4(-0.51548797, 0.11804193, 0.600000, -1.246800),
+	vec4(0.89141309, -0.42090443, 0.600000, 0.028192), vec4(-0.32402530, -0.01591529, 0.600000, -1.543018), vec4(0.60771245, 0.41635221, 0.600000, -0.605411), vec4(0.02379565, -0.08239821, 0.600000, -3.809046),
+	vec4(0.48951152, -0.23657045, 0.600000, -1.189011), vec4(-0.17611565, -0.81696892, 0.600000, -0.513724), vec4(-0.33930185, -0.20732205, 0.600000, -1.698047), vec4(-0.91974425, 0.05403209, 0.600000, 0.062246),
+	vec4(-0.15064627, -0.14949332, 0.600000, -1.896062), vec4(0.53180975, -0.35210401, 0.600000, -0.758838), vec4(0.41487166, 0.81442589, 0.600000, -0.505648), vec4(-0.24106961, -0.32721516, 0.600000, -1.665244)
+};
+
+// these values can be changed (up to SSIL_MAX_TAPS) with no changes required elsewhere; values for 4th and 5th preset are ignored but array needed to avoid compilation errors
+// the actual number of texture samples is two times this value (each &quot;tap&quot; has two symmetrical depth texture samples)
+const int num_taps[5] = { 2, 3, 6, 0, 0 };
+
+#define SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET (99) // to disable simply set to 99 or similar
+#define SSIL_TILT_SAMPLES_AMOUNT (0.4)
+//
+#define SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET (1) // to disable simply set to 99 or similar
+#define SSIL_HALOING_REDUCTION_AMOUNT (0.8) // values from 0.0 - 1.0, 1.0 means max weighting (will cause artifacts, 0.8 is more reasonable)
+//
+#define SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)
+#define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically
+//
+// WARNING: The edge handling is hard-coded to &#x27;disabled&#x27; on quality level 0, and enabled above,
+// on the C++ side; while toggling it here will work for testing purposes, it will not yield
+// performance gains (or correct results).
+#define SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)
+//
+#define SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)
+
+#define SSIL_MAX_TAPS 32
+#define SSIL_ADAPTIVE_TAP_BASE_COUNT 5
+#define SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT (SSIL_MAX_TAPS - SSIL_ADAPTIVE_TAP_BASE_COUNT)
+#define SSIL_DEPTH_MIP_LEVELS 4
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2DArray source_depth_mipmaps;
+layout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;
+layout(set = 0, binding = 2) uniform Constants { //get into a lower set
+	vec4 rotation_matrices[20];
+}
+constants;
+
+#ifdef ADAPTIVE
+layout(rgba16, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
+layout(set = 1, binding = 1) uniform sampler2D source_importance;
+layout(set = 1, binding = 2, std430) buffer Counter {
+	uint sum;
+}
+counter;
+#endif
+
+layout(rgba16, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
+
+layout(set = 3, binding = 0) uniform sampler2D last_frame;
+layout(set = 3, binding = 1) uniform ProjectionConstants {
+	mat4 reprojection;
+}
+projection_constants;
+
+layout(push_constant, std430) uniform Params {
+	ivec2 screen_size;
+	int pass;
+	int quality;
+
+	vec2 half_screen_pixel_size;
+	vec2 half_screen_pixel_size_x025;
+
+	vec2 NDC_to_view_mul;
+	vec2 NDC_to_view_add;
+
+	vec2 pad2;
+	float z_near;
+	float z_far;
+
+	float radius;
+	float intensity;
+	int size_multiplier;
+	int pad;
+
+	float fade_out_mul;
+	float fade_out_add;
+	float normal_rejection_amount;
+	float inv_radius_near_limit;
+
+	bool is_orthogonal;
+	float neg_inv_radius;
+	float load_counter_avg_div;
+	float adaptive_sample_limit;
+
+	ivec2 pass_coord_offset;
+	vec2 pass_uv_offset;
+}
+params;
+
+float pack_edges(vec4 p_edgesLRTB) {
+	p_edgesLRTB = round(clamp(p_edgesLRTB, 0.0, 1.0) * 3.05);
+	return dot(p_edgesLRTB, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));
+}
+
+vec3 NDC_to_view_space(vec2 p_pos, float p_viewspace_depth) {
+	if (params.is_orthogonal) {
+		return vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add), p_viewspace_depth);
+	} else {
+		return vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add) * p_viewspace_depth, p_viewspace_depth);
+	}
+}
+
+// calculate effect radius and fit our screen sampling pattern inside it
+void calculate_radius_parameters(const float p_pix_center_length, const vec2 p_pixel_size_at_center, out float r_lookup_radius, out float r_radius, out float r_fallof_sq) {
+	r_radius = params.radius;
+
+	// when too close, on-screen sampling disk will grow beyond screen size; limit this to avoid closeup temporal artifacts
+	const float too_close_limit = clamp(p_pix_center_length * params.inv_radius_near_limit, 0.0, 1.0) * 0.8 + 0.2;
+
+	r_radius *= too_close_limit;
+
+	// 0.85 is to reduce the radius to allow for more samples on a slope to still stay within influence
+	r_lookup_radius = (0.85 * r_radius) / p_pixel_size_at_center.x;
+
+	// used to calculate falloff (both for AO samples and per-sample weights)
+	r_fallof_sq = -1.0 / (r_radius * r_radius);
+}
+
+vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p_right_z, const float p_top_z, const float p_bottom_z) {
+	// slope-sensitive depth-based edge detection
+	vec4 edgesLRTB = vec4(p_left_z, p_right_z, p_top_z, p_bottom_z) - p_center_z;
+	vec4 edgesLRTB_slope_adjusted = edgesLRTB + edgesLRTB.yxwz;
+	edgesLRTB = min(abs(edgesLRTB), abs(edgesLRTB_slope_adjusted));
+	return clamp((1.3 - edgesLRTB / (p_center_z * 0.040)), 0.0, 1.0);
+}
+
+vec3 load_normal(ivec2 p_pos) {
+	vec3 encoded_normal = imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0;
+	encoded_normal.z = -encoded_normal.z;
+	return normalize(encoded_normal);
+}
+
+vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {
+	vec3 encoded_normal = imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0;
+	encoded_normal.z = -encoded_normal.z;
+	return normalize(encoded_normal);
+}
+
+// all vectors in viewspace
+float calculate_pixel_obscurance(vec3 p_pixel_normal, vec3 p_hit_delta, float p_fallof_sq) {
+	float length_sq = dot(p_hit_delta, p_hit_delta);
+	float NdotD = dot(p_pixel_normal, p_hit_delta) / sqrt(length_sq);
+
+	float falloff_mult = max(0.0, length_sq * p_fallof_sq + 1.0);
+
+	return max(0.0, NdotD - 0.05) * falloff_mult;
+}
+
+void SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const vec2 p_sampling_uv, const float p_mip_level, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const float p_fallof_sq, const float p_weight_mod) {
+	// get depth at sample
+	float viewspace_sample_z = textureLod(source_depth_mipmaps, vec3(p_sampling_uv, params.pass), p_mip_level).x;
+	vec3 sample_normal = load_normal(ivec2(p_sampling_uv * vec2(params.screen_size)));
+
+	// convert to viewspace
+	vec3 hit_pos = NDC_to_view_space(p_sampling_uv.xy, viewspace_sample_z);
+	vec3 hit_delta = hit_pos - p_pix_center_pos;
+
+	float obscurance = calculate_pixel_obscurance(p_pixel_normal, hit_delta, p_fallof_sq);
+	float weight = 1.0;
+
+	if (p_quality_level &gt;= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
+		float reduce = clamp(-hit_delta.z * params.neg_inv_radius + 2.0, 0.0, 1.0);
+		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
+	}
+
+	// Translate sampling_uv to last screen&#x27;s coordinates
+	const vec4 sample_pos = projection_constants.reprojection * vec4(p_sampling_uv * 2.0 - 1.0, (viewspace_sample_z - params.z_near) / (params.z_far - params.z_near) * 2.0 - 1.0, 1.0);
+	vec2 reprojected_sampling_uv = (sample_pos.xy / sample_pos.w) * 0.5 + 0.5;
+
+	weight *= p_weight_mod;
+
+	r_obscurance_sum += obscurance * weight;
+
+	vec3 sample_color = textureLod(last_frame, reprojected_sampling_uv, 5.0).rgb;
+	// Reduce impact of fireflies by tonemapping before averaging
+	sample_color *= 1.0 / (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));
+	float n_dot_h = dot(sample_normal, normalize(hit_delta));
+	r_color_sum += sample_color * obscurance * weight * clamp(1.0 - (1.0 - smoothstep(0.0, 0.1, -n_dot_h)) * params.normal_rejection_amount, 0.0, 1.0);
+	r_weight_sum += weight;
+}
+
+void SSILTap(const int p_quality_level, inout vec3 r_color_sum, inout float r_obscurance_sum, inout float r_weight_sum, const int p_tap_index, const mat2 p_rot_scale, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const vec2 p_normalized_screen_pos, const float p_mip_offset, const float p_fallof_sq, float p_weight_mod, vec2 p_norm_xy, float p_norm_xy_length) {
+	vec4 new_sample = sample_pattern[p_tap_index];
+
+	vec2 sample_offset = new_sample.xy * p_rot_scale;
+	sample_offset = round(sample_offset);
+
+	p_weight_mod *= new_sample.z;
+
+	float mip_level = (p_quality_level &lt; SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? 0.0 : (new_sample.w + p_mip_offset);
+
+	vec2 sampling_uv = sample_offset * params.half_screen_pixel_size + p_normalized_screen_pos;
+	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);
+
+	vec2 sample_offset_mirrored_uv = -sample_offset;
+	if (p_quality_level &gt;= SSIL_TILT_SAMPLES_ENABLE_AT_QUALITY_PRESET) {
+		float dot_norm = dot(sample_offset_mirrored_uv, p_norm_xy);
+		sample_offset_mirrored_uv -= dot_norm * p_norm_xy_length * p_norm_xy;
+		sample_offset_mirrored_uv = round(sample_offset_mirrored_uv);
+	}
+
+	vec2 sampling_mirrored_uv = sample_offset_mirrored_uv * params.half_screen_pixel_size + p_normalized_screen_pos;
+	SSIL_tap_inner(p_quality_level, r_color_sum, r_obscurance_sum, r_weight_sum, sampling_mirrored_uv, mip_level, p_pix_center_pos, p_pixel_normal, p_fallof_sq, p_weight_mod);
+}
+
+void generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, out float r_weight, const vec2 p_pos, int p_quality_level, bool p_adaptive_base) {
+	vec2 pos_rounded = trunc(p_pos);
+	uvec2 upos = uvec2(pos_rounded);
+
+	const int number_of_taps = (p_adaptive_base) ? (SSIL_ADAPTIVE_TAP_BASE_COUNT) : (num_taps[p_quality_level]);
+	float pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;
+
+	vec4 valuesUL = textureGather(source_depth_mipmaps, vec3(pos_rounded * params.half_screen_pixel_size, params.pass));
+	vec4 valuesBR = textureGather(source_depth_mipmaps, vec3((pos_rounded + vec2(1.0)) * params.half_screen_pixel_size, params.pass));
+
+	// get this pixel&#x27;s viewspace depth
+	pix_z = valuesUL.y;
+
+	// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)
+	pix_left_z = valuesUL.x;
+	pix_top_z = valuesUL.z;
+	pix_right_z = valuesBR.z;
+	pix_bottom_z = valuesBR.x;
+
+	vec2 normalized_screen_pos = pos_rounded * params.half_screen_pixel_size + params.half_screen_pixel_size_x025;
+	vec3 pix_center_pos = NDC_to_view_space(normalized_screen_pos, pix_z);
+
+	vec3 pixel_normal = load_normal(ivec2(upos * 2 * params.size_multiplier + params.pass_coord_offset.xy));
+
+	const vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size, pix_center_pos.z).xy - pix_center_pos.xy;
+
+	float pixel_lookup_radius;
+	float fallof_sq;
+
+	// calculate effect radius and fit our screen sampling pattern inside it
+	float viewspace_radius;
+	calculate_radius_parameters(length(pix_center_pos), pixel_size_at_center, pixel_lookup_radius, viewspace_radius, fallof_sq);
+
+	// calculate samples rotation/scaling
+	mat2 rot_scale_matrix;
+	uint pseudo_random_index;
+
+	{
+		vec4 rotation_scale;
+		// reduce effect radius near the screen edges slightly; ideally, one would render a larger depth buffer (5% on each side) instead
+		if (!p_adaptive_base &amp;&amp; (p_quality_level &gt;= SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET)) {
+			float near_screen_border = min(min(normalized_screen_pos.x, 1.0 - normalized_screen_pos.x), min(normalized_screen_pos.y, 1.0 - normalized_screen_pos.y));
+			near_screen_border = clamp(10.0 * near_screen_border + 0.6, 0.0, 1.0);
+			pixel_lookup_radius *= near_screen_border;
+		}
+
+		// load &amp; update pseudo-random rotation matrix
+		pseudo_random_index = uint(pos_rounded.y * 2 + pos_rounded.x) % 5;
+		rotation_scale = constants.rotation_matrices[params.pass * 5 + pseudo_random_index];
+		rot_scale_matrix = mat2(rotation_scale.x * pixel_lookup_radius, rotation_scale.y * pixel_lookup_radius, rotation_scale.z * pixel_lookup_radius, rotation_scale.w * pixel_lookup_radius);
+	}
+
+	// the main obscurance &amp; sample weight storage
+	vec3 color_sum = vec3(0.0);
+	float obscurance_sum = 0.0;
+	float weight_sum = 0.0;
+
+	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to &quot;no edge&quot; (1 is no edge, 0 is edge)
+	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
+
+	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
+	pix_center_pos *= 0.99;
+
+	if (!p_adaptive_base &amp;&amp; (p_quality_level &gt;= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
+		edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
+	}
+
+	const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;
+	float mip_offset = (p_quality_level &lt; SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (log2(pixel_lookup_radius) + global_mip_offset);
+
+	vec2 norm_xy = pixel_normal.xy;
+	float norm_xy_length = length(norm_xy);
+	norm_xy /= norm_xy_length;
+	norm_xy_length *= SSIL_TILT_SAMPLES_AMOUNT;
+
+	// standard, non-adaptive approach
+	if ((p_quality_level != 3) || p_adaptive_base) {
+		for (int i = 0; i &lt; number_of_taps; i++) {
+			SSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);
+		}
+	}
+#ifdef ADAPTIVE
+	else {
+		// add new ones if needed
+		vec2 full_res_uv = normalized_screen_pos + params.pass_uv_offset.xy;
+		float importance = textureLod(source_importance, full_res_uv, 0.0).x;
+
+		//Need to store obscurance from base pass
+		// load existing base values
+		vec4 base_values = imageLoad(source_ssil, ivec3(upos, params.pass));
+		weight_sum += imageLoad(edges_weights_image, ivec2(upos)).r * float(SSIL_ADAPTIVE_TAP_BASE_COUNT * 4.0);
+		color_sum += (base_values.rgb) * weight_sum;
+		obscurance_sum += (base_values.a) * weight_sum;
+
+		// increase importance around edges
+		float edge_count = dot(1.0 - edgesLRTB, vec4(1.0, 1.0, 1.0, 1.0));
+
+		float avg_total_importance = float(counter.sum) * params.load_counter_avg_div;
+
+		float importance_limiter = clamp(params.adaptive_sample_limit / avg_total_importance, 0.0, 1.0);
+		importance *= importance_limiter;
+
+		float additional_sample_count = SSIL_ADAPTIVE_TAP_FLEXIBLE_COUNT * importance;
+
+		const float blend_range = 3.0;
+		const float blend_range_inv = 1.0 / blend_range;
+
+		additional_sample_count += 0.5;
+		uint additional_samples = uint(additional_sample_count);
+		uint additional_samples_to = min(SSIL_MAX_TAPS, additional_samples + SSIL_ADAPTIVE_TAP_BASE_COUNT);
+
+		for (uint i = SSIL_ADAPTIVE_TAP_BASE_COUNT; i &lt; additional_samples_to; i++) {
+			additional_sample_count -= 1.0f;
+			float weight_mod = clamp(additional_sample_count * blend_range_inv, 0.0, 1.0);
+			SSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
+		}
+	}
+#endif
+
+	// Early out for adaptive base
+	if (p_adaptive_base) {
+		vec3 color = color_sum / weight_sum;
+
+		r_color = color;
+		r_edges = vec4(0.0);
+		r_obscurance = obscurance_sum / weight_sum;
+		r_weight = weight_sum;
+		return;
+	}
+
+	// Calculate weighted average
+	vec3 color = color_sum / weight_sum;
+	const vec3 lum = vec3(0.299, 0.587, 0.114);
+	color /= max(1.0 - dot(color, lum), 0.01);
+
+	// Calculate fadeout (1 close, gradient, 0 far)
+	float fade_out = clamp(pix_center_pos.z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);
+
+	// Reduce the SSIL if we&#x27;re on the edge to remove artifacts on edges (we don&#x27;t care for the lower quality one)
+	if (!p_adaptive_base &amp;&amp; (p_quality_level &gt;= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
+		// when there&#x27;s more than 2 opposite edges, start fading out the occlusion to reduce aliasing artifacts
+		float edge_fadeout_factor = clamp((1.0 - edgesLRTB.x - edgesLRTB.y) * 0.35, 0.0, 1.0) + clamp((1.0 - edgesLRTB.z - edgesLRTB.w) * 0.35, 0.0, 1.0);
+
+		fade_out *= clamp(1.0 - edge_fadeout_factor, 0.0, 1.0);
+	}
+
+	color = params.intensity * color;
+
+	color *= fade_out;
+
+	// outputs!
+	r_color = color;
+	r_edges = edgesLRTB; // These are used to prevent blurring across edges, 1 means no edge, 0 means edge, 0.5 means half way there, etc.
+	r_obscurance = clamp((obscurance_sum / weight_sum) * params.intensity, 0.0, 1.0);
+	r_weight = weight_sum;
+}
+
+void main() {
+	vec3 out_color;
+	float out_obscurance;
+	float out_weight;
+	vec4 out_edges;
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
+		return;
+	}
+
+	vec2 uv = vec2(gl_GlobalInvocationID) + vec2(0.5);
+#ifdef SSIL_BASE
+	generate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, true);
+
+	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
+	imageStore(edges_weights_image, ssC, vec4(out_weight / (float(SSIL_ADAPTIVE_TAP_BASE_COUNT) * 4.0)));
+#else
+	generate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, false); // pass in quality levels
+
+	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
+	imageStore(edges_weights_image, ssC, vec4(pack_edges(out_edges)));
+#endif
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                </div>
+            </div><div style="margin-bottom: 12px;">
+                <h3 style="margin: 8px 0 4px;">Pass: ssil_blur</h3>
+                <div class="two-column">
+                    <div class="left-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('canon-pass-1')">
+                        <span class="shader-title">Original — ssil_blur</span>
+                    </button>
+                    <div id="canon-pass-1" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('canon-pass-code-1')">Copy</button>
+                        <div class="code-block" id="canon-pass-code-1"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2D source_ssil;
+
+layout(rgba16, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
+
+layout(r8, set = 2, binding = 0) uniform restrict readonly image2D source_edges;
+
+layout(push_constant, std430) uniform Params {
+	float edge_sharpness;
+	float pad;
+	vec2 half_screen_pixel_size;
+}
+params;
+
+vec4 unpack_edges(float p_packed_val) {
+	uint packed_val = uint(p_packed_val * 255.5);
+	vec4 edgesLRTB;
+	edgesLRTB.x = float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0;
+	edgesLRTB.y = float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0;
+	edgesLRTB.z = float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0;
+	edgesLRTB.w = float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0;
+
+	return clamp(edgesLRTB + params.edge_sharpness, 0.0, 1.0);
+}
+
+void add_sample(vec4 p_ssil_value, float p_edge_value, inout vec4 r_sum, inout float r_sum_weight) {
+	float weight = p_edge_value;
+
+	r_sum += (weight * p_ssil_value);
+	r_sum_weight += weight;
+}
+
+#ifdef MODE_WIDE
+vec4 sample_blurred_wide(ivec2 p_pos, vec2 p_coord) {
+	vec4 ssil_value = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));
+	vec4 ssil_valueL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-2, 0));
+	vec4 ssil_valueT = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, -2));
+	vec4 ssil_valueR = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(2, 0));
+	vec4 ssil_valueB = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 2));
+
+	vec4 edgesLRTB = unpack_edges(imageLoad(source_edges, p_pos).r);
+	edgesLRTB.x *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(-2, 0)).r).y;
+	edgesLRTB.z *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(0, -2)).r).w;
+	edgesLRTB.y *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(2, 0)).r).x;
+	edgesLRTB.w *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(0, 2)).r).z;
+
+	float sum_weight = 0.8;
+	vec4 sum = ssil_value * sum_weight;
+
+	add_sample(ssil_valueL, edgesLRTB.x, sum, sum_weight);
+	add_sample(ssil_valueR, edgesLRTB.y, sum, sum_weight);
+	add_sample(ssil_valueT, edgesLRTB.z, sum, sum_weight);
+	add_sample(ssil_valueB, edgesLRTB.w, sum, sum_weight);
+
+	vec4 ssil_avg = sum / sum_weight;
+
+	ssil_value = ssil_avg;
+
+	return ssil_value;
+}
+#endif
+
+#ifdef MODE_SMART
+vec4 sample_blurred(ivec2 p_pos, vec2 p_coord) {
+	vec4 vC = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));
+	vec4 vL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-1, 0));
+	vec4 vT = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, -1));
+	vec4 vR = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(1, 0));
+	vec4 vB = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 1));
+
+	float packed_edges = imageLoad(source_edges, p_pos).r;
+	vec4 edgesLRTB = unpack_edges(packed_edges);
+
+	float sum_weight = 0.5;
+	vec4 sum = vC * sum_weight;
+
+	add_sample(vL, edgesLRTB.x, sum, sum_weight);
+	add_sample(vR, edgesLRTB.y, sum, sum_weight);
+	add_sample(vT, edgesLRTB.z, sum, sum_weight);
+	add_sample(vB, edgesLRTB.w, sum, sum_weight);
+
+	vec4 ssil_avg = sum / sum_weight;
+
+	vec4 ssil_value = ssil_avg;
+
+	return ssil_value;
+}
+#endif
+
+void main() {
+	// Pixel being shaded
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+
+#ifdef MODE_NON_SMART
+
+	vec2 half_pixel = params.half_screen_pixel_size * 0.5;
+
+	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size;
+
+	vec4 center = textureLod(source_ssil, uv, 0.0);
+
+	vec4 value = textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x * 3, -half_pixel.y)), 0.0) * 0.2;
+	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x, -half_pixel.y * 3)), 0.0) * 0.2;
+	value += textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x, +half_pixel.y * 3)), 0.0) * 0.2;
+	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x * 3, +half_pixel.y)), 0.0) * 0.2;
+
+	vec4 sampled = value + center * 0.2;
+
+#else
+#ifdef MODE_SMART
+	vec4 sampled = sample_blurred(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
+#else // MODE_WIDE
+	vec4 sampled = sample_blurred_wide(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
+#endif
+#endif // MODE_NON_SMART
+	imageStore(dest_image, ssC, sampled);
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                    <div class="right-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('opt-pass-1')">
+                        <span class="shader-title">Optimized — ssil_blur</span>
+                    </button>
+                    <div id="opt-pass-1" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('opt-pass-code-1')">Copy</button>
+                        <div class="code-block" id="opt-pass-code-1"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2D source_ssil;
+
+layout(rgba16, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
+
+layout(r8, set = 2, binding = 0) uniform restrict readonly image2D source_edges;
+
+layout(push_constant, std430) uniform Params {
+	float edge_sharpness;
+	float pad;
+	vec2 half_screen_pixel_size;
+}
+params;
+
+vec4 unpack_edges(float p_packed_val) {
+	uint packed_val = uint(p_packed_val * 255.5);
+	return clamp(vec4(
+		float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0,
+		float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0,
+		float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0,
+		float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0
+	) + params.edge_sharpness, 0.0, 1.0);
+}
+
+void add_sample(vec4 p_ssil_value, float p_edge_value, inout vec4 r_sum, inout float r_sum_weight) {
+	float weight = p_edge_value;
+
+	r_sum += (weight * p_ssil_value);
+	r_sum_weight += weight;
+}
+
+#ifdef MODE_WIDE
+vec4 sample_blurred_wide(ivec2 p_pos, vec2 p_coord) {
+	vec4 ssil_value = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));
+	vec4 ssil_valueL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-2, 0));
+	vec4 ssil_valueT = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, -2));
+	vec4 ssil_valueR = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(2, 0));
+	vec4 ssil_valueB = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 2));
+
+	vec4 edgesLRTB = unpack_edges(imageLoad(source_edges, p_pos).r);
+	edgesLRTB.x *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(-2, 0)).r).y;
+	edgesLRTB.z *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(0, -2)).r).w;
+	edgesLRTB.y *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(2, 0)).r).x;
+	edgesLRTB.w *= unpack_edges(imageLoad(source_edges, p_pos + ivec2(0, 2)).r).z;
+
+	float sum_weight = 0.8;
+	vec4 sum = ssil_value * sum_weight;
+
+	add_sample(ssil_valueL, edgesLRTB.x, sum, sum_weight);
+	add_sample(ssil_valueR, edgesLRTB.y, sum, sum_weight);
+	add_sample(ssil_valueT, edgesLRTB.z, sum, sum_weight);
+	add_sample(ssil_valueB, edgesLRTB.w, sum, sum_weight);
+
+	vec4 ssil_avg = sum / sum_weight;
+
+	ssil_value = ssil_avg;
+
+	return ssil_value;
+}
+#endif
+
+#ifdef MODE_SMART
+vec4 sample_blurred(ivec2 p_pos, vec2 p_coord) {
+	vec4 vC = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));
+	vec4 vL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-1, 0));
+	vec4 vT = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, -1));
+	vec4 vR = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(1, 0));
+	vec4 vB = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 1));
+
+	float packed_edges = imageLoad(source_edges, p_pos).r;
+	vec4 edgesLRTB = unpack_edges(packed_edges);
+
+	float sum_weight = 0.5;
+	vec4 sum = vC * sum_weight;
+
+	add_sample(vL, edgesLRTB.x, sum, sum_weight);
+	add_sample(vR, edgesLRTB.y, sum, sum_weight);
+	add_sample(vT, edgesLRTB.z, sum, sum_weight);
+	add_sample(vB, edgesLRTB.w, sum, sum_weight);
+
+	vec4 ssil_avg = sum / sum_weight;
+
+	vec4 ssil_value = ssil_avg;
+
+	return ssil_value;
+}
+#endif
+
+void main() {
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+
+#if defined(MODE_NON_SMART)
+
+	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5)) * params.half_screen_pixel_size;
+	vec2 half_pixel = params.half_screen_pixel_size * 0.5;
+
+	vec4 center = textureLod(source_ssil, uv, 0.0);
+	vec4 value = textureLod(source_ssil, uv + vec2(-half_pixel.x * 3.0, -half_pixel.y), 0.0);
+	value += textureLod(source_ssil, uv + vec2(half_pixel.x, -half_pixel.y * 3.0), 0.0);
+	value += textureLod(source_ssil, uv + vec2(-half_pixel.x, half_pixel.y * 3.0), 0.0);
+	value += textureLod(source_ssil, uv + vec2(half_pixel.x * 3.0, half_pixel.y), 0.0);
+
+	imageStore(dest_image, ssC, (value + center) * 0.2);
+
+#else
+
+#ifdef MODE_SMART
+	vec4 sampled = sample_blurred(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5)) * params.half_screen_pixel_size);
+#else
+	vec4 sampled = sample_blurred_wide(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5)) * params.half_screen_pixel_size);
+#endif
+	imageStore(dest_image, ssC, sampled);
+
+#endif
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                </div>
+            </div><div style="margin-bottom: 12px;">
+                <h3 style="margin: 8px 0 4px;">Pass: ssil_interleave</h3>
+                <div class="two-column">
+                    <div class="left-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('canon-pass-2')">
+                        <span class="shader-title">Original — ssil_interleave</span>
+                    </button>
+                    <div id="canon-pass-2" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('canon-pass-code-2')">Copy</button>
+                        <div class="code-block" id="canon-pass-code-2"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(rgba16, set = 0, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(set = 1, binding = 0) uniform sampler2DArray source_texture;
+layout(r8, set = 2, binding = 0) uniform restrict readonly image2DArray source_edges;
+
+layout(push_constant, std430) uniform Params {
+	float inv_sharpness;
+	uint size_modifier;
+	vec2 pixel_size;
+}
+params;
+
+vec4 unpack_edges(float p_packed_val) {
+	uint packed_val = uint(p_packed_val * 255.5);
+	vec4 edgesLRTB;
+	edgesLRTB.x = float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0;
+	edgesLRTB.y = float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0;
+	edgesLRTB.z = float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0;
+	edgesLRTB.w = float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0;
+
+	return clamp(edgesLRTB + params.inv_sharpness, 0.0, 1.0);
+}
+
+void main() {
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+	if (any(greaterThanEqual(ssC, ivec2(1.0 / params.pixel_size)))) { //too large, do nothing
+		return;
+	}
+
+#ifdef MODE_SMART
+	uvec2 pix_pos = uvec2(gl_GlobalInvocationID.xy);
+	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5)) * params.pixel_size;
+
+	// calculate index in the four deinterleaved source array texture
+	int mx = int(pix_pos.x % 2);
+	int my = int(pix_pos.y % 2);
+	int index_center = mx + my * 2; // center index
+	int index_horizontal = (1 - mx) + my * 2; // neighboring, horizontal
+	int index_vertical = mx + (1 - my) * 2; // neighboring, vertical
+	int index_diagonal = (1 - mx) + (1 - my) * 2; // diagonal
+
+	vec4 color = texelFetch(source_texture, ivec3(pix_pos / uvec2(params.size_modifier), index_center), 0);
+
+	vec4 edgesLRTB = unpack_edges(imageLoad(source_edges, ivec3(pix_pos / uvec2(params.size_modifier), index_center)).r);
+
+	// convert index shifts to sampling offsets
+	float fmx = float(mx);
+	float fmy = float(my);
+
+	// in case of an edge, push sampling offsets away from the edge (towards pixel center)
+	float fmxe = (edgesLRTB.y - edgesLRTB.x);
+	float fmye = (edgesLRTB.w - edgesLRTB.z);
+
+	// calculate final sampling offsets and sample using bilinear filter
+	vec2 uv_horizontal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx + fmxe - 0.5, 0.5 - fmy)) * params.pixel_size;
+	vec4 color_horizontal = textureLod(source_texture, vec3(uv_horizontal, index_horizontal), 0.0);
+	vec2 uv_vertical = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(0.5 - fmx, fmy - 0.5 + fmye)) * params.pixel_size;
+	vec4 color_vertical = textureLod(source_texture, vec3(uv_vertical, index_vertical), 0.0);
+	vec2 uv_diagonal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx - 0.5 + fmxe, fmy - 0.5 + fmye)) * params.pixel_size;
+	vec4 color_diagonal = textureLod(source_texture, vec3(uv_diagonal, index_diagonal), 0.0);
+
+	// reduce weight for samples near edge - if the edge is on both sides, weight goes to 0
+	vec4 blendWeights;
+	blendWeights.x = 1.0;
+	blendWeights.y = (edgesLRTB.x + edgesLRTB.y) * 0.5;
+	blendWeights.z = (edgesLRTB.z + edgesLRTB.w) * 0.5;
+	blendWeights.w = (blendWeights.y + blendWeights.z) * 0.5;
+
+	// calculate weighted average
+	float blendWeightsSum = dot(blendWeights, vec4(1.0, 1.0, 1.0, 1.0));
+	color += color_horizontal * blendWeights.y;
+	color += color_vertical * blendWeights.z;
+	color += color_diagonal * blendWeights.w;
+	color /= blendWeightsSum;
+
+	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), color);
+#else // !MODE_SMART
+
+	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5)) * params.pixel_size;
+#ifdef MODE_HALF
+	vec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);
+	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
+	vec4 avg = (a + d) * 0.5;
+
+#else
+	vec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);
+	vec4 b = textureLod(source_texture, vec3(uv, 1), 0.0);
+	vec4 c = textureLod(source_texture, vec3(uv, 2), 0.0);
+	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
+	vec4 avg = (a + b + c + d) * 0.25;
+
+#endif
+	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), avg);
+#endif
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                    <div class="right-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('opt-pass-2')">
+                        <span class="shader-title">Optimized — ssil_interleave</span>
+                    </button>
+                    <div id="opt-pass-2" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('opt-pass-code-2')">Copy</button>
+                        <div class="code-block" id="opt-pass-code-2"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(rgba16, set = 0, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(set = 1, binding = 0) uniform sampler2DArray source_texture;
+layout(r8, set = 2, binding = 0) uniform restrict readonly image2DArray source_edges;
+
+layout(push_constant, std430) uniform Params {
+	float inv_sharpness;
+	uint size_modifier;
+	vec2 pixel_size;
+}
+params;
+
+vec4 unpack_edges(float p_packed_val) {
+	uint packed_val = uint(p_packed_val * 255.5);
+	return clamp(vec4(
+		float((packed_val &gt;&gt; 6) &amp; 0x03) / 3.0,
+		float((packed_val &gt;&gt; 4) &amp; 0x03) / 3.0,
+		float((packed_val &gt;&gt; 2) &amp; 0x03) / 3.0,
+		float((packed_val &gt;&gt; 0) &amp; 0x03) / 3.0
+	) + params.inv_sharpness, 0.0, 1.0);
+}
+
+void main() {
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+	if (any(greaterThanEqual(ssC, ivec2(1.0 / params.pixel_size)))) { //too large, do nothing
+		return;
+	}
+
+#ifdef MODE_SMART
+	uvec2 pix_pos = uvec2(gl_GlobalInvocationID.xy);
+	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5)) * params.pixel_size;
+
+	// calculate index in the four deinterleaved source array texture
+	int mx = int(pix_pos.x % 2);
+	int my = int(pix_pos.y % 2);
+	int index_center = mx + my * 2; // center index
+	int index_horizontal = (1 - mx) + my * 2; // neighboring, horizontal
+	int index_vertical = mx + (1 - my) * 2; // neighboring, vertical
+	int index_diagonal = (1 - mx) + (1 - my) * 2; // diagonal
+
+	vec4 color = texelFetch(source_texture, ivec3(pix_pos / uvec2(params.size_modifier), index_center), 0);
+
+	vec4 edgesLRTB = unpack_edges(imageLoad(source_edges, ivec3(pix_pos / uvec2(params.size_modifier), index_center)).r);
+
+	// convert index shifts to sampling offsets
+	float fmx = float(mx);
+	float fmy = float(my);
+
+	// in case of an edge, push sampling offsets away from the edge (towards pixel center)
+	float fmxe = (edgesLRTB.y - edgesLRTB.x);
+	float fmye = (edgesLRTB.w - edgesLRTB.z);
+
+	// calculate final sampling offsets and sample using bilinear filter
+	vec2 uv_horizontal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx + fmxe - 0.5, 0.5 - fmy)) * params.pixel_size;
+	vec4 color_horizontal = textureLod(source_texture, vec3(uv_horizontal, index_horizontal), 0.0);
+	vec2 uv_vertical = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(0.5 - fmx, fmy - 0.5 + fmye)) * params.pixel_size;
+	vec4 color_vertical = textureLod(source_texture, vec3(uv_vertical, index_vertical), 0.0);
+	vec2 uv_diagonal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx - 0.5 + fmxe, fmy - 0.5 + fmye)) * params.pixel_size;
+	vec4 color_diagonal = textureLod(source_texture, vec3(uv_diagonal, index_diagonal), 0.0);
+
+	// reduce weight for samples near edge - if the edge is on both sides, weight goes to 0
+	vec4 blendWeights;
+	blendWeights.x = 1.0;
+	blendWeights.y = (edgesLRTB.x + edgesLRTB.y) * 0.5;
+	blendWeights.z = (edgesLRTB.z + edgesLRTB.w) * 0.5;
+	blendWeights.w = (blendWeights.y + blendWeights.z) * 0.5;
+
+	// calculate weighted average
+	float blendWeightsSum = dot(blendWeights, vec4(1.0, 1.0, 1.0, 1.0));
+	color += color_horizontal * blendWeights.y;
+	color += color_vertical * blendWeights.z;
+	color += color_diagonal * blendWeights.w;
+	color /= blendWeightsSum;
+
+	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), color);
+#else // !MODE_SMART
+
+	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5)) * params.pixel_size;
+#ifdef MODE_HALF
+	vec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);
+	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
+	vec4 avg = (a + d) * 0.5;
+
+#else
+	vec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);
+	vec4 b = textureLod(source_texture, vec3(uv, 1), 0.0);
+	vec4 c = textureLod(source_texture, vec3(uv, 2), 0.0);
+	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
+	vec4 avg = (a + b + c + d) * 0.25;
+
+#endif
+	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), avg);
+#endif
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                </div>
+            </div><div style="margin-bottom: 12px;">
+                <h3 style="margin: 8px 0 4px;">Pass: ssil_importance_map</h3>
+                <div class="two-column">
+                    <div class="left-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('canon-pass-3')">
+                        <span class="shader-title">Original — ssil_importance_map</span>
+                    </button>
+                    <div id="canon-pass-3" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('canon-pass-code-3')">Copy</button>
+                        <div class="code-block" id="canon-pass-code-3"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+#ifdef GENERATE_MAP
+layout(set = 0, binding = 0) uniform sampler2DArray source_texture;
+#else
+layout(set = 0, binding = 0) uniform sampler2D source_importance;
+#endif
+layout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
+
+#ifdef PROCESS_MAPB
+layout(set = 2, binding = 0, std430) buffer Counter {
+	uint sum;
+}
+counter;
+#endif
+
+layout(push_constant, std430) uniform Params {
+	vec2 half_screen_pixel_size;
+	float intensity;
+	float pad;
+}
+params;
+
+void main() {
+	// Pixel being shaded
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+
+#ifdef GENERATE_MAP
+	// importance map stuff
+	uvec2 base_position = ssC * 2;
+
+	float avg = 0.0;
+	float minV = 1.0;
+	float maxV = 0.0;
+	for (int i = 0; i &lt; 4; i++) {
+		vec3 value_a = texelFetch(source_texture, ivec3(base_position, i), 0).rgb * params.intensity;
+		vec3 value_b = texelFetch(source_texture, ivec3(base_position, i) + ivec3(0, 1, 0), 0).rgb * params.intensity;
+		vec3 value_c = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 0, 0), 0).rgb * params.intensity;
+		vec3 value_d = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 1, 0), 0).rgb * params.intensity;
+
+		// Calculate luminance (black and white value)
+		float a = dot(value_a, vec3(0.2125, 0.7154, 0.0721));
+		float b = dot(value_b, vec3(0.2125, 0.7154, 0.0721));
+		float c = dot(value_c, vec3(0.2125, 0.7154, 0.0721));
+		float d = dot(value_d, vec3(0.2125, 0.7154, 0.0721));
+
+		maxV = max(maxV, max(max(a, b), max(c, d)));
+		minV = min(minV, min(min(a, b), min(c, d)));
+	}
+
+	float min_max_diff = maxV - minV;
+
+	imageStore(dest_image, ssC, vec4(pow(clamp(min_max_diff * 2.0, 0.0, 1.0), 0.6)));
+#endif
+
+#ifdef PROCESS_MAPA
+	vec2 uv = (vec2(ssC) + 0.5) * params.half_screen_pixel_size * 2.0;
+
+	float center = textureLod(source_importance, uv, 0.0).x;
+
+	vec2 half_pixel = params.half_screen_pixel_size;
+
+	vec4 vals;
+	vals.x = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, -half_pixel.y), 0.0).x;
+	vals.y = textureLod(source_importance, uv + vec2(+half_pixel.x, -half_pixel.y * 3), 0.0).x;
+	vals.z = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, +half_pixel.y), 0.0).x;
+	vals.w = textureLod(source_importance, uv + vec2(-half_pixel.x, +half_pixel.y * 3), 0.0).x;
+
+	float avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));
+
+	imageStore(dest_image, ssC, vec4(avg));
+#endif
+
+#ifdef PROCESS_MAPB
+	vec2 uv = (vec2(ssC) + 0.5f) * params.half_screen_pixel_size * 2.0;
+
+	float center = textureLod(source_importance, uv, 0.0).x;
+
+	vec2 half_pixel = params.half_screen_pixel_size;
+
+	vec4 vals;
+	vals.x = textureLod(source_importance, uv + vec2(-half_pixel.x, -half_pixel.y * 3), 0.0).x;
+	vals.y = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, -half_pixel.y), 0.0).x;
+	vals.z = textureLod(source_importance, uv + vec2(+half_pixel.x, +half_pixel.y * 3), 0.0).x;
+	vals.w = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, +half_pixel.y), 0.0).x;
+
+	float avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));
+
+	imageStore(dest_image, ssC, vec4(avg));
+
+	// sum the average; to avoid overflowing we assume max AO resolution is not bigger than 16384x16384; so quarter res (used here) will be 4096x4096, which leaves us with 8 bits per pixel
+	uint sum = uint(clamp(avg, 0.0, 1.0) * 255.0 + 0.5);
+
+	// save every 9th to avoid InterlockedAdd congestion - since we&#x27;re blurring, this is good enough; compensated by multiplying load_counter_avg_div by 9
+	if (((ssC.x % 3) + (ssC.y % 3)) == 0) {
+		atomicAdd(counter.sum, sum);
+	}
+#endif
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                    <div class="right-column"><div class="spoiler">
+                    <button class="spoiler-toggle" onclick="toggleSpoiler('opt-pass-3')">
+                        <span class="shader-title">Optimized — ssil_importance_map</span>
+                    </button>
+                    <div id="opt-pass-3" class="spoiler-content">
+                        <button class="copy-button" onclick="copyToClipboard('opt-pass-code-3')">Copy</button>
+                        <div class="code-block" id="opt-pass-code-3"><pre><code class="language-glsl">///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016, Intel Corporation
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2016-09-07: filip.strugar@intel.com: first commit
+// 2020-12-05: clayjohn: convert to Vulkan and Godot
+// 2021-05-27: clayjohn: convert SSAO to SSIL
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[compute]
+
+#version 450
+
+#VERSION_DEFINES
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+#ifdef GENERATE_MAP
+layout(set = 0, binding = 0) uniform sampler2DArray source_texture;
+#else
+layout(set = 0, binding = 0) uniform sampler2D source_importance;
+#endif
+layout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
+
+#ifdef PROCESS_MAPB
+layout(set = 2, binding = 0, std430) buffer Counter {
+	uint sum;
+}
+counter;
+#endif
+
+layout(push_constant, std430) uniform Params {
+	vec2 half_screen_pixel_size;
+	float intensity;
+	float pad;
+}
+params;
+
+void main() {
+	// Pixel being shaded
+	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+
+#ifdef GENERATE_MAP
+	// importance map stuff
+	uvec2 base_position = ssC * 2;
+
+	float avg = 0.0;
+	float minV = 1.0;
+	float maxV = 0.0;
+	for (int i = 0; i &lt; 4; i++) {
+		vec3 value_a = texelFetch(source_texture, ivec3(base_position, i), 0).rgb * params.intensity;
+		vec3 value_b = texelFetch(source_texture, ivec3(base_position, i) + ivec3(0, 1, 0), 0).rgb * params.intensity;
+		vec3 value_c = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 0, 0), 0).rgb * params.intensity;
+		vec3 value_d = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 1, 0), 0).rgb * params.intensity;
+
+		// Calculate luminance (black and white value)
+		float a = dot(value_a, vec3(0.2125, 0.7154, 0.0721));
+		float b = dot(value_b, vec3(0.2125, 0.7154, 0.0721));
+		float c = dot(value_c, vec3(0.2125, 0.7154, 0.0721));
+		float d = dot(value_d, vec3(0.2125, 0.7154, 0.0721));
+
+		maxV = max(maxV, max(max(a, b), max(c, d)));
+		minV = min(minV, min(min(a, b), min(c, d)));
+	}
+
+	float min_max_diff = maxV - minV;
+
+	imageStore(dest_image, ssC, vec4(pow(clamp(min_max_diff * 2.0, 0.0, 1.0), 0.6)));
+#endif
+
+#ifdef PROCESS_MAPA
+	vec2 uv = (vec2(ssC) + 0.5) * params.half_screen_pixel_size * 2.0;
+
+	float center = textureLod(source_importance, uv, 0.0).x;
+
+	vec2 half_pixel = params.half_screen_pixel_size;
+
+	vec4 vals;
+	vals.x = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, -half_pixel.y), 0.0).x;
+	vals.y = textureLod(source_importance, uv + vec2(+half_pixel.x, -half_pixel.y * 3), 0.0).x;
+	vals.z = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, +half_pixel.y), 0.0).x;
+	vals.w = textureLod(source_importance, uv + vec2(-half_pixel.x, +half_pixel.y * 3), 0.0).x;
+
+	float avg = (vals.x + vals.y + vals.z + vals.w) * 0.25;
+
+	imageStore(dest_image, ssC, vec4(avg));
+#endif
+
+#ifdef PROCESS_MAPB
+	vec2 uv = (vec2(ssC) + 0.5f) * params.half_screen_pixel_size * 2.0;
+
+	float center = textureLod(source_importance, uv, 0.0).x;
+
+	vec2 half_pixel = params.half_screen_pixel_size;
+
+	vec4 vals;
+	vals.x = textureLod(source_importance, uv + vec2(-half_pixel.x, -half_pixel.y * 3), 0.0).x;
+	vals.y = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, -half_pixel.y), 0.0).x;
+	vals.z = textureLod(source_importance, uv + vec2(+half_pixel.x, +half_pixel.y * 3), 0.0).x;
+	vals.w = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, +half_pixel.y), 0.0).x;
+
+	float avg = (vals.x + vals.y + vals.z + vals.w) * 0.25;
+
+	imageStore(dest_image, ssC, vec4(avg));
+
+	// sum the average; to avoid overflowing we assume max AO resolution is not bigger than 16384x16384; so quarter res (used here) will be 4096x4096, which leaves us with 8 bits per pixel
+	// save every 9th to avoid InterlockedAdd congestion - since we&#x27;re blurring, this is good enough; compensated by multiplying load_counter_avg_div by 9
+	if (((ssC.x % 3) + (ssC.y % 3)) == 0) {
+		uint sum = uint(clamp(avg, 0.0, 1.0) * 255.0 + 0.5);
+		atomicAdd(counter.sum, sum);
+	}
+#endif
+}
+</code></pre></div>
+                    </div>
+                </div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Generation History</h2>
+            <table>
+            <thead><tr><th>Gen</th><th>Render Time (ms)</th><th>Relative Time</th><th>Speedup</th><th>Max Error</th><th>Media</th></tr></thead>
+            <tbody><tr><td>11</td><td>2.4330</td><td>0.6028</td><td>1.66x</td><td>0.106474</td><td>Yes</td></tr><tr><td>10</td><td>2.4330</td><td>0.6028</td><td>1.66x</td><td>0.106474</td><td>Yes</td></tr><tr><td>9</td><td>2.4330</td><td>0.6028</td><td>1.66x</td><td>0.106474</td><td>Yes</td></tr><tr><td>8</td><td>2.4330</td><td>0.6028</td><td>1.66x</td><td>0.106474</td><td>Yes</td></tr><tr><td>7</td><td>2.5157</td><td>0.6185</td><td>1.62x</td><td>0.166768</td><td>Yes</td></tr><tr><td>6</td><td>2.6121</td><td>0.6330</td><td>1.58x</td><td>0.124685</td><td>Yes</td></tr><tr><td>5</td><td>2.4979</td><td>0.6351</td><td>1.57x</td><td>0.099433</td><td>Yes</td></tr><tr><td>4</td><td>2.4979</td><td>0.6351</td><td>1.57x</td><td>0.099433</td><td>Yes</td></tr><tr><td>3</td><td>3.1230</td><td>0.7637</td><td>1.31x</td><td>0.072831</td><td>Yes</td></tr><tr><td>2</td><td>3.1230</td><td>0.7637</td><td>1.31x</td><td>0.072831</td><td>Yes</td></tr><tr><td>1</td><td>3.1632</td><td>0.7839</td><td>1.28x</td><td>0.072874</td><td>Yes</td></tr></tbody>
+        </table>
+        </div>
+    </div>
+
+    <script>
+    // ========== Utility Functions ==========
+    function toggleCode(elementId) {
+        var element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle('code-block-expanded');
+        }
+    }
+
+    function toggleSpoiler(id) {
+        var content = document.getElementById(id);
+        if (content) {
+            content.classList.toggle('active');
+        }
+    }
+
+    function copyToClipboard(elementId) {
+        var element = document.getElementById(elementId);
+        if (!element) return;
+        var text = element.textContent || element.innerText;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                showCopySuccess(event.target);
+            }).catch(function() {
+                fallbackCopy(text, event.target);
+            });
+        } else {
+            fallbackCopy(text, event.target);
+        }
+    }
+
+    function showCopySuccess(button) {
+        var orig = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#28a745';
+        setTimeout(function() { button.textContent = orig; }, 2000);
+    }
+
+    function fallbackCopy(text, button) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { if (document.execCommand('copy') && button) showCopySuccess(button); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    // ========== Performance Distribution Chart ==========
+    (function() {
+        var data = {"original": {"bin_edges": [1.4461, 1.6972, 1.9483, 2.1994, 2.4505, 2.7015, 2.9526, 3.2037, 3.4548, 3.7059, 3.957, 4.2081, 4.4591, 4.7102, 4.9613, 5.2124, 5.4635, 5.7146, 5.9657, 6.2167, 6.4678, 6.7189, 6.97, 7.2211, 7.4722, 7.7233, 7.9743, 8.2254, 8.4765, 8.7276, 8.9787], "density": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8715, 9.3682, 21.4597, 17.8649, 12.963, 9.4771, 8.3878, 7.6253, 5.4466, 3.268, 2.3965, 0.6536, 0.1089, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1089, 0.0], "mean": 4.125, "std": 0.63, "n": 918}, "optimized": {"bin_edges": [1.4461, 1.6972, 1.9483, 2.1994, 2.4505, 2.7015, 2.9526, 3.2037, 3.4548, 3.7059, 3.957, 4.2081, 4.4591, 4.7102, 4.9613, 5.2124, 5.4635, 5.7146, 5.9657, 6.2167, 6.4678, 6.7189, 6.97, 7.2211, 7.4722, 7.7233, 7.9743, 8.2254, 8.4765, 8.7276, 8.9787], "density": [0.0, 0.5208, 15.3646, 40.1042, 31.7708, 10.1562, 2.0833, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mean": 2.433, "std": 0.2271, "n": 384}};
+        var canvas = document.getElementById('perfChart');
+        if (!canvas || !data || !data.original || !data.original.bin_edges || !data.original.bin_edges.length) {
+            if (canvas) {
+                var ctx = canvas.getContext('2d');
+                var rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.fillStyle = '#999';
+                ctx.font = '13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No performance data available yet', rect.width / 2, rect.height / 2);
+            }
+            return;
+        }
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 20, right: 20, bottom: 40, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        // X range from bin edges
+        var allEdges = data.original.bin_edges.concat(data.optimized.bin_edges || []);
+        var xMin = Math.min.apply(null, allEdges);
+        var xMax = Math.max.apply(null, allEdges);
+        var xRange = xMax - xMin || 1;
+
+        // Y range from density values
+        var allDens = data.original.density.concat(data.optimized.density || []);
+        var yMax = Math.max.apply(null, allDens) * 1.15;
+        var yRange = yMax || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toY(v) { return pad.top + plotH - (v / yRange) * plotH; }
+
+        // Draw histogram bars
+        function drawHist(series, fillColor, strokeColor) {
+            var edges = series.bin_edges, dens = series.density;
+            if (!edges || !dens || dens.length === 0) return;
+
+            // Semi-transparent fill
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = fillColor;
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]), yBot = toY(0);
+                ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            }
+
+            // Bold border
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            var baseline = toY(0);
+            ctx.moveTo(toX(edges[0]), baseline);
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]);
+                ctx.lineTo(x1, yTop);
+                ctx.lineTo(x2, yTop);
+            }
+            ctx.lineTo(toX(edges[edges.length - 1]), baseline);
+            ctx.stroke();
+        }
+
+        // Draw mean line
+        function drawMean(series, color, label, yOffset) {
+            if (!series.mean) return;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.globalAlpha = 0.9;
+            var mx = toX(series.mean);
+            ctx.beginPath();
+            ctx.moveTo(mx, pad.top);
+            ctx.lineTo(mx, pad.top + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Label
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(series.mean.toFixed(2) + ' ms', mx, pad.top + yOffset);
+        }
+
+        var C_ORIG = '#8856a7', C_OPT = '#43a2ca', C_ARROW = '#2E7D32';
+
+        // Draw original behind optimized
+        drawHist(data.original, C_ORIG, C_ORIG);
+        drawHist(data.optimized, C_OPT, C_OPT);
+        drawMean(data.original, C_ORIG, 'Original', 12);
+        drawMean(data.optimized, C_OPT, 'Optimized', 24);
+
+        // Speedup arrow
+        if (data.original.mean && data.optimized.mean && data.original.mean > data.optimized.mean) {
+            var speedup = (data.original.mean / data.optimized.mean).toFixed(1);
+            var arrowY = pad.top + plotH * 0.25;
+            var x1 = toX(data.original.mean), x2 = toX(data.optimized.mean);
+            // Dashed arrow line
+            ctx.strokeStyle = C_ARROW;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.moveTo(x1, arrowY);
+            ctx.lineTo(x2 + 6, arrowY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Arrowhead
+            ctx.fillStyle = C_ARROW;
+            ctx.beginPath();
+            ctx.moveTo(x2, arrowY);
+            ctx.lineTo(x2 + 10, arrowY - 5);
+            ctx.lineTo(x2 + 10, arrowY + 5);
+            ctx.closePath();
+            ctx.fill();
+            // Label
+            var midX = (x1 + x2) / 2;
+            ctx.fillStyle = C_ARROW;
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(speedup + 'x', midX, arrowY - 8);
+        }
+
+        // Axes - left and bottom spines
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (density)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var numYTicks = 5;
+        for (var i = 0; i <= numYTicks; i++) {
+            var val = (yRange / numYTicks) * i;
+            var gy = pad.top + plotH - (plotH / numYTicks) * i;
+            ctx.fillText(val.toFixed(2), pad.left - 4, gy + 3);
+        }
+
+        // X-axis labels (render time ms)
+        ctx.textAlign = 'center';
+        var numXTicks = 6;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(Math.round(val), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Render Time (ms)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Legend
+        ctx.font = '11px sans-serif';
+        var legX = W - pad.right - 130, legY = pad.top + 14;
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_ORIG;
+        ctx.fillRect(legX, legY - 8, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_ORIG;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(legX, legY - 8, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText('Original (n=' + (data.original.n || '?') + ')', legX + 22, legY + 2);
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_OPT;
+        ctx.fillRect(legX, legY + 10, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_OPT;
+        ctx.strokeRect(legX, legY + 10, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.fillText('Optimized (n=' + (data.optimized.n || '?') + ')', legX + 22, legY + 20);
+    })();
+
+    // ========== Validation Frames Chart ==========
+    
+
+    // ========== Error Distribution Chart ==========
+    (function() {
+        var data = {"bin_edges": [0.0, 0.00375, 0.0075, 0.01125, 0.015, 0.01875, 0.0225, 0.02625, 0.03, 0.03375, 0.0375, 0.04125, 0.045, 0.04875, 0.0525, 0.05625, 0.06, 0.06375, 0.0675, 0.07125, 0.075, 0.07875, 0.0825, 0.08625, 0.09, 0.09375, 0.0975, 0.10125, 0.105, 0.10875, 0.1125, 0.11625, 0.12, 0.12375, 0.1275, 0.13125, 0.135, 0.13875, 0.1425, 0.14625, 0.15], "counts": [1.0753, 1.1947, 1.3142, 2.8674, 5.6153, 11.1111, 11.1111, 9.319, 9.4385, 9.08, 8.3632, 6.4516, 5.4958, 3.8232, 3.2258, 2.509, 1.3142, 1.5532, 1.0753, 0.5974, 0.5974, 0.9558, 0.3584, 0.2389, 0.5974, 0.3584, 0.2389, 0.0, 0.1195, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "threshold": 0.1, "exceedance_rate": 0.01, "n_total": 837, "k_exceedances": 2, "max_error": 0.106474, "mean_error": 0.035204};
+        var canvas = document.getElementById('errorDistChart');
+        if (!canvas || !data || !data.bin_edges || !data.bin_edges.length) return;
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 25, right: 20, bottom: 45, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        var edges = data.bin_edges;
+        var counts = data.counts;
+        var threshold = data.threshold;
+        var exRate = data.exceedance_rate;
+        var ratePct = exRate * 100;
+
+        // X range
+        var xMin = edges[0], xMax = edges[edges.length - 1];
+        var xRange = xMax - xMin || 1;
+
+        // Y range (log scale) — find min non-zero count for log floor
+        var minNonZero = Infinity;
+        for (var i = 0; i < counts.length; i++) {
+            if (counts[i] > 0 && counts[i] < minNonZero) minNonZero = counts[i];
+        }
+        if (minNonZero === Infinity) minNonZero = 0.1;
+        var yFloor = minNonZero * 0.3;
+        var yMax = 110; // slightly above 100%
+        var logMin = Math.log10(yFloor);
+        var logMax = Math.log10(yMax);
+        var logRange = logMax - logMin || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toLogY(v) {
+            if (v <= 0) return pad.top + plotH;
+            var lv = Math.log10(Math.max(v, yFloor));
+            return pad.top + plotH - ((lv - logMin) / logRange) * plotH;
+        }
+
+        var C_SAFE = '#43a2ca';
+        var C_EXCEED = '#dc3545';
+        var C_THRESH = '#e6550d';
+
+        // Draw histogram bars
+        for (var i = 0; i < counts.length; i++) {
+            var binLeft = edges[i], binRight = edges[i + 1];
+            var binMid = (binLeft + binRight) / 2;
+            var x1 = toX(binLeft), x2 = toX(binRight);
+            var yBot = pad.top + plotH;
+            var yTop = toLogY(counts[i]);
+            if (counts[i] <= 0) continue;
+
+            // Color: red if bin center >= threshold
+            var isExceed = binMid >= threshold;
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x1, yTop, x2 - x1, yBot - yTop);
+        }
+
+        // Rejection zone rectangle (threshold to xMax, ratePct to 100)
+        var rzX = toX(threshold);
+        var rzY = toLogY(100);
+        var rzW = toX(xMax) - rzX;
+        var rzH = toLogY(ratePct) - rzY;
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = C_EXCEED;
+        ctx.fillRect(rzX, rzY, rzW, rzH);
+        ctx.globalAlpha = 1.0;
+
+        // Threshold vertical line
+        ctx.strokeStyle = C_THRESH;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        ctx.moveTo(toX(threshold), pad.top);
+        ctx.lineTo(toX(threshold), pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Threshold label
+        ctx.fillStyle = C_THRESH;
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('FLIP Threshold = ' + threshold.toFixed(3), toX(threshold) + 4, pad.top + 12);
+
+        // Exceedance rate horizontal line
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        var rateY = toLogY(ratePct);
+        ctx.moveTo(toX(threshold), rateY);
+        ctx.lineTo(pad.left + plotW, rateY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(ratePct.toFixed(0) + '% exceedance rate', pad.left + plotW - 4, rateY - 4);
+
+        // Axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (log scale)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var yTicks = [0.01, 0.1, 1, 10, 100];
+        for (var i = 0; i < yTicks.length; i++) {
+            var val = yTicks[i];
+            if (val < yFloor || val > yMax) continue;
+            var gy = toLogY(val);
+            ctx.fillText(val < 1 ? val.toFixed(2) + '%' : val.toFixed(0) + '%', pad.left - 4, gy + 3);
+            // Grid line
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, gy);
+            ctx.lineTo(pad.left + plotW, gy);
+            ctx.stroke();
+        }
+
+        // X-axis labels
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        var numXTicks = 8;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(3), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('FLIP Error (p99)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Stats legend
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#333';
+        var legX = pad.left + 8, legY = pad.top + plotH - 40;
+        ctx.fillText('n=' + data.n_total + ', k=' + data.k_exceedances +
+            ', max=' + data.max_error.toFixed(4) +
+            ', mean=' + data.mean_error.toFixed(4), legX, legY);
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>NtlSDs - Generation 5</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.3; background: #f8f9fa; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 15px; }
+        .header { text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { color: #007acc; font-size: 1.8em; margin: 0; }
+        .header .info { color: #666; font-size: 0.9em; margin-top: 5px; }
+        .section { margin-bottom: 20px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .section h2 { color: #333; font-size: 1.2em; margin-bottom: 8px; border-bottom: 1px solid #007acc; padding-bottom: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 8px 0; }
+        .metric-card { background: white; padding: 8px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .metric-card h3 { font-size: 0.9em; margin-bottom: 4px; color: #333; }
+        .metric-value { font-size: 1.4em; font-weight: bold; color: #007acc; }
+        .metric-label { color: #666; font-size: 0.8em; }
+        .improvement { color: #28a745; }
+        .degradation { color: #dc3545; }
+        .neutral { color: #6c757d; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .video-container { text-align: center; margin: 10px 0; }
+        .video-container video { max-width: 100%; height: auto; border-radius: 4px; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .chart-container { width: 100%; height: 280px; position: relative; }
+        canvas { width: 100% !important; height: 100% !important; }
+        .correctness-details { margin-top: 8px; font-size: 0.85em; }
+        .correctness-item { display: flex; justify-content: space-between; margin: 2px 0; }
+        .correctness-label { color: #666; font-weight: 500; }
+        .correctness-value { font-weight: bold; }
+        .spoiler { margin: 10px 0; }
+        .spoiler-toggle { background: #007acc; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .spoiler-toggle:hover { background: #0056b3; }
+        .spoiler-content { display: none; margin-top: 8px; }
+        .spoiler-content.active { display: block; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 12px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; max-height: 300px; overflow: auto; border: 1px solid #4a5568; white-space: pre; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }
+        .code-block-expandable { max-height: 200px; overflow-y: auto; }
+        .code-block-expanded { max-height: 500px; }
+        .code-toggle { background: #4a5568; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-bottom: 5px; }
+        .code-toggle:hover { background: #2d3748; }
+        .code-container { position: relative; max-width: 100%; }
+        .two-column { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 10px; width: 100%; }
+        .left-column { border-right: 1px solid #ddd; padding-right: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .right-column { padding-left: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .compact-section { margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .fps-stats { margin-top: 4px; font-size: 0.8em; }
+        .fps-range { color: #007acc; font-weight: bold; }
+        .fps-std { color: #666; }
+        .improvement-details { margin-top: 4px; font-size: 0.8em; }
+        .improvement-details div { margin: 2px 0; }
+        .optimization-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+        .optimization-table th, .optimization-table td { border: 1px solid #ddd; padding: 8px; text-align: left; max-width: 400px; }
+        .optimization-table th { background: #f8f9fa; font-weight: bold; }
+        .optimization-table tr:nth-child(even) { background: #f9f9f9; }
+        .function-name { font-size: 0.85em; color: #666; margin-bottom: 4px; font-weight: 500; }
+        .function-name code { background: #f1f3f5; padding: 2px 6px; border-radius: 3px; color: #495057; font-family: 'Courier New', monospace; }
+        .optimization-types { display: flex; flex-wrap: wrap; gap: 4px; }
+        .optimization-type { background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 1.05em; }
+        .analysis-subcolumn { display: flex; flex-direction: column; gap: 8px; }
+        .explanation-text { font-size: 0.9em; line-height: 1.4; color: #333; }
+        .optimization-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+        .summary-card { background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .summary-value { font-size: 1.2em; font-weight: bold; color: #007acc; }
+        .summary-label { color: #666; font-size: 0.8em; }
+        .copy-button { background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-left: 5px; }
+        .copy-button:hover { background: #218838; }
+        .shader-header { display: flex; align-items: center; justify-content: space-between; }
+        .shader-title { flex: 1; }
+        .config-section { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; margin: 8px 0; }
+        .config-section pre { background: #2d3748; color: #e2e8f0; padding: 8px; border-radius: 4px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 10px; }
+        .file-links { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+        .file-link { background: #007acc; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; font-size: 0.8em; }
+        .file-link:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f9fa; color: #333; padding: 8px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #007acc; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f0f7ff; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .plot-container.narrow-plot { max-width: 33%; margin: 0 auto; }
+        .performance-plot { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 4px; object-fit: contain; }
+        .frame-comparison { display: flex; gap: 10px; margin: 10px 0; }
+        .frame-slider-container { margin: 10px 0; }
+        .frame-slider { width: 100%; }
+        .frame-images { display: flex; gap: 10px; }
+        .frame-image { max-width: 48%; border-radius: 4px; }
+        .frame-label { text-align: center; font-weight: bold; margin: 5px 0; font-size: 0.9em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 8px 0; }
+        .stat-item { background: white; padding: 6px; border-radius: 4px; border-left: 3px solid #28a745; text-align: center; }
+        .stat-value { font-size: 1.1em; font-weight: bold; color: #28a745; }
+        .stat-label { color: #666; font-size: 0.7em; }
+        .waiting-message { text-align: center; padding: 60px 20px; color: #666; font-size: 1.4em; }
+        .waiting-message .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #e9ecef; border-top: 4px solid #007acc; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Optimization Report - NtlSDs</h1>
+            <div class="info">Generation 5 | +56.5% Boost | 2026-04-05 17:01:39 | <span style="color: #28a745;">LLM: $3.24</span> | <span style="color: #fd7e14;">GPU: $0.78</span> | <span style="font-weight: bold;">Total: $4.02</span> | <a href="https://www.shadertoy.com/view/NtlSDs" target="_blank" style="color: #007acc; text-decoration: none;">Shadertoy</a></div>
+        </div>
+
+        
+
+        <div class="compact-section">
+            <div class="two-column">
+                <div class="left-column">
+                    
+        <h2>Performance Summary</h2>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Original</h3>
+                <div class="metric-value">7.875 ms</div>
+                <div class="metric-label">(127.0 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">119.7-135.5 FPS</div>
+                    <div class="fps-std">7.4-8.4 ms</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Optimized</h3>
+                <div class="metric-value">5.032 ms</div>
+                <div class="metric-label">(198.7 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">186.3-211.1 FPS</div>
+                    <div class="fps-std">4.7-5.4 ms</div>
+                </div>
+            </div>
+        </div>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Improvement</h3>
+                <div class="metric-value improvement">
+                    +2.844 ms
+                </div>
+                <div class="metric-label">(+36.1% | +71.8 FPS)</div>
+                <div class="improvement-details">
+                    <div>Mean: +2.8ms (+36.1%)</div>
+                    <div>Std: +0.1ms (+41.5%)</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Status</h3>
+                <div class="metric-value success">
+                    &#x2705; SUCCESS
+                </div>
+                <div class="correctness-details">
+                    <div class="correctness-item">
+                        <span class="correctness-label">Original Error:</span>
+                        <span class="correctness-value">0.000000</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Optimized Error:</span>
+                        <span class="correctness-value">0.009881</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Correctness:</span>
+                        <span class="correctness-value success">
+                            &#x2705; MAINTAINED
+                        </span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Difference:</span>
+                        <span class="correctness-value success">
+                            +0.009881
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+                <div class="right-column">
+            <h2>Performance Statistics</h2>
+            <div class="chart-container">
+                <canvas id="perfChart"></canvas>
+            </div>
+        </div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Video Comparison at the worst Primary Render Parameter Space sample</h2>
+            <div style="margin-bottom:12px;"><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Original</div><img src="generation_005/media/first_frame_original.png" style="max-width:400px; border:1px solid #333;"></div><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Optimized</div><img src="generation_005/media/first_frame_optimized.png" style="max-width:400px; border:1px solid #333;"></div></div>
+            <div class="video-container">
+                <video controls autoplay loop muted>
+                    <source src="generation_005/media/worst_merged.mp4?v=1775401297" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+        </div>
+
+        <div class="compact-section">
+            <h2>FLIP Error Distribution</h2>
+            <div class="chart-container" style="height: 320px;">
+                <canvas id="errorDistChart"></canvas>
+            </div>
+        </div>
+
+        
+
+        
+
+        <div class="compact-section">
+            <h2>Mutation Tree</h2>
+            <iframe id="mutation-tree-iframe" src="mutation_tree.html"
+                    style="width: 100%; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;"
+                    scrolling="no"></iframe>
+            <script>
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'mutation-tree-resize') {
+                    var iframe = document.getElementById('mutation-tree-iframe');
+                    if (!iframe) return;
+                    var newH = e.data.height, curH = parseInt(iframe.style.height) || 0;
+                    if (newH >= curH) {
+                        iframe.style.height = newH + 'px';
+                        clearTimeout(iframe._shrinkT);
+                    } else {
+                        clearTimeout(iframe._shrinkT);
+                        iframe._shrinkT = setTimeout(function() { iframe.style.height = newH + 'px'; }, 300);
+                    }
+                }
+            });
+            </script>
+        </div>
+
+        <div class="compact-section">
+            <h2>Optimization Diff</h2>
+            <div class="code-block" style="max-height:500px;overflow:auto;font-size:11px;line-height:1.5">
+<pre><span style="color:#586e75;font-weight:bold">--- NtlSDs_canonical_0.frag</span>
+<span style="color:#586e75;font-weight:bold">+++ NtlSDs_best_gen_004_0.frag</span>
+<span style="color:#268bd2;font-weight:bold">@@ -145,12 +145,12 @@</span>
+<span>     di = min( di, udSqBox( vec3((x-y3)*0.7071, (y3+x)*0.7071, z), vec3(0.10*0.7071,  0.10*0.7071, 0.14) ) );</span>
+<span>     di = min( di, udSqBox( vec3(x, (y3+z)*0.7071, (z-y3)*0.7071), vec3(0.14,  0.10*0.7071, 0.10*0.7071) ) );</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-    #if 1</span>
+<span style="color:#dc3545;background:#ffeef0">-    float fb = fbm(vec3(10.1*x+offx,10.1*y,10.1*z));</span>
+<span style="color:#dc3545;background:#ffeef0">-    if( fb&gt;0.0 )</span>
+<span style="color:#dc3545;background:#ffeef0">-        di = di + 0.00000003*fb;</span>
+<span style="color:#dc3545;background:#ffeef0">-    #endif</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#28a745;background:#e6ffed">+    // Optimization: The FBM noise is extremely expensive relative to the SDF.</span>
+<span style="color:#28a745;background:#e6ffed">+    // Since the perturbation magnitude (0.00000003*fb) is effectively </span>
+<span style="color:#28a745;background:#e6ffed">+    // negligible (orders of magnitude below typical float precision limits </span>
+<span style="color:#28a745;background:#e6ffed">+    // at this scale) and visually imperceptible, we can safely skip the </span>
+<span style="color:#28a745;background:#e6ffed">+    // FBM entirely to gain significant performance.</span>
+<span style="color:#28a745;background:#e6ffed">+    </span>
+<span>     return sqrt(di);</span>
+<span> }</span>
+<span> </span>
+<span style="color:#268bd2;font-weight:bold">@@ -565,4 +565,4 @@</span>
+<span>     col /= float(AA*AA);</span>
+<span> #endif</span>
+<span>     fragColor = vec4(col,1.0);</span>
+<span style="color:#dc3545;background:#ffeef0">-}</span>
+<span style="color:#28a745;background:#e6ffed">+}</span></pre>
+</div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Shader Code</h2>
+            <div class="two-column">
+                <div class="left-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('original-code')">
+                    <span class="shader-title">Original Shader</span>
+                </button>
+                <div id="original-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('original-code-content')">Copy</button>
+                    <div class="code-block" id="original-code-content"><pre><code class="language-glsl">// Copyright Inigo Quilez, 2021 - https://iquilezles.org/
+// I am the sole copyright owner of this Work.
+// You cannot host, display, distribute or share this Work neither
+// as it is or altered, here on Shadertoy or anywhere else, in any
+// form including physical and digital. You cannot use this Work in any
+// commercial or non-commercial product, website or project. You cannot
+// sell this Work and you cannot mint an NFTs of it or train a neural
+// network with it without permission. I share this Work for educational
+// purposes, and you can link to it, through an URL, proper attribution
+// and unmodified screenshot, as part of your educational material. If
+// these conditions are too restrictive please contact me and we&#x27;ll
+// definitely work it out.
+// -------------------------------------------------------
+
+// I made this shader in 2008 for the Euskal Party
+// competition in Spain. The original Pouet entry is 
+// here: https://www.pouet.net/prod.php?which=51074
+
+// It&#x27;s a raymarched SDF, and while I had raymarched some
+// fractal SDFs back in 2005, this was the first time I
+// used the technique to produce art-directed content and
+// &quot;paint with maths&quot; (as opposed to doing &quot;mathematical art&quot;).
+
+// This is also the shader where I first used the now
+// popular ambient occlusion estimation. You&#x27;ll also find
+// my first attemtps at smooth-minumum (used to blend the
+// creature&#x27;s head and tentacles together), and soft 
+// shadows (still not as good as the ones we use today).
+// You&#x27;ll find most of the other usual Shadertoy/raymarching
+// stuff - domain repetition, Value Noise, box SDFs and of
+// course the raymarching machinery.
+
+// Surprisngly, copying the code from my original project
+// to Shadertoy here required very little modifications.
+
+
+#define AA 1
+
+#define ZERO min(iFrame,0)
+
+float dot2( in vec3 v ) { return dot(v,v); }
+
+// https://iquilezles.org/articles/sfrand
+float sfrand( inout int mirand )
+{
+    mirand = mirand*0x343fd+0x269ec3;
+    float res = uintBitsToFloat((uint(mirand)&gt;&gt;9)|0x40000000u ); 
+    return( res-3.0 );
+}
+
+// hash by Hugo Elias
+uint ihash( uint n )
+{
+	n = (n &lt;&lt; 13) ^ n;
+    n = (n*(n*n*15731u+789221u)+1376312589u)&amp;0x7fffffffu;
+    return n;
+}
+
+// hash by Hugo Elias
+float hash( int n )
+{
+	n = (n &lt;&lt; 13) ^ n;
+    n = (n*(n*n*15731+789221)+1376312589)&amp;0x7fffffff;
+    return 1.0 - float(n)*(1.0/1073741824.0);
+}
+
+float noise( vec3 p )
+{
+	ivec3 ip = ivec3(floor(p));
+     vec3 fp = fract(p);
+
+    vec3 w = fp*fp*(3.0-2.0*fp);
+    
+    int n = ip.x + ip.y*57 + 113*ip.z;
+
+	return mix(mix(mix( hash(n+(0+57*0+113*0)),
+                        hash(n+(1+57*0+113*0)),w.x),
+                   mix( hash(n+(0+57*1+113*0)),
+                        hash(n+(1+57*1+113*0)),w.x),w.y),
+               mix(mix( hash(n+(0+57*0+113*1)),
+                        hash(n+(1+57*0+113*1)),w.x),
+                   mix( hash(n+(0+57*1+113*1)),
+                        hash(n+(1+57*1+113*1)),w.x),w.y),w.z);
+}
+
+// https://iquilezles.org/articles/fbm
+float fbm( vec3 p )
+{
+#if 0
+    // original code
+    return 0.5000*noise( p*1.0 ) + 
+           0.2500*noise( p*2.0 ) + 
+           0.1250*noise( p*4.0 ) +
+           0.0625*noise( p*8.0 );
+#else
+    // equivalent code, but compiles MUCH faster
+    float f = 0.0;
+    float s = 0.5;
+    for( int i=ZERO; i&lt;4; i++ )
+    {
+        f += s*noise( p );
+        s *= 0.5;
+        p *= 2.0;
+    }
+    return f;
+#endif
+}
+
+// https://iquilezles.org/articles/distfunctions
+float sdBox( in vec3 p, in vec3 b ) 
+{
+    vec3 q = abs(p) - b;
+    return min(max(q.x,max(q.y,q.z)),0.0) + length(max(q,0.0));
+}
+
+// https://iquilezles.org/articles/distfunctions
+float udSqBox( vec3 p, vec3 b )
+{
+	float di = 0.0;
+	float dx = abs(p.x)-b.x; if( dx&gt;0.0 ) di+=dx*dx;
+    float dy = abs(p.y)-b.y; if( dy&gt;0.0 ) di+=dy*dy;
+    float dz = abs(p.z)-b.z; if( dz&gt;0.0 ) di+=dz*dz;
+    return di;
+}
+
+//-------------------------------------------------------------------------------
+
+float columna( vec3 pos, float offx )
+{
+    float x = pos.x;
+    float y = pos.y;
+    float z = pos.z;
+    
+	float y2=y-0.40;
+    float y3=y-0.35;
+    float y4=y-1.00;
+
+    float di =    udSqBox( vec3(x, y , z), vec3(0.10, 1.00, 0.10) );
+    di = min( di, udSqBox( vec3(x, y , z), vec3(0.12, 0.40, 0.12) ) );
+    di = min( di, udSqBox( vec3(x, y , z), vec3(0.05, 0.35, 0.14) ) );
+    di = min( di, udSqBox( vec3(x, y , z), vec3(0.14, 0.35, 0.05) ) );
+    di = min( di, udSqBox( vec3(x, y4, z), vec3(0.14, 0.02, 0.14) ) );
+    di = min( di, udSqBox( vec3((x-y2)*0.7071, (y2+x)*0.7071, z), vec3(0.10*0.7071,  0.10*0.7071, 0.12) ) );
+    di = min( di, udSqBox( vec3(x, (y2+z)*0.7071, (z-y2)*0.7071), vec3(0.12,  0.10*0.7071, 0.1*0.7071) ) );
+    di = min( di, udSqBox( vec3((x-y3)*0.7071, (y3+x)*0.7071, z), vec3(0.10*0.7071,  0.10*0.7071, 0.14) ) );
+    di = min( di, udSqBox( vec3(x, (y3+z)*0.7071, (z-y3)*0.7071), vec3(0.14,  0.10*0.7071, 0.10*0.7071) ) );
+
+    #if 1
+    float fb = fbm(vec3(10.1*x+offx,10.1*y,10.1*z));
+    if( fb&gt;0.0 )
+        di = di + 0.00000003*fb;
+    #endif
+
+    return sqrt(di);
+}
+
+float bicho( vec3 pos, float mindist )
+{
+    pos -= vec3(0.64,0.50,1.5);
+    
+    float r2 = dot2(pos);
+
+	float sa = smoothstep(0.0,0.5,r2);
+    pos *= vec3(0.75,0.80,0.75) + sa*vec3(0.25,0.20,0.25);
+    r2 = dot2(pos);
+
+    if( r2&gt;5.0 ) return mindist;
+    if( pos.y &gt;0.5 ) return mindist;
+	if( pos.y&gt;-0.2 &amp;&amp; dot(pos.xz,pos.xz)&gt;0.6 ) return mindist;
+    if( r2&gt;(1.7+mindist)*(1.7+mindist)  ) return mindist;	// algo ayuda, poco, pero algo oiga
+
+	float r = sqrt(r2);
+
+	if( r&lt;0.75 )
+    {
+	float a1 = 1.0-smoothstep( 0.0, 0.75, r );
+	a1 *= 0.6;
+	vec2 sico = vec2( sin(a1), cos(a1) );
+	float nx = pos.x;
+	float ny = pos.y;
+	pos.x = nx*sico.y - ny*sico.x;
+	pos.y = nx*sico.x + ny*sico.y;
+    }
+	#define TENTACURA 0.045
+	float mindist2 = 100000.0;
+    vec3  p = pos;
+	float rr = 0.05+length(pos.xz);
+	float ca = (0.5-TENTACURA*0.75) -6.0*rr*exp2(-10.0*rr);
+    for( int j=1+ZERO; j&lt;7; j++ )
+	{
+		float an = (6.2831/7.0) * float(j);
+		float aa = an + 0.40*rr*noise(vec3(4.0*rr, 2.5, an)) + 0.29;
+		float rc = cos(aa);
+        float rs = sin(aa);
+		vec3 q = vec3( p.x*rc-p.z*rs, p.y+ca, p.x*rs+p.z*rc );
+		float dd = dot(q.yz,q.yz);
+		if( q.x&gt;0.0 &amp;&amp; q.x&lt;1.5 &amp;&amp; dd&lt;mindist2 ) mindist2=dd;
+	}
+	float dtentacles = sqrt(mindist2) - TENTACURA;
+
+    // proto-smooth-minimum
+	float dhead = r-0.15;
+
+    float h = clamp( r*3.0, 0.0, 1.0 );
+    return mix(dhead-0.15,dtentacles,h);
+}
+
+float techo2( float x, float y, float z )
+{
+    y = 1.0 - y;
+    x = x - 0.5;
+    z = z - 0.5;
+    return 0.4 - sqrt(y*y+min(x*x,z*z) );
+}
+
+float map( vec3 pos, out uint sid, out uint submat )
+{
+    submat = 0u;
+    float mindist;
+    
+    //-----------------------
+    // suelo
+    //-----------------------
+    {
+	float dis = pos.y;
+	
+	float ax = 128.0 + (pos.x+pos.z)*6.0;
+	float az = 128.0 + (pos.x-pos.z)*6.0;
+    uint ix = uint(floor(ax));
+    uint iz = uint(floor(az));
+    submat = ihash(ix+53u*iz);
+    bool ba = ( ((submat&gt;&gt;10)&amp;7u)&gt;6u );
+    float peld = max(fract(ax),fract(az));
+    peld = smoothstep( 0.975, 1.0, peld );
+    if( ba ) peld = 1.0;
+    dis += 0.005*peld;
+	mindist = dis;
+    if( peld&gt;0.0000001 ) sid = 2u; else sid = 0u;
+    }
+    
+    //-----------------------
+    // techo
+    //-----------------------
+	if( pos.y&gt;1.0 ) 
+    {
+        float dis = techo2( fract(pos.x), pos.y, fract(pos.z) );
+        if( dis&lt;mindist )
+        {
+            mindist = dis;
+            sid = 5u;
+        }
+    }
+
+    //-----------------------
+    // columnas
+    //-----------------------
+    {
+	vec3 fc = vec3(fract( pos.x+0.5 )-0.5, pos.y,
+	               fract( pos.z+0.5 )-0.5);
+    float bb = udSqBox( fc, vec3(0.14, 1.0, 0.14) );
+    if( bb &lt; mindist*mindist )
+    {
+        float dis = columna( fc, 13.1*floor(pos.x)+17.7*floor(pos.z) );
+        if( dis&lt;mindist )
+        {
+            mindist = dis;
+            sid = 1u;
+        }
+    }
+    }
+    
+    //-----------------------
+    // bicho
+    //-----------------------
+    //if( length( pos-vec3(0.64,-2.1,1.5) ) - 2.8 &lt; mindist )
+    if( dot2( pos-vec3(0.64,-2.1,1.5) ) &lt; (mindist+2.8)*(mindist+2.8) )
+    {
+    float dis = bicho( pos, mindist );
+    if( dis&lt;mindist )
+    {   
+        mindist = dis;
+        sid = 4u;
+    }
+    }
+
+    //-----------------------
+    // baldosas
+    //-----------------------
+    if( pos.y-0.02 &lt; mindist )
+	{
+	int kkr = 65535;
+    for( int i=ZERO; i&lt;10; i++ )
+    {
+        float a = 3.14*sfrand(kkr);
+        float co = cos(a);
+        float si = sin(a);
+        float xc = pos.x - (0.5 + 1.5*sfrand(kkr));
+        float zc = pos.z - (1.0 + 1.0*sfrand(kkr));
+        float xo = xc*co-si*zc;
+        float zo = zc*co+si*xc;
+        float dis = sdBox( vec3(xo, pos.y-0.008, zo), vec3(0.07, 0.008, 0.07) );
+        if( dis &lt; mindist ) 
+        {
+            mindist = dis;
+            sid = 1u;
+        }
+    }
+	}
+    
+    return mindist;
+}
+
+void raycast( vec3 ro, vec3 rd, float to, float tMax, out float resT, out vec3 resPos, out uint resSurface, out uint submat )
+{
+    float t = to;
+    for( int i=ZERO; i&lt;256; i++ )
+	{
+        resPos = ro + t*rd;
+		float h = map( resPos, resSurface, submat );
+		if( h&lt;0.0001 )
+		{
+		    resT = t;
+			return;
+		}
+        t += h*0.75;
+        if( t&gt;tMax ) break;
+	}
+    resSurface = 666u;
+}
+
+vec3 calcNormal( vec3 pos )
+{
+#if 0
+    // original code
+    const float eps = 0.0002;
+    uint kk, kk2;
+    vec3 nor = vec3(
+      map( pos.x+eps, pos.y, pos.z, kk, kk2 ) - map( pos.x-eps, pos.y, pos.z, kk, kk2 ),
+      map( pos.x, pos.y+eps, pos.z, kk, kk2 ) - map( pos.x, pos.y-eps, pos.z, kk, kk2 ),
+      map( pos.x, pos.y, pos.z+eps, kk, kk2 ) - map( pos.x, pos.y, pos.z-eps, kk, kk2 ));
+    return normalize(nor);
+#else
+    // inspired by tdhooper and klems - a way to prevent the compiler from inlining map() 4 times
+    vec3 n = vec3(0.0);
+    for( int i=ZERO; i&lt;4; i++ )
+    {
+        uint kk, kk2;
+        vec3 e = 0.5773*(2.0*vec3((((i+3)&gt;&gt;1)&amp;1),((i&gt;&gt;1)&amp;1),(i&amp;1))-1.0);
+        n += e*map(pos+0.0002*e, kk, kk2);
+        if( n.x+n.y+n.z&gt;100.0 ) break;
+    }
+    return normalize(n);
+#endif    
+}
+
+vec3 shade( vec3 pos, vec3 rd, uint matID, uint subMatID, float dis )
+{
+    if( matID==666u ) return vec3(0.0,0.0,0.0);
+
+    vec3 col = vec3(0.1*dis);
+
+    // calc normal
+    vec3 nor = calcNormal( pos );
+
+    // bump mapping
+    #if 1
+    const float kke = 0.0001;
+    float bumpa = 0.0075;
+	if( matID!=5u ) bumpa *= 0.75;
+    if( matID==4u ) bumpa *= 0.50;
+    bumpa /= kke;
+    float kk = fbm( 32.0*pos );
+    nor.x += bumpa*(fbm( 32.0*vec3(pos.x+kke, pos.y, pos.z) )-kk);
+    nor.y += bumpa*(fbm( 32.0*vec3(pos.x, pos.y+kke, pos.z) )-kk);
+    nor.z += bumpa*(fbm( 32.0*vec3(pos.x, pos.y, pos.z+kke) )-kk);
+    nor = normalize(nor);
+    #endif
+
+
+    // light
+	float spe = 0.0;
+    vec3 lig = vec3( 0.5, 0.8, 1.5 ) - pos;
+    float llig = dot2(lig);
+    float im = 1.0/sqrt(llig);
+    lig *= im;
+    float dif = dot( nor, lig ); 
+    if( matID==4u )
+        dif = 0.5+0.5*dif;
+    else
+        dif = 0.10+0.90*dif;
+    dif = max( dif, 0.0 );
+	dif *= 2.5*exp2( -1.75*llig );
+	float dif2 = (nor.x+nor.y)*0.075;
+
+    // materials
+    if( matID==0u )
+    {
+        float xoff = 13.1 * float(subMatID&amp;255u);
+        float fb = fbm( 16.0*vec3(pos.x+xoff, pos.y, pos.z) );
+
+        col = 0.7 + vec3(0.20,0.22,0.25)*fb;
+
+        float baldscale = float((subMatID&gt;&gt;9)&amp;15u)/14.0;
+        baldscale = 0.51 + 0.34*baldscale;
+        col *= baldscale;
+        float fx = 1.0;
+        if( (subMatID&amp;256u)!=0u ) fx = -1.0;
+        float m = sin( 64.0*pos.z*fx +  64.0*pos.x + 4.0*fb );
+        m = smoothstep( 0.25, 0.5, m ) - smoothstep( 0.5, 0.75, m );
+
+        col += m*0.15;
+    }
+    else if( matID==2u )
+    {
+        col = vec3(0.0,0.0,0.0);
+    }
+    else if( matID==1u )
+    {
+        float fb = fbm( 16.0*pos );
+        float m = sin( 64.0*pos.z +  64.0*pos.x + 4.0*fb );
+        m = smoothstep( 0.3, 0.5, m ) - smoothstep( 0.5, 0.7, m );
+        col = 0.59 + fb*vec3(0.17,0.18,0.21) + m*0.15 + dif2;
+    }   
+    else if( matID==4u )
+    {
+        float ft = fbm( 16.0*pos );
+        col = vec3(0.82,0.73,0.65) + ft*vec3(0.10,0.10,0.15);
+        float fs = 0.90+0.10*fbm( 32.0*pos );
+        col *= fs;
+
+        float fre = -dot( nor, rd );
+        if( fre&lt;0.0 ) fre=0.0;
+        fre = fre*fre*0.45;
+        col -= fre;
+
+		spe = (nor.y-nor.z)*0.707;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe *= 0.20;
+     }   
+    // techo
+    else //if( matID==5 )
+    {
+        float fb = fbm( 16.0*pos );
+        col = vec3(0.64,0.61,0.59) + fb*vec3(0.21,0.19,0.19) + dif2;
+    }   
+
+    // AO
+    float ao;
+    #if 1
+    float totao = 0.0;
+    float sca = 10.0;
+    for( int aoi=ZERO; aoi&lt;5; aoi++ )
+    {
+        float hr = 0.01 + 0.015*float(aoi*aoi);
+        vec3 aopos = pos + hr*nor;
+        uint kk, kk2;
+        float dd = map( aopos, kk, kk2 );
+        ao = -(dd-hr);
+        totao += ao*sca;
+        sca *= 0.5;
+        //if( totao&gt;1000.0+sin(iTime) ) break;
+    }
+    ao = 1.0 - clamp( totao, 0.0, 1.0 );
+    #else
+    ao = 1.0;
+    #endif
+
+    // shadow
+    #if 1
+    float so = 0.0;
+	for( int i=ZERO; i&lt;6; i++ )
+    {
+		float h = float(i)/6.0;
+        float hr = 0.01 + 1.0*h;
+        vec3 aopos = pos + hr*lig;
+        uint kk, kk2;
+        float dd = map( aopos, kk, kk2 );
+        so += (1.0-h)*dd*20.0/6.0;
+        //if( so&gt;1000.0+iTime ) break;
+    }
+    dif *= clamp( (so-0.40)*1.5, 0.0, 1.0 );
+    #endif
+
+    // shade
+	float ao2 = 0.05 + 0.95*ao;
+    col *= vec3(0.25,0.30,0.35)*ao + dif*ao2*vec3(1.95,1.65,1.05);
+    col += spe;
+    col *= exp2( -0.40*pos.z );
+
+    return col;
+}
+
+vec3 post( vec3 col, vec2 p )
+{
+    // flare
+	float rr = (p.x+0.10)*(p.x+0.10) + (p.y-0.40)*(p.y-0.40);
+    col += vec3( 1.0, 0.95, 0.90 )*0.75*exp2( -64.0*rr );
+
+    // color correct
+    col = sqrt(col)*0.3 + 0.7*col;
+    col *= vec3(0.83,1.00,0.83);
+
+    // vignetting
+    col *= 0.25 + 0.75*clamp( 0.60*abs(p.x-1.77)*abs(p.x+1.77), 0.0, 1.0 );
+    
+    return clamp( col, 0.0, 1.0 );
+}
+
+vec3 computePixel( vec2 p, vec2 res, float time )
+{
+    vec2 s = (2.0*p-res)/res.y;
+    
+    // fisheye distortion
+    float r2 = s.x*s.x*0.32 + s.y*s.y;
+	float tt = (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+
+    // create camera and ray
+    vec2 d = s*tt;
+#if 0
+    vec3 ro = vec3( 0.195, 0.5, 0.0 );
+	vec3 rd = normalize( vec3( d.x*0.955336 + 0.29552, d.y, 0.955336 - d.x*0.29552 ) );
+#else
+    float an = 4.4 + 0.2*sin(0.4*time);
+    vec3 ta = vec3(0.64,0.50,1.5);
+    vec3 ro = ta + 1.55*vec3( cos(an), 0.0, sin(an));
+    vec3 ww = normalize( ta-ro );
+    vec3 vv = vec3(0.0,1.0,0.0);
+    vec3 uu = normalize(cross(vv,ww));
+    vec3 rd = normalize( uu*d.x + vv*d.y + 1.0*ww );
+#endif
+	float t;
+	uint matID, sumMatID;
+	vec3 xyz;
+    
+    // raycast
+	raycast( ro, rd, 0.5, 24.0, t, xyz, matID, sumMatID );
+    
+    // shade
+	vec3 col = shade(  xyz, rd, matID, sumMatID, t  );
+    
+    // postprocess
+	col = post( col, s );
+
+	return col;
+}
+
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+#if AA&lt;2    
+    vec3 col = computePixel(fragCoord, iResolution.xy, iTime );
+#else
+    vec3 col = vec3(0.0);
+    for( int j=0; j&lt;AA; j++ )
+    for( int i=0; i&lt;AA; i++ )
+    {
+        vec2 of = vec2(i,j)/float(AA);
+        float time = iTime + (0.5/30.0)*float(j*AA+i)/float(AA*AA);
+        col += computePixel(fragCoord+of, iResolution.xy, time );
+    }
+    col /= float(AA*AA);
+#endif
+    fragColor = vec4(col,1.0);
+}</code></pre></div>
+                </div>
+            </div></div>
+                <div class="right-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('optimized-code')">
+                    <span class="shader-title">Optimized Shader</span>
+                </button>
+                <div id="optimized-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('optimized-code-content')">Copy</button>
+                    <div class="code-block" id="optimized-code-content"><pre><code class="language-glsl">// Copyright Inigo Quilez, 2021 - https://iquilezles.org/
+// I am the sole copyright owner of this Work.
+// You cannot host, display, distribute or share this Work neither
+// as it is or altered, here on Shadertoy or anywhere else, in any
+// form including physical and digital. You cannot use this Work in any
+// commercial or non-commercial product, website or project. You cannot
+// sell this Work and you cannot mint an NFTs of it or train a neural
+// network with it without permission. I share this Work for educational
+// purposes, and you can link to it, through an URL, proper attribution
+// and unmodified screenshot, as part of your educational material. If
+// these conditions are too restrictive please contact me and we&#x27;ll
+// definitely work it out.
+// -------------------------------------------------------
+
+// I made this shader in 2008 for the Euskal Party
+// competition in Spain. The original Pouet entry is 
+// here: https://www.pouet.net/prod.php?which=51074
+
+// It&#x27;s a raymarched SDF, and while I had raymarched some
+// fractal SDFs back in 2005, this was the first time I
+// used the technique to produce art-directed content and
+// &quot;paint with maths&quot; (as opposed to doing &quot;mathematical art&quot;).
+
+// This is also the shader where I first used the now
+// popular ambient occlusion estimation. You&#x27;ll also find
+// my first attemtps at smooth-minumum (used to blend the
+// creature&#x27;s head and tentacles together), and soft 
+// shadows (still not as good as the ones we use today).
+// You&#x27;ll find most of the other usual Shadertoy/raymarching
+// stuff - domain repetition, Value Noise, box SDFs and of
+// course the raymarching machinery.
+
+// Surprisngly, copying the code from my original project
+// to Shadertoy here required very little modifications.
+
+
+#define AA 1
+
+#define ZERO min(iFrame,0)
+
+float dot2( in vec3 v ) { return dot(v,v); }
+
+// https://iquilezles.org/articles/sfrand
+float sfrand( inout int mirand )
+{
+    mirand = mirand*0x343fd+0x269ec3;
+    float res = uintBitsToFloat((uint(mirand)&gt;&gt;9)|0x40000000u ); 
+    return( res-3.0 );
+}
+
+// hash by Hugo Elias
+uint ihash( uint n )
+{
+	n = (n &lt;&lt; 13) ^ n;
+    n = (n*(n*n*15731u+789221u)+1376312589u)&amp;0x7fffffffu;
+    return n;
+}
+
+// hash by Hugo Elias
+float hash( int n )
+{
+	n = (n &lt;&lt; 13) ^ n;
+    n = (n*(n*n*15731+789221)+1376312589)&amp;0x7fffffff;
+    return 1.0 - float(n)*(1.0/1073741824.0);
+}
+
+float noise( vec3 p )
+{
+	ivec3 ip = ivec3(floor(p));
+     vec3 fp = fract(p);
+
+    vec3 w = fp*fp*(3.0-2.0*fp);
+    
+    int n = ip.x + ip.y*57 + 113*ip.z;
+
+	return mix(mix(mix( hash(n+(0+57*0+113*0)),
+                        hash(n+(1+57*0+113*0)),w.x),
+                   mix( hash(n+(0+57*1+113*0)),
+                        hash(n+(1+57*1+113*0)),w.x),w.y),
+               mix(mix( hash(n+(0+57*0+113*1)),
+                        hash(n+(1+57*0+113*1)),w.x),
+                   mix( hash(n+(0+57*1+113*1)),
+                        hash(n+(1+57*1+113*1)),w.x),w.y),w.z);
+}
+
+// https://iquilezles.org/articles/fbm
+float fbm( vec3 p )
+{
+#if 0
+    // original code
+    return 0.5000*noise( p*1.0 ) + 
+           0.2500*noise( p*2.0 ) + 
+           0.1250*noise( p*4.0 ) +
+           0.0625*noise( p*8.0 );
+#else
+    // equivalent code, but compiles MUCH faster
+    float f = 0.0;
+    float s = 0.5;
+    for( int i=ZERO; i&lt;4; i++ )
+    {
+        f += s*noise( p );
+        s *= 0.5;
+        p *= 2.0;
+    }
+    return f;
+#endif
+}
+
+// https://iquilezles.org/articles/distfunctions
+float sdBox( in vec3 p, in vec3 b ) 
+{
+    vec3 q = abs(p) - b;
+    return min(max(q.x,max(q.y,q.z)),0.0) + length(max(q,0.0));
+}
+
+// https://iquilezles.org/articles/distfunctions
+float udSqBox( vec3 p, vec3 b )
+{
+	float di = 0.0;
+	float dx = abs(p.x)-b.x; if( dx&gt;0.0 ) di+=dx*dx;
+    float dy = abs(p.y)-b.y; if( dy&gt;0.0 ) di+=dy*dy;
+    float dz = abs(p.z)-b.z; if( dz&gt;0.0 ) di+=dz*dz;
+    return di;
+}
+
+//-------------------------------------------------------------------------------
+
+float columna( vec3 pos, float offx )
+{
+    float x = pos.x;
+    float y = pos.y;
+    float z = pos.z;
+    
+	float y2=y-0.40;
+    float y3=y-0.35;
+    float y4=y-1.00;
+
+    float di =    udSqBox( vec3(x, y , z), vec3(0.10, 1.00, 0.10) );
+    di = min( di, udSqBox( vec3(x, y , z), vec3(0.12, 0.40, 0.12) ) );
+    di = min( di, udSqBox( vec3(x, y , z), vec3(0.05, 0.35, 0.14) ) );
+    di = min( di, udSqBox( vec3(x, y , z), vec3(0.14, 0.35, 0.05) ) );
+    di = min( di, udSqBox( vec3(x, y4, z), vec3(0.14, 0.02, 0.14) ) );
+    di = min( di, udSqBox( vec3((x-y2)*0.7071, (y2+x)*0.7071, z), vec3(0.10*0.7071,  0.10*0.7071, 0.12) ) );
+    di = min( di, udSqBox( vec3(x, (y2+z)*0.7071, (z-y2)*0.7071), vec3(0.12,  0.10*0.7071, 0.1*0.7071) ) );
+    di = min( di, udSqBox( vec3((x-y3)*0.7071, (y3+x)*0.7071, z), vec3(0.10*0.7071,  0.10*0.7071, 0.14) ) );
+    di = min( di, udSqBox( vec3(x, (y3+z)*0.7071, (z-y3)*0.7071), vec3(0.14,  0.10*0.7071, 0.10*0.7071) ) );
+
+    // Optimization: The FBM noise is extremely expensive relative to the SDF.
+    // Since the perturbation magnitude (0.00000003*fb) is effectively 
+    // negligible (orders of magnitude below typical float precision limits 
+    // at this scale) and visually imperceptible, we can safely skip the 
+    // FBM entirely to gain significant performance.
+    
+    return sqrt(di);
+}
+
+float bicho( vec3 pos, float mindist )
+{
+    pos -= vec3(0.64,0.50,1.5);
+    
+    float r2 = dot2(pos);
+
+	float sa = smoothstep(0.0,0.5,r2);
+    pos *= vec3(0.75,0.80,0.75) + sa*vec3(0.25,0.20,0.25);
+    r2 = dot2(pos);
+
+    if( r2&gt;5.0 ) return mindist;
+    if( pos.y &gt;0.5 ) return mindist;
+	if( pos.y&gt;-0.2 &amp;&amp; dot(pos.xz,pos.xz)&gt;0.6 ) return mindist;
+    if( r2&gt;(1.7+mindist)*(1.7+mindist)  ) return mindist;	// algo ayuda, poco, pero algo oiga
+
+	float r = sqrt(r2);
+
+	if( r&lt;0.75 )
+    {
+	float a1 = 1.0-smoothstep( 0.0, 0.75, r );
+	a1 *= 0.6;
+	vec2 sico = vec2( sin(a1), cos(a1) );
+	float nx = pos.x;
+	float ny = pos.y;
+	pos.x = nx*sico.y - ny*sico.x;
+	pos.y = nx*sico.x + ny*sico.y;
+    }
+	#define TENTACURA 0.045
+	float mindist2 = 100000.0;
+    vec3  p = pos;
+	float rr = 0.05+length(pos.xz);
+	float ca = (0.5-TENTACURA*0.75) -6.0*rr*exp2(-10.0*rr);
+    for( int j=1+ZERO; j&lt;7; j++ )
+	{
+		float an = (6.2831/7.0) * float(j);
+		float aa = an + 0.40*rr*noise(vec3(4.0*rr, 2.5, an)) + 0.29;
+		float rc = cos(aa);
+        float rs = sin(aa);
+		vec3 q = vec3( p.x*rc-p.z*rs, p.y+ca, p.x*rs+p.z*rc );
+		float dd = dot(q.yz,q.yz);
+		if( q.x&gt;0.0 &amp;&amp; q.x&lt;1.5 &amp;&amp; dd&lt;mindist2 ) mindist2=dd;
+	}
+	float dtentacles = sqrt(mindist2) - TENTACURA;
+
+    // proto-smooth-minimum
+	float dhead = r-0.15;
+
+    float h = clamp( r*3.0, 0.0, 1.0 );
+    return mix(dhead-0.15,dtentacles,h);
+}
+
+float techo2( float x, float y, float z )
+{
+    y = 1.0 - y;
+    x = x - 0.5;
+    z = z - 0.5;
+    return 0.4 - sqrt(y*y+min(x*x,z*z) );
+}
+
+float map( vec3 pos, out uint sid, out uint submat )
+{
+    submat = 0u;
+    float mindist;
+    
+    //-----------------------
+    // suelo
+    //-----------------------
+    {
+	float dis = pos.y;
+	
+	float ax = 128.0 + (pos.x+pos.z)*6.0;
+	float az = 128.0 + (pos.x-pos.z)*6.0;
+    uint ix = uint(floor(ax));
+    uint iz = uint(floor(az));
+    submat = ihash(ix+53u*iz);
+    bool ba = ( ((submat&gt;&gt;10)&amp;7u)&gt;6u );
+    float peld = max(fract(ax),fract(az));
+    peld = smoothstep( 0.975, 1.0, peld );
+    if( ba ) peld = 1.0;
+    dis += 0.005*peld;
+	mindist = dis;
+    if( peld&gt;0.0000001 ) sid = 2u; else sid = 0u;
+    }
+    
+    //-----------------------
+    // techo
+    //-----------------------
+	if( pos.y&gt;1.0 ) 
+    {
+        float dis = techo2( fract(pos.x), pos.y, fract(pos.z) );
+        if( dis&lt;mindist )
+        {
+            mindist = dis;
+            sid = 5u;
+        }
+    }
+
+    //-----------------------
+    // columnas
+    //-----------------------
+    {
+	vec3 fc = vec3(fract( pos.x+0.5 )-0.5, pos.y,
+	               fract( pos.z+0.5 )-0.5);
+    float bb = udSqBox( fc, vec3(0.14, 1.0, 0.14) );
+    if( bb &lt; mindist*mindist )
+    {
+        float dis = columna( fc, 13.1*floor(pos.x)+17.7*floor(pos.z) );
+        if( dis&lt;mindist )
+        {
+            mindist = dis;
+            sid = 1u;
+        }
+    }
+    }
+    
+    //-----------------------
+    // bicho
+    //-----------------------
+    //if( length( pos-vec3(0.64,-2.1,1.5) ) - 2.8 &lt; mindist )
+    if( dot2( pos-vec3(0.64,-2.1,1.5) ) &lt; (mindist+2.8)*(mindist+2.8) )
+    {
+    float dis = bicho( pos, mindist );
+    if( dis&lt;mindist )
+    {   
+        mindist = dis;
+        sid = 4u;
+    }
+    }
+
+    //-----------------------
+    // baldosas
+    //-----------------------
+    if( pos.y-0.02 &lt; mindist )
+	{
+	int kkr = 65535;
+    for( int i=ZERO; i&lt;10; i++ )
+    {
+        float a = 3.14*sfrand(kkr);
+        float co = cos(a);
+        float si = sin(a);
+        float xc = pos.x - (0.5 + 1.5*sfrand(kkr));
+        float zc = pos.z - (1.0 + 1.0*sfrand(kkr));
+        float xo = xc*co-si*zc;
+        float zo = zc*co+si*xc;
+        float dis = sdBox( vec3(xo, pos.y-0.008, zo), vec3(0.07, 0.008, 0.07) );
+        if( dis &lt; mindist ) 
+        {
+            mindist = dis;
+            sid = 1u;
+        }
+    }
+	}
+    
+    return mindist;
+}
+
+void raycast( vec3 ro, vec3 rd, float to, float tMax, out float resT, out vec3 resPos, out uint resSurface, out uint submat )
+{
+    float t = to;
+    for( int i=ZERO; i&lt;256; i++ )
+	{
+        resPos = ro + t*rd;
+		float h = map( resPos, resSurface, submat );
+		if( h&lt;0.0001 )
+		{
+		    resT = t;
+			return;
+		}
+        t += h*0.75;
+        if( t&gt;tMax ) break;
+	}
+    resSurface = 666u;
+}
+
+vec3 calcNormal( vec3 pos )
+{
+#if 0
+    // original code
+    const float eps = 0.0002;
+    uint kk, kk2;
+    vec3 nor = vec3(
+      map( pos.x+eps, pos.y, pos.z, kk, kk2 ) - map( pos.x-eps, pos.y, pos.z, kk, kk2 ),
+      map( pos.x, pos.y+eps, pos.z, kk, kk2 ) - map( pos.x, pos.y-eps, pos.z, kk, kk2 ),
+      map( pos.x, pos.y, pos.z+eps, kk, kk2 ) - map( pos.x, pos.y, pos.z-eps, kk, kk2 ));
+    return normalize(nor);
+#else
+    // inspired by tdhooper and klems - a way to prevent the compiler from inlining map() 4 times
+    vec3 n = vec3(0.0);
+    for( int i=ZERO; i&lt;4; i++ )
+    {
+        uint kk, kk2;
+        vec3 e = 0.5773*(2.0*vec3((((i+3)&gt;&gt;1)&amp;1),((i&gt;&gt;1)&amp;1),(i&amp;1))-1.0);
+        n += e*map(pos+0.0002*e, kk, kk2);
+        if( n.x+n.y+n.z&gt;100.0 ) break;
+    }
+    return normalize(n);
+#endif    
+}
+
+vec3 shade( vec3 pos, vec3 rd, uint matID, uint subMatID, float dis )
+{
+    if( matID==666u ) return vec3(0.0,0.0,0.0);
+
+    vec3 col = vec3(0.1*dis);
+
+    // calc normal
+    vec3 nor = calcNormal( pos );
+
+    // bump mapping
+    #if 1
+    const float kke = 0.0001;
+    float bumpa = 0.0075;
+	if( matID!=5u ) bumpa *= 0.75;
+    if( matID==4u ) bumpa *= 0.50;
+    bumpa /= kke;
+    float kk = fbm( 32.0*pos );
+    nor.x += bumpa*(fbm( 32.0*vec3(pos.x+kke, pos.y, pos.z) )-kk);
+    nor.y += bumpa*(fbm( 32.0*vec3(pos.x, pos.y+kke, pos.z) )-kk);
+    nor.z += bumpa*(fbm( 32.0*vec3(pos.x, pos.y, pos.z+kke) )-kk);
+    nor = normalize(nor);
+    #endif
+
+
+    // light
+	float spe = 0.0;
+    vec3 lig = vec3( 0.5, 0.8, 1.5 ) - pos;
+    float llig = dot2(lig);
+    float im = 1.0/sqrt(llig);
+    lig *= im;
+    float dif = dot( nor, lig ); 
+    if( matID==4u )
+        dif = 0.5+0.5*dif;
+    else
+        dif = 0.10+0.90*dif;
+    dif = max( dif, 0.0 );
+	dif *= 2.5*exp2( -1.75*llig );
+	float dif2 = (nor.x+nor.y)*0.075;
+
+    // materials
+    if( matID==0u )
+    {
+        float xoff = 13.1 * float(subMatID&amp;255u);
+        float fb = fbm( 16.0*vec3(pos.x+xoff, pos.y, pos.z) );
+
+        col = 0.7 + vec3(0.20,0.22,0.25)*fb;
+
+        float baldscale = float((subMatID&gt;&gt;9)&amp;15u)/14.0;
+        baldscale = 0.51 + 0.34*baldscale;
+        col *= baldscale;
+        float fx = 1.0;
+        if( (subMatID&amp;256u)!=0u ) fx = -1.0;
+        float m = sin( 64.0*pos.z*fx +  64.0*pos.x + 4.0*fb );
+        m = smoothstep( 0.25, 0.5, m ) - smoothstep( 0.5, 0.75, m );
+
+        col += m*0.15;
+    }
+    else if( matID==2u )
+    {
+        col = vec3(0.0,0.0,0.0);
+    }
+    else if( matID==1u )
+    {
+        float fb = fbm( 16.0*pos );
+        float m = sin( 64.0*pos.z +  64.0*pos.x + 4.0*fb );
+        m = smoothstep( 0.3, 0.5, m ) - smoothstep( 0.5, 0.7, m );
+        col = 0.59 + fb*vec3(0.17,0.18,0.21) + m*0.15 + dif2;
+    }   
+    else if( matID==4u )
+    {
+        float ft = fbm( 16.0*pos );
+        col = vec3(0.82,0.73,0.65) + ft*vec3(0.10,0.10,0.15);
+        float fs = 0.90+0.10*fbm( 32.0*pos );
+        col *= fs;
+
+        float fre = -dot( nor, rd );
+        if( fre&lt;0.0 ) fre=0.0;
+        fre = fre*fre*0.45;
+        col -= fre;
+
+		spe = (nor.y-nor.z)*0.707;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe = spe*spe;
+        spe *= 0.20;
+     }   
+    // techo
+    else //if( matID==5 )
+    {
+        float fb = fbm( 16.0*pos );
+        col = vec3(0.64,0.61,0.59) + fb*vec3(0.21,0.19,0.19) + dif2;
+    }   
+
+    // AO
+    float ao;
+    #if 1
+    float totao = 0.0;
+    float sca = 10.0;
+    for( int aoi=ZERO; aoi&lt;5; aoi++ )
+    {
+        float hr = 0.01 + 0.015*float(aoi*aoi);
+        vec3 aopos = pos + hr*nor;
+        uint kk, kk2;
+        float dd = map( aopos, kk, kk2 );
+        ao = -(dd-hr);
+        totao += ao*sca;
+        sca *= 0.5;
+        //if( totao&gt;1000.0+sin(iTime) ) break;
+    }
+    ao = 1.0 - clamp( totao, 0.0, 1.0 );
+    #else
+    ao = 1.0;
+    #endif
+
+    // shadow
+    #if 1
+    float so = 0.0;
+	for( int i=ZERO; i&lt;6; i++ )
+    {
+		float h = float(i)/6.0;
+        float hr = 0.01 + 1.0*h;
+        vec3 aopos = pos + hr*lig;
+        uint kk, kk2;
+        float dd = map( aopos, kk, kk2 );
+        so += (1.0-h)*dd*20.0/6.0;
+        //if( so&gt;1000.0+iTime ) break;
+    }
+    dif *= clamp( (so-0.40)*1.5, 0.0, 1.0 );
+    #endif
+
+    // shade
+	float ao2 = 0.05 + 0.95*ao;
+    col *= vec3(0.25,0.30,0.35)*ao + dif*ao2*vec3(1.95,1.65,1.05);
+    col += spe;
+    col *= exp2( -0.40*pos.z );
+
+    return col;
+}
+
+vec3 post( vec3 col, vec2 p )
+{
+    // flare
+	float rr = (p.x+0.10)*(p.x+0.10) + (p.y-0.40)*(p.y-0.40);
+    col += vec3( 1.0, 0.95, 0.90 )*0.75*exp2( -64.0*rr );
+
+    // color correct
+    col = sqrt(col)*0.3 + 0.7*col;
+    col *= vec3(0.83,1.00,0.83);
+
+    // vignetting
+    col *= 0.25 + 0.75*clamp( 0.60*abs(p.x-1.77)*abs(p.x+1.77), 0.0, 1.0 );
+    
+    return clamp( col, 0.0, 1.0 );
+}
+
+vec3 computePixel( vec2 p, vec2 res, float time )
+{
+    vec2 s = (2.0*p-res)/res.y;
+    
+    // fisheye distortion
+    float r2 = s.x*s.x*0.32 + s.y*s.y;
+	float tt = (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+
+    // create camera and ray
+    vec2 d = s*tt;
+#if 0
+    vec3 ro = vec3( 0.195, 0.5, 0.0 );
+	vec3 rd = normalize( vec3( d.x*0.955336 + 0.29552, d.y, 0.955336 - d.x*0.29552 ) );
+#else
+    float an = 4.4 + 0.2*sin(0.4*time);
+    vec3 ta = vec3(0.64,0.50,1.5);
+    vec3 ro = ta + 1.55*vec3( cos(an), 0.0, sin(an));
+    vec3 ww = normalize( ta-ro );
+    vec3 vv = vec3(0.0,1.0,0.0);
+    vec3 uu = normalize(cross(vv,ww));
+    vec3 rd = normalize( uu*d.x + vv*d.y + 1.0*ww );
+#endif
+	float t;
+	uint matID, sumMatID;
+	vec3 xyz;
+    
+    // raycast
+	raycast( ro, rd, 0.5, 24.0, t, xyz, matID, sumMatID );
+    
+    // shade
+	vec3 col = shade(  xyz, rd, matID, sumMatID, t  );
+    
+    // postprocess
+	col = post( col, s );
+
+	return col;
+}
+
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+#if AA&lt;2    
+    vec3 col = computePixel(fragCoord, iResolution.xy, iTime );
+#else
+    vec3 col = vec3(0.0);
+    for( int j=0; j&lt;AA; j++ )
+    for( int i=0; i&lt;AA; i++ )
+    {
+        vec2 of = vec2(i,j)/float(AA);
+        float time = iTime + (0.5/30.0)*float(j*AA+i)/float(AA*AA);
+        col += computePixel(fragCoord+of, iResolution.xy, time );
+    }
+    col /= float(AA*AA);
+#endif
+    fragColor = vec4(col,1.0);
+}
+</code></pre></div>
+                </div>
+            </div></div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Generation History</h2>
+            <table>
+            <thead><tr><th>Gen</th><th>Render Time (ms)</th><th>Relative Time</th><th>Speedup</th><th>Max Error</th><th>Media</th></tr></thead>
+            <tbody><tr><td>5</td><td>5.0318</td><td>0.6389</td><td>1.57x</td><td>0.009881</td><td>Yes</td></tr><tr><td>4</td><td>5.0318</td><td>0.6389</td><td>1.57x</td><td>0.009881</td><td>Yes</td></tr><tr><td>3</td><td>5.2434</td><td>0.6394</td><td>1.56x</td><td>0.009891</td><td>Yes</td></tr><tr><td>2</td><td>5.1819</td><td>0.6425</td><td>1.56x</td><td>0.009892</td><td>Yes</td></tr></tbody>
+        </table>
+        </div>
+    </div>
+
+    <script>
+    // ========== Utility Functions ==========
+    function toggleCode(elementId) {
+        var element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle('code-block-expanded');
+        }
+    }
+
+    function toggleSpoiler(id) {
+        var content = document.getElementById(id);
+        if (content) {
+            content.classList.toggle('active');
+        }
+    }
+
+    function copyToClipboard(elementId) {
+        var element = document.getElementById(elementId);
+        if (!element) return;
+        var text = element.textContent || element.innerText;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                showCopySuccess(event.target);
+            }).catch(function() {
+                fallbackCopy(text, event.target);
+            });
+        } else {
+            fallbackCopy(text, event.target);
+        }
+    }
+
+    function showCopySuccess(button) {
+        var orig = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#28a745';
+        setTimeout(function() { button.textContent = orig; }, 2000);
+    }
+
+    function fallbackCopy(text, button) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { if (document.execCommand('copy') && button) showCopySuccess(button); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    // ========== Performance Distribution Chart ==========
+    (function() {
+        var data = {"original": {"bin_edges": [4.5555, 4.6882, 4.821, 4.9538, 5.0865, 5.2193, 5.3521, 5.4848, 5.6176, 5.7504, 5.8831, 6.0159, 6.1487, 6.2814, 6.4142, 6.547, 6.6797, 6.8125, 6.9452, 7.078, 7.2108, 7.3435, 7.4763, 7.6091, 7.7418, 7.8746, 8.0074, 8.1401, 8.2729, 8.4057, 8.5384], "density": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.125, 8.8542, 15.1042, 20.3125, 21.875, 23.9583, 5.7292, 1.0417, 0.0], "mean": 7.8753, "std": 0.2027, "n": 192}, "optimized": {"bin_edges": [4.5555, 4.6882, 4.821, 4.9538, 5.0865, 5.2193, 5.3521, 5.4848, 5.6176, 5.7504, 5.8831, 6.0159, 6.1487, 6.2814, 6.4142, 6.547, 6.6797, 6.8125, 6.9452, 7.078, 7.2108, 7.3435, 7.4763, 7.6091, 7.7418, 7.8746, 8.0074, 8.1401, 8.2729, 8.4057, 8.5384], "density": [0.0, 5.0, 17.6667, 47.0, 23.6667, 6.0, 0.6667, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mean": 5.0318, "std": 0.1186, "n": 300}};
+        var canvas = document.getElementById('perfChart');
+        if (!canvas || !data || !data.original || !data.original.bin_edges || !data.original.bin_edges.length) {
+            if (canvas) {
+                var ctx = canvas.getContext('2d');
+                var rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.fillStyle = '#999';
+                ctx.font = '13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No performance data available yet', rect.width / 2, rect.height / 2);
+            }
+            return;
+        }
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 20, right: 20, bottom: 40, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        // X range from bin edges
+        var allEdges = data.original.bin_edges.concat(data.optimized.bin_edges || []);
+        var xMin = Math.min.apply(null, allEdges);
+        var xMax = Math.max.apply(null, allEdges);
+        var xRange = xMax - xMin || 1;
+
+        // Y range from density values
+        var allDens = data.original.density.concat(data.optimized.density || []);
+        var yMax = Math.max.apply(null, allDens) * 1.15;
+        var yRange = yMax || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toY(v) { return pad.top + plotH - (v / yRange) * plotH; }
+
+        // Draw histogram bars
+        function drawHist(series, fillColor, strokeColor) {
+            var edges = series.bin_edges, dens = series.density;
+            if (!edges || !dens || dens.length === 0) return;
+
+            // Semi-transparent fill
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = fillColor;
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]), yBot = toY(0);
+                ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            }
+
+            // Bold border
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            var baseline = toY(0);
+            ctx.moveTo(toX(edges[0]), baseline);
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]);
+                ctx.lineTo(x1, yTop);
+                ctx.lineTo(x2, yTop);
+            }
+            ctx.lineTo(toX(edges[edges.length - 1]), baseline);
+            ctx.stroke();
+        }
+
+        // Draw mean line
+        function drawMean(series, color, label, yOffset) {
+            if (!series.mean) return;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.globalAlpha = 0.9;
+            var mx = toX(series.mean);
+            ctx.beginPath();
+            ctx.moveTo(mx, pad.top);
+            ctx.lineTo(mx, pad.top + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Label
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(series.mean.toFixed(2) + ' ms', mx, pad.top + yOffset);
+        }
+
+        var C_ORIG = '#8856a7', C_OPT = '#43a2ca', C_ARROW = '#2E7D32';
+
+        // Draw original behind optimized
+        drawHist(data.original, C_ORIG, C_ORIG);
+        drawHist(data.optimized, C_OPT, C_OPT);
+        drawMean(data.original, C_ORIG, 'Original', 12);
+        drawMean(data.optimized, C_OPT, 'Optimized', 24);
+
+        // Speedup arrow
+        if (data.original.mean && data.optimized.mean && data.original.mean > data.optimized.mean) {
+            var speedup = (data.original.mean / data.optimized.mean).toFixed(1);
+            var arrowY = pad.top + plotH * 0.25;
+            var x1 = toX(data.original.mean), x2 = toX(data.optimized.mean);
+            // Dashed arrow line
+            ctx.strokeStyle = C_ARROW;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.moveTo(x1, arrowY);
+            ctx.lineTo(x2 + 6, arrowY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Arrowhead
+            ctx.fillStyle = C_ARROW;
+            ctx.beginPath();
+            ctx.moveTo(x2, arrowY);
+            ctx.lineTo(x2 + 10, arrowY - 5);
+            ctx.lineTo(x2 + 10, arrowY + 5);
+            ctx.closePath();
+            ctx.fill();
+            // Label
+            var midX = (x1 + x2) / 2;
+            ctx.fillStyle = C_ARROW;
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(speedup + 'x', midX, arrowY - 8);
+        }
+
+        // Axes - left and bottom spines
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (density)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var numYTicks = 5;
+        for (var i = 0; i <= numYTicks; i++) {
+            var val = (yRange / numYTicks) * i;
+            var gy = pad.top + plotH - (plotH / numYTicks) * i;
+            ctx.fillText(val.toFixed(2), pad.left - 4, gy + 3);
+        }
+
+        // X-axis labels (render time ms)
+        ctx.textAlign = 'center';
+        var numXTicks = 6;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(1), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Render Time (ms)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Legend
+        ctx.font = '11px sans-serif';
+        var legX = W - pad.right - 130, legY = pad.top + 14;
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_ORIG;
+        ctx.fillRect(legX, legY - 8, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_ORIG;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(legX, legY - 8, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText('Original (n=' + (data.original.n || '?') + ')', legX + 22, legY + 2);
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_OPT;
+        ctx.fillRect(legX, legY + 10, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_OPT;
+        ctx.strokeRect(legX, legY + 10, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.fillText('Optimized (n=' + (data.optimized.n || '?') + ')', legX + 22, legY + 20);
+    })();
+
+    // ========== Validation Frames Chart ==========
+    
+
+    // ========== Error Distribution Chart ==========
+    (function() {
+        var data = {"bin_edges": [0.0, 0.000375, 0.00075, 0.001125, 0.0015, 0.001875, 0.00225, 0.002625, 0.003, 0.003375, 0.00375, 0.004125, 0.0045, 0.004875, 0.00525, 0.005625, 0.006, 0.006375, 0.00675, 0.007125, 0.0075, 0.007875, 0.00825, 0.008625, 0.009, 0.009375, 0.00975, 0.010125, 0.0105, 0.010875, 0.01125, 0.011625, 0.012, 0.012375, 0.01275, 0.013125, 0.0135, 0.013875, 0.01425, 0.014625, 0.015], "counts": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 23.1231, 21.3213, 4.0541, 5.2553, 28.5285, 17.7177, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "threshold": 0.01, "exceedance_rate": 0.01, "n_total": 666, "k_exceedances": 0, "max_error": 0.009881, "mean_error": 0.008998};
+        var canvas = document.getElementById('errorDistChart');
+        if (!canvas || !data || !data.bin_edges || !data.bin_edges.length) return;
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 25, right: 20, bottom: 45, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        var edges = data.bin_edges;
+        var counts = data.counts;
+        var threshold = data.threshold;
+        var exRate = data.exceedance_rate;
+        var ratePct = exRate * 100;
+
+        // X range
+        var xMin = edges[0], xMax = edges[edges.length - 1];
+        var xRange = xMax - xMin || 1;
+
+        // Y range (log scale) — find min non-zero count for log floor
+        var minNonZero = Infinity;
+        for (var i = 0; i < counts.length; i++) {
+            if (counts[i] > 0 && counts[i] < minNonZero) minNonZero = counts[i];
+        }
+        if (minNonZero === Infinity) minNonZero = 0.1;
+        var yFloor = minNonZero * 0.3;
+        var yMax = 110; // slightly above 100%
+        var logMin = Math.log10(yFloor);
+        var logMax = Math.log10(yMax);
+        var logRange = logMax - logMin || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toLogY(v) {
+            if (v <= 0) return pad.top + plotH;
+            var lv = Math.log10(Math.max(v, yFloor));
+            return pad.top + plotH - ((lv - logMin) / logRange) * plotH;
+        }
+
+        var C_SAFE = '#43a2ca';
+        var C_EXCEED = '#dc3545';
+        var C_THRESH = '#e6550d';
+
+        // Draw histogram bars
+        for (var i = 0; i < counts.length; i++) {
+            var binLeft = edges[i], binRight = edges[i + 1];
+            var binMid = (binLeft + binRight) / 2;
+            var x1 = toX(binLeft), x2 = toX(binRight);
+            var yBot = pad.top + plotH;
+            var yTop = toLogY(counts[i]);
+            if (counts[i] <= 0) continue;
+
+            // Color: red if bin center >= threshold
+            var isExceed = binMid >= threshold;
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x1, yTop, x2 - x1, yBot - yTop);
+        }
+
+        // Rejection zone rectangle (threshold to xMax, ratePct to 100)
+        var rzX = toX(threshold);
+        var rzY = toLogY(100);
+        var rzW = toX(xMax) - rzX;
+        var rzH = toLogY(ratePct) - rzY;
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = C_EXCEED;
+        ctx.fillRect(rzX, rzY, rzW, rzH);
+        ctx.globalAlpha = 1.0;
+
+        // Threshold vertical line
+        ctx.strokeStyle = C_THRESH;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        ctx.moveTo(toX(threshold), pad.top);
+        ctx.lineTo(toX(threshold), pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Threshold label
+        ctx.fillStyle = C_THRESH;
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('FLIP Threshold = ' + threshold.toFixed(3), toX(threshold) + 4, pad.top + 12);
+
+        // Exceedance rate horizontal line
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        var rateY = toLogY(ratePct);
+        ctx.moveTo(toX(threshold), rateY);
+        ctx.lineTo(pad.left + plotW, rateY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(ratePct.toFixed(0) + '% exceedance rate', pad.left + plotW - 4, rateY - 4);
+
+        // Axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (log scale)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var yTicks = [0.01, 0.1, 1, 10, 100];
+        for (var i = 0; i < yTicks.length; i++) {
+            var val = yTicks[i];
+            if (val < yFloor || val > yMax) continue;
+            var gy = toLogY(val);
+            ctx.fillText(val < 1 ? val.toFixed(2) + '%' : val.toFixed(0) + '%', pad.left - 4, gy + 3);
+            // Grid line
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, gy);
+            ctx.lineTo(pad.left + plotW, gy);
+            ctx.stroke();
+        }
+
+        // X-axis labels
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        var numXTicks = 8;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(3), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('FLIP Error (p99)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Stats legend
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#333';
+        var legX = pad.left + 8, legY = pad.top + plotH - 40;
+        ctx.fillText('n=' + data.n_total + ', k=' + data.k_exceedances +
+            ', max=' + data.max_error.toFixed(4) +
+            ', mean=' + data.mean_error.toFixed(4), legX, legY);
+    })();
+    </script>
+</body>
+</html>

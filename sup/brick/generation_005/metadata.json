@@ -1,0 +1,12 @@
+{
+  "generation": 4,
+  "best_render_time": 0.5326495831258244,
+  "best_abs_render_time": 0.238069376,
+  "timestamp": "2026-04-01T18:46:57.610815",
+  "shader_json_file": "best_gen_004_shader.json",
+  "max_error": 0.07364992201328277,
+  "avg_error": null,
+  "early_stopped": false,
+  "early_stop_reason": null,
+  "generations_without_progress": 1
+}

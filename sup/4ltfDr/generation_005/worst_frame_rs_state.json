@@ -1,0 +1,84 @@
+{
+  "uniforms": [
+    {
+      "class_type": "ShaderUniformTime",
+      "name": "iTime",
+      "value": [
+        35.46198516381797
+      ],
+      "primary_value": [
+        0.2836958813105438
+      ],
+      "distribution": {
+        "type": "UniformVecDistribution",
+        "mins": [
+          0.0
+        ],
+        "maxs": [
+          125.0
+        ]
+      },
+      "mins": [
+        0.0
+      ],
+      "maxs": [
+        125.0
+      ],
+      "fixed_sample": [
+        0.0
+      ],
+      "fixed_primary": [
+        0.0
+      ],
+      "constraints": {
+        "smin": [
+          0.0
+        ],
+        "smax": [
+          125.0
+        ],
+        "per_frame_time": 0.033
+      },
+      "per_frame_time": 0.033
+    },
+    {
+      "class_type": "ShaderUniformVec",
+      "name": "dummy",
+      "value": [
+        5.059372162464812e-08
+      ],
+      "primary_value": [
+        0.5059372103340497
+      ],
+      "distribution": {
+        "type": "UniformVecDistribution",
+        "mins": [
+          0.0
+        ],
+        "maxs": [
+          1.0000000116860974e-07
+        ]
+      },
+      "mins": [
+        0.0
+      ],
+      "maxs": [
+        1.0000000116860974e-07
+      ],
+      "fixed_sample": [
+        0.0
+      ],
+      "fixed_primary": [
+        0.0
+      ],
+      "constraints": {
+        "smin": [
+          0.0
+        ],
+        "smax": [
+          1.0000000116860974e-07
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>3sc3z4 - Generation 5</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.3; background: #f8f9fa; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 15px; }
+        .header { text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { color: #007acc; font-size: 1.8em; margin: 0; }
+        .header .info { color: #666; font-size: 0.9em; margin-top: 5px; }
+        .section { margin-bottom: 20px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .section h2 { color: #333; font-size: 1.2em; margin-bottom: 8px; border-bottom: 1px solid #007acc; padding-bottom: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 8px 0; }
+        .metric-card { background: white; padding: 8px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .metric-card h3 { font-size: 0.9em; margin-bottom: 4px; color: #333; }
+        .metric-value { font-size: 1.4em; font-weight: bold; color: #007acc; }
+        .metric-label { color: #666; font-size: 0.8em; }
+        .improvement { color: #28a745; }
+        .degradation { color: #dc3545; }
+        .neutral { color: #6c757d; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .video-container { text-align: center; margin: 10px 0; }
+        .video-container video { max-width: 100%; height: auto; border-radius: 4px; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .chart-container { width: 100%; height: 280px; position: relative; }
+        canvas { width: 100% !important; height: 100% !important; }
+        .correctness-details { margin-top: 8px; font-size: 0.85em; }
+        .correctness-item { display: flex; justify-content: space-between; margin: 2px 0; }
+        .correctness-label { color: #666; font-weight: 500; }
+        .correctness-value { font-weight: bold; }
+        .spoiler { margin: 10px 0; }
+        .spoiler-toggle { background: #007acc; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .spoiler-toggle:hover { background: #0056b3; }
+        .spoiler-content { display: none; margin-top: 8px; }
+        .spoiler-content.active { display: block; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 12px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; max-height: 300px; overflow: auto; border: 1px solid #4a5568; white-space: pre; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }
+        .code-block-expandable { max-height: 200px; overflow-y: auto; }
+        .code-block-expanded { max-height: 500px; }
+        .code-toggle { background: #4a5568; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-bottom: 5px; }
+        .code-toggle:hover { background: #2d3748; }
+        .code-container { position: relative; max-width: 100%; }
+        .two-column { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 10px; width: 100%; }
+        .left-column { border-right: 1px solid #ddd; padding-right: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .right-column { padding-left: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .compact-section { margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .fps-stats { margin-top: 4px; font-size: 0.8em; }
+        .fps-range { color: #007acc; font-weight: bold; }
+        .fps-std { color: #666; }
+        .improvement-details { margin-top: 4px; font-size: 0.8em; }
+        .improvement-details div { margin: 2px 0; }
+        .optimization-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+        .optimization-table th, .optimization-table td { border: 1px solid #ddd; padding: 8px; text-align: left; max-width: 400px; }
+        .optimization-table th { background: #f8f9fa; font-weight: bold; }
+        .optimization-table tr:nth-child(even) { background: #f9f9f9; }
+        .function-name { font-size: 0.85em; color: #666; margin-bottom: 4px; font-weight: 500; }
+        .function-name code { background: #f1f3f5; padding: 2px 6px; border-radius: 3px; color: #495057; font-family: 'Courier New', monospace; }
+        .optimization-types { display: flex; flex-wrap: wrap; gap: 4px; }
+        .optimization-type { background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 1.05em; }
+        .analysis-subcolumn { display: flex; flex-direction: column; gap: 8px; }
+        .explanation-text { font-size: 0.9em; line-height: 1.4; color: #333; }
+        .optimization-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+        .summary-card { background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .summary-value { font-size: 1.2em; font-weight: bold; color: #007acc; }
+        .summary-label { color: #666; font-size: 0.8em; }
+        .copy-button { background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-left: 5px; }
+        .copy-button:hover { background: #218838; }
+        .shader-header { display: flex; align-items: center; justify-content: space-between; }
+        .shader-title { flex: 1; }
+        .config-section { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; margin: 8px 0; }
+        .config-section pre { background: #2d3748; color: #e2e8f0; padding: 8px; border-radius: 4px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 10px; }
+        .file-links { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+        .file-link { background: #007acc; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; font-size: 0.8em; }
+        .file-link:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f9fa; color: #333; padding: 8px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #007acc; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f0f7ff; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .plot-container.narrow-plot { max-width: 33%; margin: 0 auto; }
+        .performance-plot { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 4px; object-fit: contain; }
+        .frame-comparison { display: flex; gap: 10px; margin: 10px 0; }
+        .frame-slider-container { margin: 10px 0; }
+        .frame-slider { width: 100%; }
+        .frame-images { display: flex; gap: 10px; }
+        .frame-image { max-width: 48%; border-radius: 4px; }
+        .frame-label { text-align: center; font-weight: bold; margin: 5px 0; font-size: 0.9em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 8px 0; }
+        .stat-item { background: white; padding: 6px; border-radius: 4px; border-left: 3px solid #28a745; text-align: center; }
+        .stat-value { font-size: 1.1em; font-weight: bold; color: #28a745; }
+        .stat-label { color: #666; font-size: 0.7em; }
+        .waiting-message { text-align: center; padding: 60px 20px; color: #666; font-size: 1.4em; }
+        .waiting-message .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #e9ecef; border-top: 4px solid #007acc; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Optimization Report - 3sc3z4</h1>
+            <div class="info">Generation 5 | +13.6% Boost | 2026-04-05 17:47:18 | <span style="color: #28a745;">LLM: $3.21</span> | <span style="color: #fd7e14;">GPU: $0.69</span> | <span style="font-weight: bold;">Total: $3.90</span> | <a href="https://www.shadertoy.com/view/3sc3z4" target="_blank" style="color: #007acc; text-decoration: none;">Shadertoy</a></div>
+        </div>
+
+        
+
+        <div class="compact-section">
+            <div class="two-column">
+                <div class="left-column">
+                    
+        <h2>Performance Summary</h2>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Original</h3>
+                <div class="metric-value">7.280 ms</div>
+                <div class="metric-label">(137.4 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">82.3-197.7 FPS</div>
+                    <div class="fps-std">5.1-12.2 ms</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Optimized</h3>
+                <div class="metric-value">6.408 ms</div>
+                <div class="metric-label">(156.1 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">108.4-204.0 FPS</div>
+                    <div class="fps-std">4.9-9.2 ms</div>
+                </div>
+            </div>
+        </div>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Improvement</h3>
+                <div class="metric-value improvement">
+                    +0.872 ms
+                </div>
+                <div class="metric-label">(+12.0% | +18.7 FPS)</div>
+                <div class="improvement-details">
+                    <div>Mean: +0.9ms (+12.1%)</div>
+                    <div>Std: +0.4ms (+32.1%)</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Status</h3>
+                <div class="metric-value success">
+                    &#x2705; SUCCESS
+                </div>
+                <div class="correctness-details">
+                    <div class="correctness-item">
+                        <span class="correctness-label">Original Error:</span>
+                        <span class="correctness-value">0.000000</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Optimized Error:</span>
+                        <span class="correctness-value">0.009307</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Correctness:</span>
+                        <span class="correctness-value success">
+                            &#x2705; MAINTAINED
+                        </span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Difference:</span>
+                        <span class="correctness-value success">
+                            +0.009307
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+                <div class="right-column">
+            <h2>Performance Statistics</h2>
+            <div class="chart-container">
+                <canvas id="perfChart"></canvas>
+            </div>
+        </div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Video Comparison at the worst Primary Render Parameter Space sample</h2>
+            <div style="margin-bottom:12px;"><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Original</div><img src="generation_005/media/first_frame_original.png" style="max-width:400px; border:1px solid #333;"></div><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Optimized</div><img src="generation_005/media/first_frame_optimized.png" style="max-width:400px; border:1px solid #333;"></div></div>
+            <div class="video-container">
+                <video controls autoplay loop muted>
+                    <source src="generation_005/media/worst_merged.mp4?v=1775404034" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+        </div>
+
+        <div class="compact-section">
+            <h2>FLIP Error Distribution</h2>
+            <div class="chart-container" style="height: 320px;">
+                <canvas id="errorDistChart"></canvas>
+            </div>
+        </div>
+
+        
+
+        
+
+        <div class="compact-section">
+            <h2>Mutation Tree</h2>
+            <iframe id="mutation-tree-iframe" src="mutation_tree.html"
+                    style="width: 100%; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;"
+                    scrolling="no"></iframe>
+            <script>
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'mutation-tree-resize') {
+                    var iframe = document.getElementById('mutation-tree-iframe');
+                    if (!iframe) return;
+                    var newH = e.data.height, curH = parseInt(iframe.style.height) || 0;
+                    if (newH >= curH) {
+                        iframe.style.height = newH + 'px';
+                        clearTimeout(iframe._shrinkT);
+                    } else {
+                        clearTimeout(iframe._shrinkT);
+                        iframe._shrinkT = setTimeout(function() { iframe.style.height = newH + 'px'; }, 300);
+                    }
+                }
+            });
+            </script>
+        </div>
+
+        <div class="compact-section">
+            <h2>Optimization Diff</h2>
+            <div class="code-block" style="max-height:500px;overflow:auto;font-size:11px;line-height:1.5">
+<pre><span style="color:#586e75;font-weight:bold">--- 3sc3z4_canonical_0.frag</span>
+<span style="color:#586e75;font-weight:bold">+++ 3sc3z4_best_gen_005_0.frag</span>
+<span style="color:#268bd2;font-weight:bold">@@ -40,33 +40,28 @@</span>
+<span> };</span>
+<span> HitData AllObjectsRayTest(vec3 rayPos, vec3 rayDir)</span>
+<span> {</span>
+<span style="color:#28a745;background:#e6ffed">+    // Precompute animated positions to avoid recomputing trigonometry per sphere test</span>
+<span style="color:#28a745;background:#e6ffed">+    float t0 = fract(iTime * 0.7);</span>
+<span style="color:#28a745;background:#e6ffed">+    t0 = -4.0 * t0 * t0 + 4.0 * t0;</span>
+<span style="color:#28a745;background:#e6ffed">+    vec3 animPos0 = AllSpheres[0].xyz;</span>
+<span style="color:#28a745;background:#e6ffed">+    animPos0.y += t0 * 0.7;</span>
+<span style="color:#28a745;background:#e6ffed">+    animPos0.x += sin(iTime) * 2.0;</span>
+<span style="color:#28a745;background:#e6ffed">+    animPos0.z += cos(iTime) * 2.0;</span>
+<span style="color:#28a745;background:#e6ffed">+    float t1 = fract(iTime * 0.47);</span>
+<span style="color:#28a745;background:#e6ffed">+    t1 = -4.0 * t1 * t1 + 4.0 * t1;</span>
+<span style="color:#28a745;background:#e6ffed">+    vec3 animPos1 = AllSpheres[1].xyz;</span>
+<span style="color:#28a745;background:#e6ffed">+    animPos1.y += t1 * 1.7;</span>
+<span style="color:#28a745;background:#e6ffed">+    animPos1.x += sin(iTime + 3.14) * 2.0;</span>
+<span style="color:#28a745;background:#e6ffed">+    animPos1.z += cos(iTime + 3.14) * 2.0;</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span>     HitData hitData;</span>
+<span>     hitData.rayLength = 9999.0; //default value if can&#x27;t hit anything</span>
+<span> </span>
+<span>     for(int i = 0; i &lt; SPHERECOUNT; i++)</span>
+<span>     {</span>
+<span style="color:#dc3545;background:#ffeef0">-        vec3 sphereCenter = AllSpheres[i].xyz;</span>
+<span style="color:#28a745;background:#e6ffed">+        vec3 sphereCenter = (i == 0) ? animPos0 : (i == 1) ? animPos1 : AllSpheres[i].xyz;</span>
+<span>         float sphereRadius = AllSpheres[i].w;</span>
+<span style="color:#dc3545;background:#ffeef0">-        //----hardcode sphere pos animations-------------------------------------</span>
+<span style="color:#dc3545;background:#ffeef0">-        if(i == 0)</span>
+<span style="color:#dc3545;background:#ffeef0">-        {</span>
+<span style="color:#dc3545;background:#ffeef0">-            float t = fract(iTime * 0.7);</span>
+<span style="color:#dc3545;background:#ffeef0">-            t = -4.0 * t * t + 4.0 * t;</span>
+<span style="color:#dc3545;background:#ffeef0">-            sphereCenter.y += t * 0.7;</span>
+<span style="color:#dc3545;background:#ffeef0">-            </span>
+<span style="color:#dc3545;background:#ffeef0">-            sphereCenter.x += sin(iTime) * 2.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-            sphereCenter.z += cos(iTime) * 2.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-        }</span>
+<span style="color:#dc3545;background:#ffeef0">-             </span>
+<span style="color:#dc3545;background:#ffeef0">-        if(i == 1)</span>
+<span style="color:#dc3545;background:#ffeef0">-        {</span>
+<span style="color:#dc3545;background:#ffeef0">-            float t = fract(iTime*0.47);</span>
+<span style="color:#dc3545;background:#ffeef0">-            t = -4.0 * t * t + 4.0 * t;</span>
+<span style="color:#dc3545;background:#ffeef0">-            sphereCenter.y += t * 1.7;</span>
+<span style="color:#dc3545;background:#ffeef0">-            </span>
+<span style="color:#dc3545;background:#ffeef0">-            sphereCenter.x += sin(iTime+3.14) * 2.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-            sphereCenter.z += cos(iTime+3.14) * 2.0;</span>
+<span style="color:#dc3545;background:#ffeef0">-        }             </span>
+<span style="color:#28a745;background:#e6ffed">+        // Animation code removed from loop, as positions are now precomputed</span>
+<span>         //---------------------------------------</span>
+<span>                 </span>
+<span>         float resultRayLength = raySphereIntersect(rayPos,rayDir,sphereCenter,sphereRadius);</span>
+<span style="color:#268bd2;font-weight:bold">@@ -107,10 +102,10 @@</span>
+<span>     for(int i = 0; i &lt; MAX_BOUNCE; i++)</span>
+<span>     {</span>
+<span>         HitData h = AllObjectsRayTest(rayStartPos + rayDir * 0.0001,rayDir);//+0.0001 to prevent ray already hit at start pos</span>
+<span style="color:#dc3545;background:#ffeef0">-        </span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span>         //only for CineShader, to show depth</span>
+<span>         firstHitRayLength = firstHitRayLength &lt; 0.0 ? h.rayLength : firstHitRayLength;</span>
+<span style="color:#dc3545;background:#ffeef0">-               </span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span>         //if ray can&#x27;t hit anything, rayLength will remain default value 9999.0</span>
+<span>         //which enters this if()</span>
+<span>         //** 99999 is too large for mobile, use 9900 as threshold now **</span>
+<span style="color:#268bd2;font-weight:bold">@@ -119,15 +114,18 @@</span>
+<span>             vec3 skyColor = vec3(0.7,0.85,1.0);//hit nothing = hit sky color</span>
+<span>             finalColor = skyColor * absorbMul;</span>
+<span>             break;</span>
+<span style="color:#dc3545;background:#ffeef0">-        }   </span>
+<span style="color:#dc3545;background:#ffeef0">-               </span>
+<span style="color:#28a745;background:#e6ffed">+        }</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span> 		absorbMul *= 0.8; //every bounce absorb some light(more bounces = darker)</span>
+<span style="color:#dc3545;background:#ffeef0">-        </span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span style="color:#28a745;background:#e6ffed">+        // Early termination for low-energy paths: skip to next iteration without adding sky contribution, approximating as black</span>
+<span style="color:#28a745;background:#e6ffed">+        if(absorbMul &lt; 0.02) break;</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span>         //update rayStartPos for next bounce</span>
+<span style="color:#dc3545;background:#ffeef0">-		rayStartPos = rayStartPos + rayDir * h.rayLength; </span>
+<span style="color:#28a745;background:#e6ffed">+		rayStartPos = rayStartPos + rayDir * h.rayLength;</span>
+<span>         //update rayDir for next bounce</span>
+<span>         float rougness = 0.05 + iMouse.x / iResolution.x; //hardcode &quot;drag the window LR to control roughness&quot;</span>
+<span style="color:#dc3545;background:#ffeef0">-		rayDir = normalize(reflect(rayDir,h.normal) + randomInsideUnitSphere(rayDir,rayStartPos,AAIndex) * rougness);       </span>
+<span style="color:#28a745;background:#e6ffed">+		rayDir = normalize(reflect(rayDir,h.normal) + randomInsideUnitSphere(rayDir,rayStartPos,AAIndex) * rougness);</span>
+<span>     }</span>
+<span>     </span>
+<span>     return vec4(finalColor,firstHitRayLength);//alpha nly for CineShader, to show depth</span>
+<span style="color:#268bd2;font-weight:bold">@@ -166,4 +164,4 @@</span>
+<span>     </span>
+<span>     //result</span>
+<span>     fragColor = vec4(finalColor.rgb,cineShaderZ);</span>
+<span style="color:#dc3545;background:#ffeef0">-}</span>
+<span style="color:#28a745;background:#e6ffed">+}</span></pre>
+</div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Shader Code</h2>
+            <div class="two-column">
+                <div class="left-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('original-code')">
+                    <span class="shader-title">Original Shader</span>
+                </button>
+                <div id="original-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('original-code-content')">Copy</button>
+                    <div class="code-block" id="original-code-content"><pre><code class="language-glsl">//drag the window LR to control roughness
+
+//--graphics setting (lower = better fps)---------------------------------------------------------------------
+#define AVERAGECOUNT 16
+#define MAX_BOUNCE 32
+
+//--scene data---------------------------------------------------------------------
+#define SPHERECOUNT 6
+//xyz = pos, w = radius
+const vec4 AllSpheres[SPHERECOUNT]=vec4[SPHERECOUNT](
+    vec4(0.0,0.0,0.0,2.0),//sphere A
+    vec4(0.0,0.0,-1.0,2.0),//sphere B
+    vec4(0.0,-1002.0,0.0,1000.0),//ground
+    vec4(0.0,0.0,+1002,1000.0),//back wall
+    vec4(-1004.0,0.0,0.0,1000.0),//left wall    
+    vec4(+1004.0,0.0,0.0,1000.0)//right wall
+);
+//-----------------------------------------------------------------------
+float raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
+    // - r0: ray origin
+    // - rd: normalized ray direction
+    // - s0: sphere center
+    // - sr: sphere radius
+    // - Returns distance from r0 to first intersecion with sphere,
+    //   or -1.0 if no intersection.
+    float a = dot(rd, rd);
+    vec3 s0_r0 = r0 - s0;
+    float b = 2.0 * dot(rd, s0_r0);
+    float c = dot(s0_r0, s0_r0) - (sr * sr);
+    if (b*b - 4.0*a*c &lt; 0.0) {
+        return -1.0;
+    }
+    return (-b - sqrt((b*b) - 4.0*a*c))/(2.0*a);
+}
+//-----------------------------------------------------------------------
+struct HitData
+{
+    float rayLength;
+    vec3 normal;
+};
+HitData AllObjectsRayTest(vec3 rayPos, vec3 rayDir)
+{
+    HitData hitData;
+    hitData.rayLength = 9999.0; //default value if can&#x27;t hit anything
+
+    for(int i = 0; i &lt; SPHERECOUNT; i++)
+    {
+        vec3 sphereCenter = AllSpheres[i].xyz;
+        float sphereRadius = AllSpheres[i].w;
+        //----hardcode sphere pos animations-------------------------------------
+        if(i == 0)
+        {
+            float t = fract(iTime * 0.7);
+            t = -4.0 * t * t + 4.0 * t;
+            sphereCenter.y += t * 0.7;
+            
+            sphereCenter.x += sin(iTime) * 2.0;
+            sphereCenter.z += cos(iTime) * 2.0;
+        }
+             
+        if(i == 1)
+        {
+            float t = fract(iTime*0.47);
+            t = -4.0 * t * t + 4.0 * t;
+            sphereCenter.y += t * 1.7;
+            
+            sphereCenter.x += sin(iTime+3.14) * 2.0;
+            sphereCenter.z += cos(iTime+3.14) * 2.0;
+        }             
+        //---------------------------------------
+                
+        float resultRayLength = raySphereIntersect(rayPos,rayDir,sphereCenter,sphereRadius);
+        if(resultRayLength &lt; hitData.rayLength &amp;&amp; resultRayLength &gt; 0.001)
+        {
+            //if a shorter(better) hit ray found, update
+            hitData.rayLength = resultRayLength;
+            vec3 hitPos = rayPos + rayDir * resultRayLength;
+    		hitData.normal = normalize(hitPos - sphereCenter);
+        }
+    }
+    
+    //all test finished, return shortest(best) hit data
+    return hitData;
+}
+//--random functions-------------------------------------------------------------------
+float rand01(float seed) { return fract(sin(seed)*43758.5453123); }
+vec3 randomInsideUnitSphere(vec3 rayDir,vec3 rayPos, float extraSeed)
+{
+    return vec3(rand01(iTime * (rayDir.x + rayPos.x + 0.357) * extraSeed),
+                rand01(iTime * (rayDir.y + rayPos.y + 16.35647) *extraSeed),
+                rand01(iTime * (rayDir.z + rayPos.z + 425.357) * extraSeed));
+}
+//---------------------------------------------------------------------
+vec4 calculateFinalColor(vec3 cameraPos, vec3 cameraRayDir, float AAIndex)
+{
+    //init
+    vec3 finalColor = vec3(0.0);
+    float absorbMul = 1.0;
+    vec3 rayStartPos = cameraPos;
+    vec3 rayDir = cameraRayDir;
+    
+    //only for CineShader, to show depth
+    float firstHitRayLength = -1.0;
+    
+    //can&#x27;t write recursive function in GLSL, so write it in a for loop
+    //will loop until hitting any light source / bounces too many times
+    for(int i = 0; i &lt; MAX_BOUNCE; i++)
+    {
+        HitData h = AllObjectsRayTest(rayStartPos + rayDir * 0.0001,rayDir);//+0.0001 to prevent ray already hit at start pos
+        
+        //only for CineShader, to show depth
+        firstHitRayLength = firstHitRayLength &lt; 0.0 ? h.rayLength : firstHitRayLength;
+               
+        //if ray can&#x27;t hit anything, rayLength will remain default value 9999.0
+        //which enters this if()
+        //** 99999 is too large for mobile, use 9900 as threshold now **
+        if(h.rayLength &gt;= 9900.0)
+        {
+            vec3 skyColor = vec3(0.7,0.85,1.0);//hit nothing = hit sky color
+            finalColor = skyColor * absorbMul;
+            break;
+        }   
+               
+		absorbMul *= 0.8; //every bounce absorb some light(more bounces = darker)
+        
+        //update rayStartPos for next bounce
+		rayStartPos = rayStartPos + rayDir * h.rayLength; 
+        //update rayDir for next bounce
+        float rougness = 0.05 + iMouse.x / iResolution.x; //hardcode &quot;drag the window LR to control roughness&quot;
+		rayDir = normalize(reflect(rayDir,h.normal) + randomInsideUnitSphere(rayDir,rayStartPos,AAIndex) * rougness);       
+    }
+    
+    return vec4(finalColor,firstHitRayLength);//alpha nly for CineShader, to show depth
+}
+//-----------------------------------------------------------------------
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+    
+	uv = uv * 2.0 - 1.0;//transform from [0,1] to [-1,1]
+    uv.x *= iResolution.x / iResolution.y; //aspect fix
+
+    vec3 cameraPos = vec3(sin(iTime * 0.47) * 4.0,sin(iTime * 0.7)*8.0+6.0,-25.0);//camera pos animation
+    vec3 cameraFocusPoint = vec3(0,0.0 + sin(iTime),0);//camera look target point animation
+    vec3 cameraDir = normalize(cameraFocusPoint - cameraPos);
+    
+    //TEMPCODE: fov &amp; all ray init dir, it is wrong!!!!
+    //----------------------------------------------------
+    float fovTempMul = 0.2 + sin(iTime * 0.4) * 0.05;//fov animation
+    vec3 rayDir = normalize(cameraDir + vec3(uv,0) * fovTempMul);
+    //----------------------------------------------------
+
+    vec4 finalColor = vec4(0);
+    for(int i = 1; i &lt;= AVERAGECOUNT; i++)
+    {
+        finalColor+= calculateFinalColor(cameraPos,rayDir, float(i));
+    }
+    finalColor = finalColor/float(AVERAGECOUNT);//brute force AA &amp; denoise
+    finalColor.rgb = pow(finalColor.rgb,vec3(1.0/2.2));//gamma correction
+    
+    //only for CineShader, to show depth
+    float z = finalColor.w; //z is linear world space distance from camera to surface
+    float cineShaderZ; //expect 0~1
+    cineShaderZ = pow(clamp(1.0 - max(0.0,z-21.0) * (1.0/6.0),0.0,1.0),2.0);
+    
+    //result
+    fragColor = vec4(finalColor.rgb,cineShaderZ);
+}</code></pre></div>
+                </div>
+            </div></div>
+                <div class="right-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('optimized-code')">
+                    <span class="shader-title">Optimized Shader</span>
+                </button>
+                <div id="optimized-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('optimized-code-content')">Copy</button>
+                    <div class="code-block" id="optimized-code-content"><pre><code class="language-glsl">//drag the window LR to control roughness
+
+//--graphics setting (lower = better fps)---------------------------------------------------------------------
+#define AVERAGECOUNT 16
+#define MAX_BOUNCE 32
+
+//--scene data---------------------------------------------------------------------
+#define SPHERECOUNT 6
+//xyz = pos, w = radius
+const vec4 AllSpheres[SPHERECOUNT]=vec4[SPHERECOUNT](
+    vec4(0.0,0.0,0.0,2.0),//sphere A
+    vec4(0.0,0.0,-1.0,2.0),//sphere B
+    vec4(0.0,-1002.0,0.0,1000.0),//ground
+    vec4(0.0,0.0,+1002,1000.0),//back wall
+    vec4(-1004.0,0.0,0.0,1000.0),//left wall    
+    vec4(+1004.0,0.0,0.0,1000.0)//right wall
+);
+//-----------------------------------------------------------------------
+float raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
+    // - r0: ray origin
+    // - rd: normalized ray direction
+    // - s0: sphere center
+    // - sr: sphere radius
+    // - Returns distance from r0 to first intersecion with sphere,
+    //   or -1.0 if no intersection.
+    float a = dot(rd, rd);
+    vec3 s0_r0 = r0 - s0;
+    float b = 2.0 * dot(rd, s0_r0);
+    float c = dot(s0_r0, s0_r0) - (sr * sr);
+    if (b*b - 4.0*a*c &lt; 0.0) {
+        return -1.0;
+    }
+    return (-b - sqrt((b*b) - 4.0*a*c))/(2.0*a);
+}
+//-----------------------------------------------------------------------
+struct HitData
+{
+    float rayLength;
+    vec3 normal;
+};
+HitData AllObjectsRayTest(vec3 rayPos, vec3 rayDir)
+{
+    // Precompute animated positions to avoid recomputing trigonometry per sphere test
+    float t0 = fract(iTime * 0.7);
+    t0 = -4.0 * t0 * t0 + 4.0 * t0;
+    vec3 animPos0 = AllSpheres[0].xyz;
+    animPos0.y += t0 * 0.7;
+    animPos0.x += sin(iTime) * 2.0;
+    animPos0.z += cos(iTime) * 2.0;
+    float t1 = fract(iTime * 0.47);
+    t1 = -4.0 * t1 * t1 + 4.0 * t1;
+    vec3 animPos1 = AllSpheres[1].xyz;
+    animPos1.y += t1 * 1.7;
+    animPos1.x += sin(iTime + 3.14) * 2.0;
+    animPos1.z += cos(iTime + 3.14) * 2.0;
+
+    HitData hitData;
+    hitData.rayLength = 9999.0; //default value if can&#x27;t hit anything
+
+    for(int i = 0; i &lt; SPHERECOUNT; i++)
+    {
+        vec3 sphereCenter = (i == 0) ? animPos0 : (i == 1) ? animPos1 : AllSpheres[i].xyz;
+        float sphereRadius = AllSpheres[i].w;
+        // Animation code removed from loop, as positions are now precomputed
+        //---------------------------------------
+                
+        float resultRayLength = raySphereIntersect(rayPos,rayDir,sphereCenter,sphereRadius);
+        if(resultRayLength &lt; hitData.rayLength &amp;&amp; resultRayLength &gt; 0.001)
+        {
+            //if a shorter(better) hit ray found, update
+            hitData.rayLength = resultRayLength;
+            vec3 hitPos = rayPos + rayDir * resultRayLength;
+    		hitData.normal = normalize(hitPos - sphereCenter);
+        }
+    }
+    
+    //all test finished, return shortest(best) hit data
+    return hitData;
+}
+//--random functions-------------------------------------------------------------------
+float rand01(float seed) { return fract(sin(seed)*43758.5453123); }
+vec3 randomInsideUnitSphere(vec3 rayDir,vec3 rayPos, float extraSeed)
+{
+    return vec3(rand01(iTime * (rayDir.x + rayPos.x + 0.357) * extraSeed),
+                rand01(iTime * (rayDir.y + rayPos.y + 16.35647) *extraSeed),
+                rand01(iTime * (rayDir.z + rayPos.z + 425.357) * extraSeed));
+}
+//---------------------------------------------------------------------
+vec4 calculateFinalColor(vec3 cameraPos, vec3 cameraRayDir, float AAIndex)
+{
+    //init
+    vec3 finalColor = vec3(0.0);
+    float absorbMul = 1.0;
+    vec3 rayStartPos = cameraPos;
+    vec3 rayDir = cameraRayDir;
+    
+    //only for CineShader, to show depth
+    float firstHitRayLength = -1.0;
+    
+    //can&#x27;t write recursive function in GLSL, so write it in a for loop
+    //will loop until hitting any light source / bounces too many times
+    for(int i = 0; i &lt; MAX_BOUNCE; i++)
+    {
+        HitData h = AllObjectsRayTest(rayStartPos + rayDir * 0.0001,rayDir);//+0.0001 to prevent ray already hit at start pos
+
+        //only for CineShader, to show depth
+        firstHitRayLength = firstHitRayLength &lt; 0.0 ? h.rayLength : firstHitRayLength;
+
+        //if ray can&#x27;t hit anything, rayLength will remain default value 9999.0
+        //which enters this if()
+        //** 99999 is too large for mobile, use 9900 as threshold now **
+        if(h.rayLength &gt;= 9900.0)
+        {
+            vec3 skyColor = vec3(0.7,0.85,1.0);//hit nothing = hit sky color
+            finalColor = skyColor * absorbMul;
+            break;
+        }
+
+		absorbMul *= 0.8; //every bounce absorb some light(more bounces = darker)
+
+        // Early termination for low-energy paths: skip to next iteration without adding sky contribution, approximating as black
+        if(absorbMul &lt; 0.02) break;
+
+        //update rayStartPos for next bounce
+		rayStartPos = rayStartPos + rayDir * h.rayLength;
+        //update rayDir for next bounce
+        float rougness = 0.05 + iMouse.x / iResolution.x; //hardcode &quot;drag the window LR to control roughness&quot;
+		rayDir = normalize(reflect(rayDir,h.normal) + randomInsideUnitSphere(rayDir,rayStartPos,AAIndex) * rougness);
+    }
+    
+    return vec4(finalColor,firstHitRayLength);//alpha nly for CineShader, to show depth
+}
+//-----------------------------------------------------------------------
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+    
+	uv = uv * 2.0 - 1.0;//transform from [0,1] to [-1,1]
+    uv.x *= iResolution.x / iResolution.y; //aspect fix
+
+    vec3 cameraPos = vec3(sin(iTime * 0.47) * 4.0,sin(iTime * 0.7)*8.0+6.0,-25.0);//camera pos animation
+    vec3 cameraFocusPoint = vec3(0,0.0 + sin(iTime),0);//camera look target point animation
+    vec3 cameraDir = normalize(cameraFocusPoint - cameraPos);
+    
+    //TEMPCODE: fov &amp; all ray init dir, it is wrong!!!!
+    //----------------------------------------------------
+    float fovTempMul = 0.2 + sin(iTime * 0.4) * 0.05;//fov animation
+    vec3 rayDir = normalize(cameraDir + vec3(uv,0) * fovTempMul);
+    //----------------------------------------------------
+
+    vec4 finalColor = vec4(0);
+    for(int i = 1; i &lt;= AVERAGECOUNT; i++)
+    {
+        finalColor+= calculateFinalColor(cameraPos,rayDir, float(i));
+    }
+    finalColor = finalColor/float(AVERAGECOUNT);//brute force AA &amp; denoise
+    finalColor.rgb = pow(finalColor.rgb,vec3(1.0/2.2));//gamma correction
+    
+    //only for CineShader, to show depth
+    float z = finalColor.w; //z is linear world space distance from camera to surface
+    float cineShaderZ; //expect 0~1
+    cineShaderZ = pow(clamp(1.0 - max(0.0,z-21.0) * (1.0/6.0),0.0,1.0),2.0);
+    
+    //result
+    fragColor = vec4(finalColor.rgb,cineShaderZ);
+}
+</code></pre></div>
+                </div>
+            </div></div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Generation History</h2>
+            <table>
+            <thead><tr><th>Gen</th><th>Render Time (ms)</th><th>Relative Time</th><th>Speedup</th><th>Max Error</th><th>Media</th></tr></thead>
+            <tbody><tr><td>5</td><td>6.4077</td><td>0.8802</td><td>1.14x</td><td>0.009307</td><td>Yes</td></tr><tr><td>4</td><td>6.7403</td><td>0.9125</td><td>1.10x</td><td>0.000000</td><td>Yes</td></tr><tr><td>3</td><td>6.7403</td><td>0.9125</td><td>1.10x</td><td>0.000000</td><td>Yes</td></tr><tr><td>2</td><td>7.0082</td><td>0.9296</td><td>1.08x</td><td>0.000000</td><td>Yes</td></tr></tbody>
+        </table>
+        </div>
+    </div>
+
+    <script>
+    // ========== Utility Functions ==========
+    function toggleCode(elementId) {
+        var element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle('code-block-expanded');
+        }
+    }
+
+    function toggleSpoiler(id) {
+        var content = document.getElementById(id);
+        if (content) {
+            content.classList.toggle('active');
+        }
+    }
+
+    function copyToClipboard(elementId) {
+        var element = document.getElementById(elementId);
+        if (!element) return;
+        var text = element.textContent || element.innerText;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                showCopySuccess(event.target);
+            }).catch(function() {
+                fallbackCopy(text, event.target);
+            });
+        } else {
+            fallbackCopy(text, event.target);
+        }
+    }
+
+    function showCopySuccess(button) {
+        var orig = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#28a745';
+        setTimeout(function() { button.textContent = orig; }, 2000);
+    }
+
+    function fallbackCopy(text, button) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { if (document.execCommand('copy') && button) showCopySuccess(button); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    // ========== Performance Distribution Chart ==========
+    (function() {
+        var data = {"original": {"bin_edges": [4.5398, 4.8057, 5.0716, 5.3376, 5.6035, 5.8695, 6.1354, 6.4014, 6.6673, 6.9332, 7.1992, 7.4651, 7.7311, 7.997, 8.263, 8.5289, 8.7948, 9.0608, 9.3267, 9.5927, 9.8586, 10.1246, 10.3905, 10.6564, 10.9224, 11.1883, 11.4543, 11.7202, 11.9862, 12.2521, 12.518], "density": [0.0, 0.2976, 0.5952, 3.2738, 6.8452, 6.5476, 8.0357, 9.5238, 6.8452, 7.1429, 10.4167, 8.9286, 6.5476, 6.5476, 3.5714, 2.9762, 3.869, 2.0833, 2.0833, 0.2976, 1.4881, 0.5952, 0.0, 0.8929, 0.2976, 0.0, 0.0, 0.0, 0.2976, 0.0], "mean": 7.2918, "std": 1.1987, "n": 336}, "optimized": {"bin_edges": [4.5398, 4.8057, 5.0716, 5.3376, 5.6035, 5.8695, 6.1354, 6.4014, 6.6673, 6.9332, 7.1992, 7.4651, 7.7311, 7.997, 8.263, 8.5289, 8.7948, 9.0608, 9.3267, 9.5927, 9.8586, 10.1246, 10.3905, 10.6564, 10.9224, 11.1883, 11.4543, 11.7202, 11.9862, 12.2521, 12.518], "density": [0.0, 4.6667, 3.6667, 9.3333, 10.0, 13.3333, 9.3333, 11.3333, 12.6667, 9.0, 6.6667, 4.0, 3.6667, 0.6667, 0.0, 1.0, 0.3333, 0.3333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mean": 6.4077, "std": 0.8139, "n": 300}};
+        var canvas = document.getElementById('perfChart');
+        if (!canvas || !data || !data.original || !data.original.bin_edges || !data.original.bin_edges.length) {
+            if (canvas) {
+                var ctx = canvas.getContext('2d');
+                var rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.fillStyle = '#999';
+                ctx.font = '13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No performance data available yet', rect.width / 2, rect.height / 2);
+            }
+            return;
+        }
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 20, right: 20, bottom: 40, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        // X range from bin edges
+        var allEdges = data.original.bin_edges.concat(data.optimized.bin_edges || []);
+        var xMin = Math.min.apply(null, allEdges);
+        var xMax = Math.max.apply(null, allEdges);
+        var xRange = xMax - xMin || 1;
+
+        // Y range from density values
+        var allDens = data.original.density.concat(data.optimized.density || []);
+        var yMax = Math.max.apply(null, allDens) * 1.15;
+        var yRange = yMax || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toY(v) { return pad.top + plotH - (v / yRange) * plotH; }
+
+        // Draw histogram bars
+        function drawHist(series, fillColor, strokeColor) {
+            var edges = series.bin_edges, dens = series.density;
+            if (!edges || !dens || dens.length === 0) return;
+
+            // Semi-transparent fill
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = fillColor;
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]), yBot = toY(0);
+                ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            }
+
+            // Bold border
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            var baseline = toY(0);
+            ctx.moveTo(toX(edges[0]), baseline);
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]);
+                ctx.lineTo(x1, yTop);
+                ctx.lineTo(x2, yTop);
+            }
+            ctx.lineTo(toX(edges[edges.length - 1]), baseline);
+            ctx.stroke();
+        }
+
+        // Draw mean line
+        function drawMean(series, color, label, yOffset) {
+            if (!series.mean) return;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.globalAlpha = 0.9;
+            var mx = toX(series.mean);
+            ctx.beginPath();
+            ctx.moveTo(mx, pad.top);
+            ctx.lineTo(mx, pad.top + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Label
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(series.mean.toFixed(2) + ' ms', mx, pad.top + yOffset);
+        }
+
+        var C_ORIG = '#8856a7', C_OPT = '#43a2ca', C_ARROW = '#2E7D32';
+
+        // Draw original behind optimized
+        drawHist(data.original, C_ORIG, C_ORIG);
+        drawHist(data.optimized, C_OPT, C_OPT);
+        drawMean(data.original, C_ORIG, 'Original', 12);
+        drawMean(data.optimized, C_OPT, 'Optimized', 24);
+
+        // Speedup arrow
+        if (data.original.mean && data.optimized.mean && data.original.mean > data.optimized.mean) {
+            var speedup = (data.original.mean / data.optimized.mean).toFixed(1);
+            var arrowY = pad.top + plotH * 0.25;
+            var x1 = toX(data.original.mean), x2 = toX(data.optimized.mean);
+            // Dashed arrow line
+            ctx.strokeStyle = C_ARROW;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.moveTo(x1, arrowY);
+            ctx.lineTo(x2 + 6, arrowY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Arrowhead
+            ctx.fillStyle = C_ARROW;
+            ctx.beginPath();
+            ctx.moveTo(x2, arrowY);
+            ctx.lineTo(x2 + 10, arrowY - 5);
+            ctx.lineTo(x2 + 10, arrowY + 5);
+            ctx.closePath();
+            ctx.fill();
+            // Label
+            var midX = (x1 + x2) / 2;
+            ctx.fillStyle = C_ARROW;
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(speedup + 'x', midX, arrowY - 8);
+        }
+
+        // Axes - left and bottom spines
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (density)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var numYTicks = 5;
+        for (var i = 0; i <= numYTicks; i++) {
+            var val = (yRange / numYTicks) * i;
+            var gy = pad.top + plotH - (plotH / numYTicks) * i;
+            ctx.fillText(val.toFixed(2), pad.left - 4, gy + 3);
+        }
+
+        // X-axis labels (render time ms)
+        ctx.textAlign = 'center';
+        var numXTicks = 6;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(1), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Render Time (ms)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Legend
+        ctx.font = '11px sans-serif';
+        var legX = W - pad.right - 130, legY = pad.top + 14;
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_ORIG;
+        ctx.fillRect(legX, legY - 8, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_ORIG;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(legX, legY - 8, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText('Original (n=' + (data.original.n || '?') + ')', legX + 22, legY + 2);
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_OPT;
+        ctx.fillRect(legX, legY + 10, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_OPT;
+        ctx.strokeRect(legX, legY + 10, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.fillText('Optimized (n=' + (data.optimized.n || '?') + ')', legX + 22, legY + 20);
+    })();
+
+    // ========== Validation Frames Chart ==========
+    
+
+    // ========== Error Distribution Chart ==========
+    (function() {
+        var data = {"bin_edges": [0.0, 0.000375, 0.00075, 0.001125, 0.0015, 0.001875, 0.00225, 0.002625, 0.003, 0.003375, 0.00375, 0.004125, 0.0045, 0.004875, 0.00525, 0.005625, 0.006, 0.006375, 0.00675, 0.007125, 0.0075, 0.007875, 0.00825, 0.008625, 0.009, 0.009375, 0.00975, 0.010125, 0.0105, 0.010875, 0.01125, 0.011625, 0.012, 0.012375, 0.01275, 0.013125, 0.0135, 0.013875, 0.01425, 0.014625, 0.015], "counts": [29.9569, 13.1466, 8.1897, 7.3276, 6.25, 4.7414, 3.0172, 4.3103, 3.4483, 1.9397, 3.2328, 2.3707, 3.0172, 2.3707, 1.2931, 0.8621, 0.8621, 0.431, 0.2155, 0.8621, 0.6466, 0.0, 0.431, 0.6466, 0.431, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "threshold": 0.01, "exceedance_rate": 0.01, "n_total": 464, "k_exceedances": 0, "max_error": 0.009307, "mean_error": 0.001811};
+        var canvas = document.getElementById('errorDistChart');
+        if (!canvas || !data || !data.bin_edges || !data.bin_edges.length) return;
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 25, right: 20, bottom: 45, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        var edges = data.bin_edges;
+        var counts = data.counts;
+        var threshold = data.threshold;
+        var exRate = data.exceedance_rate;
+        var ratePct = exRate * 100;
+
+        // X range
+        var xMin = edges[0], xMax = edges[edges.length - 1];
+        var xRange = xMax - xMin || 1;
+
+        // Y range (log scale) — find min non-zero count for log floor
+        var minNonZero = Infinity;
+        for (var i = 0; i < counts.length; i++) {
+            if (counts[i] > 0 && counts[i] < minNonZero) minNonZero = counts[i];
+        }
+        if (minNonZero === Infinity) minNonZero = 0.1;
+        var yFloor = minNonZero * 0.3;
+        var yMax = 110; // slightly above 100%
+        var logMin = Math.log10(yFloor);
+        var logMax = Math.log10(yMax);
+        var logRange = logMax - logMin || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toLogY(v) {
+            if (v <= 0) return pad.top + plotH;
+            var lv = Math.log10(Math.max(v, yFloor));
+            return pad.top + plotH - ((lv - logMin) / logRange) * plotH;
+        }
+
+        var C_SAFE = '#43a2ca';
+        var C_EXCEED = '#dc3545';
+        var C_THRESH = '#e6550d';
+
+        // Draw histogram bars
+        for (var i = 0; i < counts.length; i++) {
+            var binLeft = edges[i], binRight = edges[i + 1];
+            var binMid = (binLeft + binRight) / 2;
+            var x1 = toX(binLeft), x2 = toX(binRight);
+            var yBot = pad.top + plotH;
+            var yTop = toLogY(counts[i]);
+            if (counts[i] <= 0) continue;
+
+            // Color: red if bin center >= threshold
+            var isExceed = binMid >= threshold;
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x1, yTop, x2 - x1, yBot - yTop);
+        }
+
+        // Rejection zone rectangle (threshold to xMax, ratePct to 100)
+        var rzX = toX(threshold);
+        var rzY = toLogY(100);
+        var rzW = toX(xMax) - rzX;
+        var rzH = toLogY(ratePct) - rzY;
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = C_EXCEED;
+        ctx.fillRect(rzX, rzY, rzW, rzH);
+        ctx.globalAlpha = 1.0;
+
+        // Threshold vertical line
+        ctx.strokeStyle = C_THRESH;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        ctx.moveTo(toX(threshold), pad.top);
+        ctx.lineTo(toX(threshold), pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Threshold label
+        ctx.fillStyle = C_THRESH;
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('FLIP Threshold = ' + threshold.toFixed(3), toX(threshold) + 4, pad.top + 12);
+
+        // Exceedance rate horizontal line
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        var rateY = toLogY(ratePct);
+        ctx.moveTo(toX(threshold), rateY);
+        ctx.lineTo(pad.left + plotW, rateY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(ratePct.toFixed(0) + '% exceedance rate', pad.left + plotW - 4, rateY - 4);
+
+        // Axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (log scale)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var yTicks = [0.01, 0.1, 1, 10, 100];
+        for (var i = 0; i < yTicks.length; i++) {
+            var val = yTicks[i];
+            if (val < yFloor || val > yMax) continue;
+            var gy = toLogY(val);
+            ctx.fillText(val < 1 ? val.toFixed(2) + '%' : val.toFixed(0) + '%', pad.left - 4, gy + 3);
+            // Grid line
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, gy);
+            ctx.lineTo(pad.left + plotW, gy);
+            ctx.stroke();
+        }
+
+        // X-axis labels
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        var numXTicks = 8;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(3), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('FLIP Error (p99)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Stats legend
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#333';
+        var legX = pad.left + 8, legY = pad.top + plotH - 40;
+        ctx.fillText('n=' + data.n_total + ', k=' + data.k_exceedances +
+            ', max=' + data.max_error.toFixed(4) +
+            ', mean=' + data.mean_error.toFixed(4), legX, legY);
+    })();
+    </script>
+</body>
+</html>

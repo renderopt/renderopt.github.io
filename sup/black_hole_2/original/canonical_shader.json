@@ -1,0 +1,186 @@
+{
+  "render_type": "godot",
+  "uniforms": {
+    "uniforms": [
+      {
+        "class_type": "ShaderUniformVec",
+        "name": "camera_position",
+        "value": [
+          -2.079105854034424,
+          -2.0615668296813965,
+          -2.0753018856048584
+        ],
+        "primary_value": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "distribution": {
+          "type": "UniformVecDistribution",
+          "mins": [
+            -2.079105854034424,
+            -2.0615668296813965,
+            -2.0753018856048584
+          ],
+          "maxs": [
+            2.1064462661743164,
+            2.0957822799682617,
+            2.1267364025115967
+          ]
+        },
+        "mins": [
+          -2.079105854034424,
+          -2.0615668296813965,
+          -2.0753018856048584
+        ],
+        "maxs": [
+          2.1064462661743164,
+          2.0957822799682617,
+          2.1267364025115967
+        ],
+        "fixed_sample": [
+          -2.079105854034424,
+          -2.0615668296813965,
+          -2.0753018856048584
+        ],
+        "fixed_primary": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "constraints": {
+          "smin": [
+            -2.07910585403442,
+            -2.0615668296814,
+            -2.07530188560486
+          ],
+          "smax": [
+            2.10644626617432,
+            2.09578227996826,
+            2.1267364025116
+          ],
+          "value": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      {
+        "class_type": "ShaderUniformVec",
+        "name": "time",
+        "value": [
+          0.0
+        ],
+        "primary_value": [
+          0.0
+        ],
+        "distribution": {
+          "type": "UniformVecDistribution",
+          "mins": [
+            0.0
+          ],
+          "maxs": [
+            30.0
+          ]
+        },
+        "mins": [
+          0.0
+        ],
+        "maxs": [
+          30.0
+        ],
+        "fixed_sample": [
+          0.0
+        ],
+        "fixed_primary": [
+          0.0
+        ],
+        "constraints": {
+          "smin": [
+            0.0
+          ],
+          "smax": [
+            30.0
+          ],
+          "value": [
+            0.0
+          ]
+        }
+      },
+      {
+        "class_type": "ShaderUniformVec",
+        "name": "camera_lookat_position",
+        "value": [
+          -0.8868957757949829,
+          -0.9197161793708801,
+          -0.851880669593811
+        ],
+        "primary_value": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "distribution": {
+          "type": "UniformVecDistribution",
+          "mins": [
+            -0.8868957757949829,
+            -0.9197161793708801,
+            -0.851880669593811
+          ],
+          "maxs": [
+            0.9400264024734497,
+            0.8913888335227966,
+            0.9047459363937378
+          ]
+        },
+        "mins": [
+          -0.8868957757949829,
+          -0.9197161793708801,
+          -0.851880669593811
+        ],
+        "maxs": [
+          0.9400264024734497,
+          0.8913888335227966,
+          0.9047459363937378
+        ],
+        "fixed_sample": [
+          -0.8868957757949829,
+          -0.9197161793708801,
+          -0.851880669593811
+        ],
+        "fixed_primary": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "constraints": {
+          "smin": [
+            -0.886895775794983,
+            -0.91971617937088,
+            -0.851880669593811
+          ],
+          "smax": [
+            0.94002640247345,
+            0.891388833522797,
+            0.904745936393738
+          ],
+          "value": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    ]
+  },
+  "stages": [
+    {
+      "shader": {
+        "source": "// Shader by HyperJragon (https://godotshaders.com/shader/black-hole-extended/)\n// Slightly modified (scale)\n\nshader_type spatial;\nrender_mode unshaded, cull_back;\n\n//uniform float time;\nuniform float radius;\nuniform sampler2D noise : filter_nearest;\nuniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;\n\nuniform float scale : hint_range(0.01, 100.0) = 1.0;\n\nuniform float spin : hint_range(0.0, 1.0) = 0.4;\nuniform float shadow_asymmetry : hint_range(0.0, 1.0) = 0.5;\nuniform float shadow_oblateness : hint_range(0.0, 1.0) = 0.5;\nuniform float frame_drag_strength : hint_range(0.0, 1.0) = 0.5;\nuniform float doppler_beaming = 0.5;\nuniform float warp_falloff : hint_range(0.5, 8.0) = 2.5;\nuniform float warp_strength : hint_range(0.0, 2.0) = 1.0;\nuniform float warp_inner_edge : hint_range(0.0, 0.9) = 0.3;\n\nuniform vec3 color_core : source_color = vec3(0.88, 0.96, 1.00);\nuniform float brightness_core : hint_range(0.0, 40.0) = 22.0;\nuniform vec3 color_hot : source_color = vec3(0.20, 0.60, 1.00);\nuniform float brightness_hot : hint_range(0.0, 20.0) = 10.0;\nuniform vec3 color_mid : source_color = vec3(0.05, 0.35, 1.00);\nuniform float brightness_mid : hint_range(0.0, 15.0) = 6.5;\nuniform vec3 color_cool : source_color = vec3(0.10, 0.45, 0.95);\nuniform float brightness_cool : hint_range(0.0, 10.0) = 4.0;\nuniform vec3 color_outer : source_color = vec3(0.95, 0.55, 0.15);\nuniform float brightness_outer : hint_range(0.0, 10.0) = 2.2;\nuniform vec3 color_edge : source_color = vec3(0.7, 0.08, 0.02);\nuniform float brightness_edge : hint_range(0.0, 5.0) = 1.1;\n\nuniform float gradient_stop0 : hint_range(0.0, 1.0) = 0.08;\nuniform float gradient_stop1 : hint_range(0.0, 1.0) = 0.25;\nuniform float gradient_stop2 : hint_range(0.0, 1.0) = 0.55;\nuniform float gradient_stop3 : hint_range(0.0, 1.0) = 0.80;\nuniform float color_saturation : hint_range(0.0, 3.0) = 1.5;\n\nuniform float grav_redshift_strength : hint_range(0.0, 2.0) = 0.85;\nuniform float turbulence_strength : hint_range(0.0, 1.0) = 0.28;\nuniform float turbulence_scale : hint_range(0.5, 8.0) = 2.5;\nuniform float turbulence_speed : hint_range(0.0, 2.0) = 0.35;\nuniform float density_heat_strength : hint_range(0.0, 1.0) = 0.55;\nuniform float density_heat_power : hint_range(0.1, 1.0) = 0.3;\n\nuniform float rs : hint_range(0.1, 3.0) = 0.7;\n\n#define fade 0.15\n#define R 7.0\n#define R0 1.75\n#define R_INV 0.18868\n#define SPIN_AXIS vec3(0.0, 1.0, 0.0)\n\nfloat accretion_density(float l, float ang, float y) {\n    float n = texture(noise, vec2(0.5 * ang / PI + TIME * 0.2, log(l) * 1.5)).r;\n    float d0 = pow(max(1.0 - l / R, 0.0) * clamp((l - R0) / fade + 1.0, 0.0, 1.0), 1.5);\n    return d0 * exp(-y * y * 400.0) * 13.0 * (n + max(0.0, n - 0.65) * 1.5);\n}\n\nvec3 temperature_color(float l, float r, float d, float ang) {\n    float turb_x = 0.5 * ang / PI + TIME * turbulence_speed;\n    float turb_y = log(max(l, 0.01)) * turbulence_scale;\n    float n1 = texture(noise, vec2(turb_x * 0.7 + 0.3, turb_y * 0.5)).r;\n    float n2 = texture(noise, vec2(turb_x * 1.3 + 0.6, turb_y * 1.1 + 0.4)).r;\n    float t = clamp((l - R0) * R_INV + (n1 * 0.6 + n2 * 0.4 - 0.5) * turbulence_strength, 0.0, 1.0);\n\n    vec3 c0 = color_core  * brightness_core;\n    vec3 c1 = color_hot   * brightness_hot;\n    vec3 c2 = color_mid   * brightness_mid;\n    vec3 c3 = color_cool  * brightness_cool;\n    vec3 c4 = color_outer * brightness_outer;\n    vec3 c5 = color_edge  * brightness_edge;\n\n    float s0 = gradient_stop0;\n    float s1 = gradient_stop1;\n    float s2 = gradient_stop2;\n    float s3 = gradient_stop3;\n\n    vec3 col = t < s0 ? mix(c0, c1, t / max(s0, 0.001)) :\n               t < s1 ? mix(c1, c2, (t - s0) / max(s1 - s0, 0.001)) :\n               t < s2 ? mix(c2, c3, (t - s1) / max(s2 - s1, 0.001)) :\n               t < s3 ? mix(c3, c4, (t - s2) / max(s3 - s2, 0.001)) :\n                        mix(c4, c5, (t - s3) / max(1.0 - s3, 0.001));\n\n    col *= 1.0 + density_heat_strength * pow(clamp(d * 0.125, 0.0, 1.0), density_heat_power);\n\n    float redshift_t = 1.0 - 1.0 / (1.0 + grav_redshift_strength * rs / (2.0 * max(r, rs * 0.6)));\n    col *= vec3(1.0 + redshift_t * 0.9, 1.0 - redshift_t * 0.4, 1.0 - redshift_t * 0.8);\n\n    float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));\n    return mix(vec3(lum), col, color_saturation);\n}\n\nvoid fragment() {\n    float inv_scale = 1.0 / scale;\n\n    mat4 inv_view_model = inverse(MODEL_MATRIX) * INV_VIEW_MATRIX;\n    vec3 campos = (inv_view_model * vec4(0.0, 0.0, 0.0, 1.0)).xyz * inv_scale;\n    vec3 ld = -normalize((inv_view_model * vec4(VIEW, 0.0)).xyz);\n    vec3 ld_orig = ld;\n    vec3 lp = (inv_view_model * vec4(VERTEX, 1.0)).xyz * inv_scale;\n    vec3 cam_dir = normalize(campos);\n\n    vec3 normal_local = normalize((inv_view_model * vec4(NORMAL, 0.0)).xyz);\n    float face_amount = clamp(dot(normal_local, normalize(campos - lp)), 0.0, 1.0);\n    float warp_weight = pow(face_amount, warp_falloff) * smoothstep(0.0, warp_inner_edge, face_amount);\n\n    vec3 prograde = normalize(cross(SPIN_AXIS, cam_dir));\n    float spin_rs = spin * rs;\n    float rs_oblate_base = rs * (1.0 - spin * shadow_oblateness * 0.12);\n\n    float scaled_radius = radius * inv_scale;\n\n    bool in_bounds = false, prev_in_bounds = false;\n    float step_size = 0.05;\n    float T = 1.0;\n    vec3 L = vec3(0.0);\n\n    for (int i = 0; i < 200; i++) {\n        step_size *= 1.005;\n        lp += ld * step_size;\n\n        float r = length(lp);\n        float r2 = r * r;\n        float l = length(lp.xz);\n\n        vec3 lp_n = lp / r;\n        float ld_dot = dot(lp_n, ld);\n        float r_clamp = clamp(2.0 - 0.5 * r, 0.0, 1.0);\n        vec3 la = (-1.5 * rs * pow(1.0 + ld_dot, 3.0) * r_clamp * r_clamp) / (r2 * r2) * lp;\n        ld = normalize(ld + (la + frame_drag_strength * spin_rs * cross(SPIN_AXIS, lp) / (max(r, rs) * max(r2, rs * rs))) * step_size);\n\n        float ang = atan(lp.z, lp.x);\n        float d = accretion_density(l, ang, lp.y);\n\n        float polar_proj = dot(lp_n, SPIN_AXIS);\n        float effective_rs = rs_oblate_base * (1.0 + spin * shadow_asymmetry * 0.18 * dot(lp_n, prograde))\n                           + spin * shadow_oblateness * 0.12 * rs * polar_proj * polar_proj;\n        T *= exp(-(d + 10.0 * clamp((effective_rs - r) * 2.0 + 1.0, 0.0, 1.0)) * step_size);\n\n        float beta = clamp(sqrt(rs / max(l, rs)) * 0.7, 0.0, 0.85) * doppler_beaming;\n        float beaming = pow(max(1.0 + beta * dot(normalize(vec3(-lp.z, 0.0, lp.x)), -cam_dir), 0.01), 4.0);\n        L += T * d * temperature_color(l, r, d, ang) * beaming * step_size;\n\n        in_bounds = r < scaled_radius;\n        if (T <= 0.005 || (!in_bounds && prev_in_bounds)) break;\n        prev_in_bounds = in_bounds;\n    }\n\n    vec2 deflection = ((INV_VIEW_MATRIX * vec4(ld, 0.0)).xyz - (INV_VIEW_MATRIX * vec4(ld_orig, 0.0)).xyz).xy * 0.5;\n    vec2 final_uv = clamp(SCREEN_UV + deflection * warp_weight * warp_strength, vec2(0.001), vec2(0.999));\n    ALBEDO = L + T * texture(SCREEN_TEXTURE, final_uv).rgb;\n}",
+        "name": "res://user_shaders/black_hole_2.gdshader"
+      }
+    }
+  ],
+  "shader_id": "black_hole_2"
+}

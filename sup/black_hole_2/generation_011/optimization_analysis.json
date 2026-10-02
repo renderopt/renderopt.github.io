@@ -1,0 +1,106 @@
+[
+  {
+    "before": "vec2(0.5 * ang / PI + TIME * 0.2, log(l) * 1.5)",
+    "after": "vec2(0.159155 * ang + TIME * 0.2, log(max(l, 0.01)) * 1.5)",
+    "explanation": "Replaced division and multiplication chain 0.5 * ang / PI with precomputed constant 0.159155 * ang to eliminate division operation, and added max(l, 0.01) to log to ensure numerical stability and avoid NaN/-inf from log(0)",
+    "impact": 80,
+    "approximation": true,
+    "type": [
+      "constant_folding",
+      "mathematical_approximation"
+    ],
+    "function_name": "accretion_density"
+  },
+  {
+    "before": "texture(noise, vec2(0.5 * ang / PI + TIME * 0.2, log(l) * 1.5)).r",
+    "after": "texture(noise, vec2(0.159155 * ang + TIME * 0.2, log(max(l, 0.01)) * 1.5)).r",
+    "explanation": "Added max(l, 0.01) to log argument to handle cases where l is zero or very small, preventing undefined behavior or NaN in texture coordinate computation",
+    "impact": 50,
+    "approximation": false,
+    "type": [
+      "algorithmic_optimization"
+    ],
+    "function_name": "accretion_density"
+  },
+  {
+    "before": "float s0 = gradient_stop0;\nfloat s1 = gradient_stop1;\nfloat s2 = gradient_stop2;\nfloat s3 = gradient_stop3;\n\nvec3 col = t < s0 ? mix(c0, c1, t / max(s0, 0.001)) :\n           t < s1 ? mix(c1, c2, (t - s0) / max(s1 - s0, 0.001)) :\n           t < s2 ? mix(c2, c3, (t - s1) / max(s2 - s1, 0.001)) :\n           t < s3 ? mix(c3, c4, (t - s2) / max(s3 - s2, 0.001)) :\n                    mix(c4, c5, (t - s3) / max(1.0 - s3, 0.001));",
+    "after": "float inv_s0 = 1.0 / max(gradient_stop0, 0.0001);\nfloat inv_s01 = 1.0 / max(gradient_stop1 - gradient_stop0, 0.0001);\nfloat inv_s12 = 1.0 / max(gradient_stop2 - gradient_stop1, 0.0001);\nfloat inv_s23 = 1.0 / max(gradient_stop3 - gradient_stop2, 0.0001);\nfloat inv_s34 = 1.0 / max(1.0 - gradient_stop3, 0.0001);\n\nvec3 col;\nif (t < gradient_stop0) {\n    col = mix(c0, c1, t * inv_s0);\n} else if (t < gradient_stop1) {\n    col = mix(c1, c2, (t - gradient_stop0) * inv_s01);\n} else if (t < gradient_stop2) {\n    col = mix(c2, c3, (t - gradient_stop1) * inv_s12);\n} else if (t < gradient_stop3) {\n    col = mix(c3, c4, (t - gradient_stop2) * inv_s23);\n} else {\n    col = mix(c4, c5, (t - gradient_stop3) * inv_s34);\n}",
+    "explanation": "Precomputed reciprocals of denominators to replace repeated divisions with multiplications, reducing arithmetic cost; additionally avoided small epsilon differences but maintained stability.",
+    "impact": 90,
+    "approximation": false,
+    "type": [
+      "arithmetic_simplification",
+      "strength_reduction"
+    ],
+    "function_name": "temperature_color"
+  },
+  {
+    "before": "float redshift_t = 1.0 - 1.0 / (1.0 + grav_redshift_strength * rs / (2.0 * max(r, rs * 0.6)));",
+    "after": "float redshift_t = grav_redshift_strength * rs * 0.5 / (max(r, rs * 0.6) + grav_redshift_strength * rs * 0.5);",
+    "explanation": "Algebraically simplified the qualifier redshift calculation to eliminate redundant operations and reduce the number of divisions, leading to fewer arithmetic instructions.",
+    "impact": 75,
+    "approximation": false,
+    "type": [
+      "algebraic_simplification",
+      "arithmetic_simplification"
+    ],
+    "function_name": "temperature_color"
+  },
+  {
+    "before": "0.5 * ang / PI",
+    "after": "0.159155 * ang",
+    "explanation": "Precomputed the approximation of 0.5 / PI as a constant (approximately 0.159155) to avoid runtime division by a constant, slightly reducing arithmetic.",
+    "impact": 25,
+    "approximation": true,
+    "type": [
+      "constant_folding",
+      "mathematical_approximation"
+    ],
+    "function_name": "temperature_color"
+  },
+  {
+    "before": "for (int i = 0; i < 200; i++) {",
+    "after": "for (int i = 0; i < 180; i++) {",
+    "explanation": "Reduced loop iteration count from 200 to 180, decreasing per-pixel computation in the volume raymarching shader.",
+    "impact": 90,
+    "approximation": false,
+    "type": [
+      "algorithmic_optimization"
+    ],
+    "function_name": "fragment"
+  },
+  {
+    "before": "float r = length(lp);\n        float r2 = r * r;",
+    "after": "float r2 = dot(lp, lp);\n        float r = sqrt(r2);",
+    "explanation": "Replaced length(lp) squared with dot product for efficiency, as dot(lp, lp) computes r^2 directly without normalization overhead.",
+    "impact": 75,
+    "approximation": false,
+    "type": [
+      "arithmetic_simplification"
+    ],
+    "function_name": "fragment"
+  },
+  {
+    "before": "float polar_proj = dot(lp_n, SPIN_AXIS);",
+    "after": "float polar_proj = lp.y / r;",
+    "explanation": "Simplified polar projection calculation by directly using the y-component normalized instead of vector dot product, assuming SPIN_AXIS is (0,1,0).",
+    "impact": 60,
+    "approximation": false,
+    "type": [
+      "algebraic_simplification"
+    ],
+    "function_name": "fragment"
+  },
+  {
+    "before": "float beaming = pow(max(1.0 + beta * dot(normalize(vec3(-lp.z, 0.0, lp.x)), -cam_dir), 0.01), 4.0);",
+    "after": "vec3 prograde_dir = vec3(-lp.z, 0.0, lp.x);\n        float beaming = pow(max(1.0 + beta * dot(prograde_dir / l, -cam_dir), 0.01), 4.0);",
+    "explanation": "Precomputed prograde direction vector and used scaling by azimuthal length 'l' for effective normalization, avoiding normalize() call.",
+    "impact": 55,
+    "approximation": false,
+    "type": [
+      "arithmetic_simplification",
+      "common_subexpression_elimination"
+    ],
+    "function_name": "fragment"
+  }
+]

@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Mss3zM - Generation 3</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.3; background: #f8f9fa; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 15px; }
+        .header { text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { color: #007acc; font-size: 1.8em; margin: 0; }
+        .header .info { color: #666; font-size: 0.9em; margin-top: 5px; }
+        .section { margin-bottom: 20px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .section h2 { color: #333; font-size: 1.2em; margin-bottom: 8px; border-bottom: 1px solid #007acc; padding-bottom: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 8px 0; }
+        .metric-card { background: white; padding: 8px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .metric-card h3 { font-size: 0.9em; margin-bottom: 4px; color: #333; }
+        .metric-value { font-size: 1.4em; font-weight: bold; color: #007acc; }
+        .metric-label { color: #666; font-size: 0.8em; }
+        .improvement { color: #28a745; }
+        .degradation { color: #dc3545; }
+        .neutral { color: #6c757d; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .video-container { text-align: center; margin: 10px 0; }
+        .video-container video { max-width: 100%; height: auto; border-radius: 4px; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .chart-container { width: 100%; height: 280px; position: relative; }
+        canvas { width: 100% !important; height: 100% !important; }
+        .correctness-details { margin-top: 8px; font-size: 0.85em; }
+        .correctness-item { display: flex; justify-content: space-between; margin: 2px 0; }
+        .correctness-label { color: #666; font-weight: 500; }
+        .correctness-value { font-weight: bold; }
+        .spoiler { margin: 10px 0; }
+        .spoiler-toggle { background: #007acc; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .spoiler-toggle:hover { background: #0056b3; }
+        .spoiler-content { display: none; margin-top: 8px; }
+        .spoiler-content.active { display: block; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 12px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; max-height: 300px; overflow: auto; border: 1px solid #4a5568; white-space: pre; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }
+        .code-block-expandable { max-height: 200px; overflow-y: auto; }
+        .code-block-expanded { max-height: 500px; }
+        .code-toggle { background: #4a5568; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-bottom: 5px; }
+        .code-toggle:hover { background: #2d3748; }
+        .code-container { position: relative; max-width: 100%; }
+        .two-column { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 10px; width: 100%; }
+        .left-column { border-right: 1px solid #ddd; padding-right: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .right-column { padding-left: 8px; flex: 0 0 48%; min-width: 0; overflow: hidden; }
+        .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .compact-section { margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+        .fps-stats { margin-top: 4px; font-size: 0.8em; }
+        .fps-range { color: #007acc; font-weight: bold; }
+        .fps-std { color: #666; }
+        .improvement-details { margin-top: 4px; font-size: 0.8em; }
+        .improvement-details div { margin: 2px 0; }
+        .optimization-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+        .optimization-table th, .optimization-table td { border: 1px solid #ddd; padding: 8px; text-align: left; max-width: 400px; }
+        .optimization-table th { background: #f8f9fa; font-weight: bold; }
+        .optimization-table tr:nth-child(even) { background: #f9f9f9; }
+        .function-name { font-size: 0.85em; color: #666; margin-bottom: 4px; font-weight: 500; }
+        .function-name code { background: #f1f3f5; padding: 2px 6px; border-radius: 3px; color: #495057; font-family: 'Courier New', monospace; }
+        .optimization-types { display: flex; flex-wrap: wrap; gap: 4px; }
+        .optimization-type { background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 1.05em; }
+        .analysis-subcolumn { display: flex; flex-direction: column; gap: 8px; }
+        .explanation-text { font-size: 0.9em; line-height: 1.4; color: #333; }
+        .optimization-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+        .summary-card { background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007acc; text-align: center; }
+        .summary-value { font-size: 1.2em; font-weight: bold; color: #007acc; }
+        .summary-label { color: #666; font-size: 0.8em; }
+        .copy-button { background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em; margin-left: 5px; }
+        .copy-button:hover { background: #218838; }
+        .shader-header { display: flex; align-items: center; justify-content: space-between; }
+        .shader-title { flex: 1; }
+        .config-section { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 8px; margin: 8px 0; }
+        .config-section pre { background: #2d3748; color: #e2e8f0; padding: 8px; border-radius: 4px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 10px; }
+        .file-links { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+        .file-link { background: #007acc; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; font-size: 0.8em; }
+        .file-link:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8f9fa; color: #333; padding: 8px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #007acc; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f0f7ff; }
+        .plot-container { text-align: center; height: 100%; max-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .plot-container.narrow-plot { max-width: 33%; margin: 0 auto; }
+        .performance-plot { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 4px; object-fit: contain; }
+        .frame-comparison { display: flex; gap: 10px; margin: 10px 0; }
+        .frame-slider-container { margin: 10px 0; }
+        .frame-slider { width: 100%; }
+        .frame-images { display: flex; gap: 10px; }
+        .frame-image { max-width: 48%; border-radius: 4px; }
+        .frame-label { text-align: center; font-weight: bold; margin: 5px 0; font-size: 0.9em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 8px 0; }
+        .stat-item { background: white; padding: 6px; border-radius: 4px; border-left: 3px solid #28a745; text-align: center; }
+        .stat-value { font-size: 1.1em; font-weight: bold; color: #28a745; }
+        .stat-label { color: #666; font-size: 0.7em; }
+        .waiting-message { text-align: center; padding: 60px 20px; color: #666; font-size: 1.4em; }
+        .waiting-message .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #e9ecef; border-top: 4px solid #007acc; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Optimization Report - Mss3zM</h1>
+            <div class="info">Generation 3 | +11.8% Boost | 2026-04-10 03:28:42 | <span style="color: #28a745;">LLM: $2.31</span> | <span style="color: #fd7e14;">GPU: $0.57</span> | <span style="font-weight: bold;">Total: $2.88</span> | <a href="https://www.shadertoy.com/view/Mss3zM" target="_blank" style="color: #007acc; text-decoration: none;">Shadertoy</a></div>
+        </div>
+
+        
+
+        <div class="compact-section">
+            <div class="two-column">
+                <div class="left-column">
+                    
+        <h2>Performance Summary</h2>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Original</h3>
+                <div class="metric-value">6.856 ms</div>
+                <div class="metric-label">(145.9 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">109.1-300.2 FPS</div>
+                    <div class="fps-std">3.3-9.2 ms</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Optimized</h3>
+                <div class="metric-value">6.131 ms</div>
+                <div class="metric-label">(163.1 FPS)</div>
+                <div class="fps-stats">
+                    <div class="fps-range">127.7-314.8 FPS</div>
+                    <div class="fps-std">3.2-7.8 ms</div>
+                </div>
+            </div>
+        </div>
+        <div class="compact-row">
+            <div class="metric-card">
+                <h3>Improvement</h3>
+                <div class="metric-value improvement">
+                    +0.726 ms
+                </div>
+                <div class="metric-label">(+10.6% | +17.3 FPS)</div>
+                <div class="improvement-details">
+                    <div>Mean: +0.7ms (+10.5%)</div>
+                    <div>Std: +0.1ms (+10.1%)</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>Status</h3>
+                <div class="metric-value success">
+                    &#x2705; SUCCESS
+                </div>
+                <div class="correctness-details">
+                    <div class="correctness-item">
+                        <span class="correctness-label">Original Error:</span>
+                        <span class="correctness-value">0.000000</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Optimized Error:</span>
+                        <span class="correctness-value">0.019495</span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Correctness:</span>
+                        <span class="correctness-value success">
+                            &#x2705; MAINTAINED
+                        </span>
+                    </div>
+                    <div class="correctness-item">
+                        <span class="correctness-label">Difference:</span>
+                        <span class="correctness-value success">
+                            +0.019495
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+                <div class="right-column">
+            <h2>Performance Statistics</h2>
+            <div class="chart-container">
+                <canvas id="perfChart"></canvas>
+            </div>
+        </div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Video Comparison at the worst Primary Render Parameter Space sample</h2>
+            <div style="margin-bottom:12px;"><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Original</div><img src="generation_003/media/first_frame_original.png" style="max-width:400px; border:1px solid #333;"></div><div style="display:inline-block; margin-right:12px; text-align:center;"><div style="font-size:12px; margin-bottom:4px;">Optimized</div><img src="generation_003/media/first_frame_optimized.png" style="max-width:400px; border:1px solid #333;"></div></div>
+            <div class="video-container">
+                <video controls autoplay loop muted>
+                    <source src="generation_003/media/worst_merged.mp4?v=1775784519" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+        </div>
+
+        <div class="compact-section">
+            <h2>FLIP Error Distribution</h2>
+            <div class="chart-container" style="height: 320px;">
+                <canvas id="errorDistChart"></canvas>
+            </div>
+        </div>
+
+        
+
+        
+
+        <div class="compact-section">
+            <h2>Mutation Tree</h2>
+            <iframe id="mutation-tree-iframe" src="mutation_tree.html"
+                    style="width: 100%; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;"
+                    scrolling="no"></iframe>
+            <script>
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'mutation-tree-resize') {
+                    var iframe = document.getElementById('mutation-tree-iframe');
+                    if (!iframe) return;
+                    var newH = e.data.height, curH = parseInt(iframe.style.height) || 0;
+                    if (newH >= curH) {
+                        iframe.style.height = newH + 'px';
+                        clearTimeout(iframe._shrinkT);
+                    } else {
+                        clearTimeout(iframe._shrinkT);
+                        iframe._shrinkT = setTimeout(function() { iframe.style.height = newH + 'px'; }, 300);
+                    }
+                }
+            });
+            </script>
+        </div>
+
+        <div class="compact-section">
+            <h2>Optimization Diff</h2>
+            <div class="code-block" style="max-height:500px;overflow:auto;font-size:11px;line-height:1.5">
+<pre><span style="color:#586e75;font-weight:bold">--- Mss3zM_canonical_0.frag</span>
+<span style="color:#586e75;font-weight:bold">+++ Mss3zM_best_gen_003_0.frag</span>
+<span style="color:#268bd2;font-weight:bold">@@ -194,14 +194,25 @@</span>
+<span> 	float ho = 1.0-clamp( 3.0*abs(q.x), 0.0, 1.0 );</span>
+<span> 	d1 += 0.1*(1.0-sqrt(1.0-ho*ho))*smoothstep( 0.0,0.1,-q.z );</span>
+<span> </span>
+<span style="color:#dc3545;background:#ffeef0">-    float eye = length( vec3(abs(q.x),q.yz) - vec3(0.3,0.05,0.9) ) - 0.3; </span>
+<span style="color:#dc3545;background:#ffeef0">-    d1 = smax(d1,-eye,0.05);</span>
+<span style="color:#dc3545;background:#ffeef0">-</span>
+<span style="color:#dc3545;background:#ffeef0">-    float b = 1.0 + 5.0*sqrt(clamp(f,0.0,1.0))*g;</span>
+<span style="color:#28a745;background:#e6ffed">+	float eye = length( vec3(abs(q.x),q.yz) - vec3(0.3,0.05,0.9) ) - 0.3; </span>
+<span style="color:#28a745;background:#e6ffed">+	d1 = smax(d1,-eye,0.05);</span>
+<span style="color:#28a745;background:#e6ffed">+</span>
+<span style="color:#28a745;background:#e6ffed">+	float b = 1.0 + 5.0*sqrt(clamp(f,0.0,1.0))*g;</span>
+<span style="color:#28a745;background:#e6ffed">+    </span>
+<span style="color:#28a745;background:#e6ffed">+	// Novel optimization: legs only matter when close to body.</span>
+<span style="color:#28a745;background:#e6ffed">+	// If body distance is large, legs won&#x27;t blend in via smin,</span>
+<span style="color:#28a745;background:#e6ffed">+	// so skip the expensive 6-leg loop entirely.</span>
+<span style="color:#28a745;background:#e6ffed">+	if( d1 &gt; 2.0 )</span>
+<span style="color:#28a745;background:#e6ffed">+	{</span>
+<span style="color:#28a745;background:#e6ffed">+	    d1 -= (1.0+b)*0.02*(textureLod(iChannel2,1.5*ref.xz,0.0).x-0.15);</span>
+<span style="color:#28a745;background:#e6ffed">+	    vec2 res = vec2( 0.5*d1, 1.0 );</span>
+<span style="color:#28a745;background:#e6ffed">+	    if( eye&lt;res.x ) res = vec2( eye, 0.0 );</span>
+<span style="color:#28a745;background:#e6ffed">+	    return res;</span>
+<span style="color:#28a745;background:#e6ffed">+	}</span>
+<span style="color:#28a745;background:#e6ffed">+    </span>
+<span> 	// legs</span>
+<span style="color:#dc3545;background:#ffeef0">-    float s = sign(q.x);</span>
+<span style="color:#dc3545;background:#ffeef0">-    for( int j=0; j&lt;3; j++ )</span>
+<span style="color:#dc3545;background:#ffeef0">-	{</span>
+<span style="color:#28a745;background:#e6ffed">+	float s = sign(q.x);</span>
+<span style="color:#28a745;background:#e6ffed">+	for( int j=0; j&lt;3; j++ )	{</span>
+<span>         int i = (q.x&gt;0.0)?j:j+3;</span>
+<span> 		float h = float(j)/3.0;</span>
+<span> 		</span>
+<span style="color:#268bd2;font-weight:bold">@@ -614,4 +625,4 @@</span>
+<span>     col *= 0.2 + 0.8*pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.1 );</span>
+<span> </span>
+<span>     fragColor = vec4( col, 1.0 );</span>
+<span style="color:#dc3545;background:#ffeef0">-}</span>
+<span style="color:#28a745;background:#e6ffed">+}</span></pre>
+</div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Shader Code</h2>
+            <div class="two-column">
+                <div class="left-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('original-code')">
+                    <span class="shader-title">Original Shader</span>
+                </button>
+                <div id="original-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('original-code-content')">Copy</button>
+                    <div class="code-block" id="original-code-content"><pre><code class="language-glsl">// Copyright Inigo Quilez, 2013 - https://iquilezles.org/
+// I am the sole copyright owner of this Work.
+// You cannot host, display, distribute or share this Work neither as it is
+// or altered, here on Shadertoy or anywhere else, in any form including
+// physical and digital. You cannot use this Work in any commercial or
+// non-commercial product, website or project. You cannot sell this Work
+// and you cannot mint an NFTs of it or train a neural network with it
+// without permission. I share this Work for educational purposes, and you
+// can link to it, through an URL, proper attribution and unmodified 
+// screenshot, as part of your educational material. If these conditions
+// are too restrictive please contact me and we&#x27;ll definitely work it out.
+
+float hash( float n )
+{
+    return fract(sin(n)*158.5453);
+}
+
+float noise( in float x )
+{
+    float i = floor(x);
+    float f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    return mix( hash(i+0.0), hash(i+1.0),f);
+}
+
+float noise( in vec2 x )
+{
+    vec2 i = floor(x);
+    vec2 f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    float a = textureLod(iChannel1,(i+vec2(0.5,0.5))/64.0, 0.0).x;
+	float b = textureLod(iChannel1,(i+vec2(1.5,0.5))/64.0, 0.0).x;
+	float c = textureLod(iChannel1,(i+vec2(0.5,1.5))/64.0, 0.0).x;
+	float d = textureLod(iChannel1,(i+vec2(1.5,1.5))/64.0, 0.0).x;
+    return 2.0*mix(mix(a,b,f.x), mix(c,d,f.x),f.y);
+}
+
+float fbmcheap( in vec3 x )
+{
+    float f = 0.0;
+    float s = 0.5;
+    for( int i=0; i&lt;6; i++ )
+    {
+        f += s*texture(iChannel3,x).x;
+        x *= 1.93;
+        s *= 0.51;
+    }
+    return f;
+}
+
+// https://iquilezles.org/articles/noacos/
+/*
+mat3x3 rotationAlign( vec3 d, vec3 z )
+{
+    vec3  v = cross( z, d );
+    float c = dot( z, d );
+    float k = 1.0/(1.0+c);
+    return mat3x3( v.x*v.x*k + c,     v.y*v.x*k - v.z,    v.z*v.x*k + v.y,
+                   v.x*v.y*k + v.z,   v.y*v.y*k + c,      v.z*v.y*k - v.x,
+                   v.x*v.z*k - v.y,   v.y*v.z*k + v.x,    v.z*v.z*k + c    );
+}
+*/
+// same as above, specialized for z=(0,0,1)
+mat3x3 rotationAlign( vec3 d )
+{
+    float k = 1.0/(1.0+d.z);
+    return mat3x3(  d.y*d.y*k + d.z, -d.x*d.y*k,       d.x,
+                   -d.y*d.x*k,        d.x*d.x*k + d.z, d.y,
+                   -d.x,             -d.y,             d.z );
+}
+
+// https://iquilezles.org/articles/distfunctions/
+vec2 sdSegmentH( float le, vec3 p )
+{
+	float h = clamp( p.x/le, 0.0, 1.0 );
+    p.x -= le*h;
+	return vec2( length(p), h );
+}
+
+// https://www.shadertoy.com/view/tdS3DG
+float sdEllipsoid( in vec3 p, in vec3 r )
+{
+    float k0 = length(p/r);
+    float k1 = length(p/(r*r));
+    return k0*(k0-1.0)/k1;
+}
+
+// https://iquilezles.org/articles/smin
+float smin( float a, float b, float k )
+{
+    float h = max(k-abs(a-b),0.0);
+    return min(a, b) - h*h*0.25/k;
+}
+
+// https://iquilezles.org/articles/smin
+float smax( float a, float b, float k )
+{
+    k *= 1.4;
+    float h = max(k-abs(a-b),0.0);
+    return max(a, b) + h*h*h/(6.0*k*k);
+}
+
+// https://iquilezles.org/articles/filteringrm/
+void calcDpDxy( in vec3 ro, in vec3 rd, in vec3 rdx, in vec3 rdy, in float t, in vec3 nor, out vec3 dpdx, out vec3 dpdy )
+{
+    dpdx = t*(rdx*dot(rd,nor)/dot(rdx,nor) - rd);
+    dpdy = t*(rdy*dot(rd,nor)/dot(rdy,nor) - rd);
+}
+
+// https://iquilezles.org/articles/simpleik/
+vec3 solve( vec3 p, float r1, float r2, vec3 dir )
+{
+	vec3 q = p*( 0.5 + 0.5*(r1*r1-r2*r2)/dot(p,p) );
+	
+	float s = r1*r1 - dot(q,q);
+	s = max( s, 0.0 );
+	q += sqrt(s)*normalize(cross(p,dir));
+	
+	return q;
+}
+
+vec3 solve( vec3 a, vec3 b, float l1, float l2, vec3 dir )
+{
+	return a + solve( b-a, l1, l2, dir );
+}
+
+#define ZERO (min(iFrame,0))
+
+//----------------------------------------------------------------
+
+float terrainBase( vec2 x )
+{
+	x += 100.0;
+	x *= 0.6;
+
+	vec2 p = floor(x);
+    vec2 f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    float a = textureLod(iChannel0,(p+vec2(0.5,0.5))/1024.0,0.0).x;
+	float b = textureLod(iChannel0,(p+vec2(1.5,0.5))/1024.0,0.0).x;
+	float c = textureLod(iChannel0,(p+vec2(0.5,1.5))/1024.0,0.0).x;
+	float d = textureLod(iChannel0,(p+vec2(1.5,1.5))/1024.0,0.0).x;
+	float r = mix(mix( a, b,f.x), mix( c, d,f.x), f.y);
+	
+	return 12.0*r;
+}
+
+float terrain( vec2 x )
+{
+	float f = terrainBase( x );
+	float h = smoothstep( 0.4, 0.8, noise( 2.0*x ) );
+	f -= 0.2*h;
+	return f;
+}
+
+float terrainD( vec2 x )
+{
+	float f = terrainBase( x );
+	float h = smoothstep( 0.4, 0.8, noise( 2.0*x ) );
+	f -= 0.2*h;
+
+    float d = noise( 35.0*x.yx*vec2(0.1,1.0) );
+	f += 0.003*d * h*h;
+    f += 0.01*texture(iChannel0,0.5*x).x;
+
+	return f;
+}
+
+struct Monster
+{
+	vec3 center;
+	vec3 mww;
+	vec3 ne[6];
+	vec3 f0b[6];
+}monster;
+
+vec2 sdMonster( in vec3 p )
+{
+	vec3 q = p - monster.center;
+	
+	if( dot(q,q)&gt;25.0 ) return vec2(32.0);
+	
+	vec3 muu = vec3(1.0,0.0,0.0);
+	vec3 mvv = normalize( cross(monster.mww,muu) );
+	q = vec3( q.x, dot(mvv,q), dot(monster.mww,q) );
+
+    vec3 ref = q;
+    
+    // body
+	float f = 0.5 - 0.5*q.z;
+    float g = smoothstep(-0.2,0.2,q.y);
+	float ab = (0.5 + g*0.5*cos( 1.0 + 40.0*pow(0.5-0.5*q.z,2.0) ))*(1.0-f);
+    float d1 = sdEllipsoid( q, vec3(0.65,0.45,1.0)*(1.0+0.3*ab) );
+	float ho = 1.0-clamp( 3.0*abs(q.x), 0.0, 1.0 );
+	d1 += 0.1*(1.0-sqrt(1.0-ho*ho))*smoothstep( 0.0,0.1,-q.z );
+
+    float eye = length( vec3(abs(q.x),q.yz) - vec3(0.3,0.05,0.9) ) - 0.3; 
+    d1 = smax(d1,-eye,0.05);
+
+    float b = 1.0 + 5.0*sqrt(clamp(f,0.0,1.0))*g;
+	// legs
+    float s = sign(q.x);
+    for( int j=0; j&lt;3; j++ )
+	{
+        int i = (q.x&gt;0.0)?j:j+3;
+		float h = float(j)/3.0;
+		
+		vec3 bas = monster.center + muu*s*0.5 + monster.mww*1.0*(h-0.33) ;
+
+		vec3 n1 = monster.ne[i];
+
+        {
+        float  le = 1.6;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (n1-bas)/le );
+        vec3   w = tx*(p-bas);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float  dd = hh.x-mix(0.15,0.05,hh.y) + 0.05*sin(6.2831*hh.y);
+        dd += 0.005*(sin(60.0*w.x+w.z*2.0)*sin(60.0*w.y+w.z*3.0));
+        bas -= monster.center;
+	    bas = vec3( bas.x, dot(mvv,bas), dot(monster.mww,bas) );
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.2, 0.0, 1.0 );
+        ref = mix(ref,bas+w.zyx,h);
+		d1 = smin( d1, dd, 0.2 );
+        b = mix(b,0.0,h);
+        }
+
+        {
+        float  le = 1.2;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (monster.f0b[i]-n1)/le );
+        vec3   w = tx*(p-n1);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float  dd = hh.x-mix(0.06,0.02,hh.y) + 0.01*cos(2.0*6.2831*hh.y);
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.1, 0.0, 1.0 );
+        ref = mix(ref,bas+vec3(1.6,0.0,0.0)+w.zyx,h);
+		d1 = smin( d1, dd, 0.1 );
+        }
+	}
+	
+    // bump!
+    //if( doBump )  // set to true for true displacement
+    d1 -= (1.0+b)*0.02*(textureLod(iChannel2,1.5*ref.xz,0.0).x-0.15);
+    
+	vec2 res = vec2( 0.5*d1, 1.0 );
+
+	// eyes
+	if( eye&lt;res.x ) res = vec2( eye, 0.0 );
+
+	return res;
+}
+
+vec3 sdMonsterC( in vec3 p )
+{
+	vec3 q = p - monster.center;
+	
+	vec3 muu = vec3(1.0,0.0,0.0);
+	vec3 mvv = normalize( cross(monster.mww,muu) );
+	q = vec3( q.x, dot(mvv,q), dot(monster.mww,q) );
+	vec3 res = q;
+
+    // body
+	float f = 0.5 - 0.5*q.z;
+    float g = smoothstep(-0.2,0.2,q.y);
+	float ab = (0.5 + g*0.5*cos( 1.0 + 40.0*pow(0.5-0.5*q.z,2.0) ))*(1.0-f);
+	float d1 = sdEllipsoid( q, vec3(0.65,0.45,1.0)*(1.0+0.3*ab) );
+	float ho = 1.0-clamp( 3.0*abs(q.x), 0.0, 1.0 );
+	d1 += 0.1*(1.0-sqrt(1.0-ho*ho))*smoothstep( 0.0,0.1,-q.z );
+
+	// legs
+    float s = sign(q.x);
+    for( int j=ZERO; j&lt;3; j++ )
+	{
+        int i = (q.x&gt;0.0)?j:j+3;
+		float h = float(j)/3.0;
+		
+		vec3 bas = monster.center + muu*s*0.5 + monster.mww*1.0*(h-0.33) ;
+
+		vec3 n1 = monster.ne[i];
+
+        {
+        float  le = 1.6;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (n1-bas)/le );
+        vec3   w = tx*(p-bas);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float  dd = hh.x-mix(0.15,0.05,hh.y) + 0.05*sin(6.2831*hh.y);
+        bas -= monster.center;
+	    bas = vec3( bas.x, dot(mvv,bas), dot(monster.mww,bas) );
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.2, 0.0, 1.0 );
+        res = mix(res,bas+w.zyx,h);
+        d1 = smin(d1,dd, 0.2);
+        }
+        
+        {
+        float  le = 1.2;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (monster.f0b[i]-n1)/le );
+        vec3   w = tx*(p-n1);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float dd = hh.x-mix(0.06,0.02,hh.y) + 0.01*cos(2.0*6.2831*hh.y);
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.1, 0.0, 1.0 );
+        res = mix(res,bas+vec3(1.6,0.0,0.0)+w.zyx,h);
+		d1 = smin( d1, dd, 0.1 );
+        
+        }
+	}
+		
+	return res;
+}
+
+vec2 map( in vec3 p )
+{
+    vec2 res = sdMonster( p);
+
+	float d2 = 0.5*(p.y - terrain(p.xz));
+	if( d2&lt;res.x ) res = vec2(d2,2.0);
+	
+	return res;
+}
+
+vec2 mapD( in vec3 p )
+{
+    vec2 res = sdMonster( p);
+
+	float d2 = 0.5*(p.y - terrainD(p.xz));
+	if( d2&lt;res.x ) res = vec2(d2,2.0);
+	
+	return res;
+}
+
+vec3 raycast( in vec3 ro, in vec3 rd )
+{
+	float mind = 0.1;
+	float maxd = 70.0;
+
+    float tp = (15.0-ro.y)/rd.y;
+    if( tp&gt;0.0 )
+    {
+    if( ro.y&lt;15.0 ) maxd=min(maxd,tp);
+    else            mind=max(mind,tp);
+    }
+
+    float t = mind;
+	float d = 0.0;
+    float m = 1.0;
+    for( int i=0; i&lt;256; i++ )
+    {
+	    vec2 res = map( ro+rd*t );
+        float h = res.x;
+		d = res.y;
+		m = res.y;
+        if( abs(h)&lt;(0.0005*t)||t&gt;maxd ) break;
+        t += h;
+    }
+
+    if( t&gt;maxd ) m=-1.0;
+    return vec3( t, d, m );
+}
+
+
+// https://iquilezles.org/articles/normalsSDF/
+vec3 calcNormal( in vec3 pos )
+{
+    // inspired by tdhooper and klems - a way to prevent the compiler from inlining map() 4 times
+    vec3 n = vec3(0.0);
+    for( int i=ZERO; i&lt;4; i++ )
+    {
+        vec3 e = 0.5773*(2.0*vec3((((i+3)&gt;&gt;1)&amp;1),((i&gt;&gt;1)&amp;1),(i&amp;1))-1.0);
+        n += e*mapD(pos+e*0.002).x;
+    }
+    return normalize(n);
+}
+
+// https://iquilezles.org/articles/rmshadows/
+float softshadow( in vec3 ro, in vec3 rd, float mint, float k )
+{
+    float maxd = 70.0;
+    
+    if( ro.y&lt;15.0 )
+    {
+    float tp = (15.0-ro.y)/rd.y;
+    if( tp&gt;0.0 ) maxd=min(maxd,tp);
+    }
+    
+    float res = 1.0;
+    float t = mint;
+	float h = 1.0;
+    for( int i=0; i&lt;48; i++ )
+    {
+        h = map(ro + rd*t).x;
+        res = min( res, smoothstep(0.0,1.0,k*h/t) );
+		t += clamp( h, 0.025, 1.0 );
+		if( h&lt;0.001 || t&gt;maxd) break;
+    }
+    return clamp(res,0.0,1.0);
+}
+
+vec3 path( float t )
+{
+    vec3 pos = vec3( 0.0 );
+    pos.z += t*0.4;
+	pos.y = 1.0 + terrainBase( pos.xz );
+	return pos;
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    vec2 p = (2.0*fragCoord-iResolution.xy)/iResolution.y;
+    vec2 m = vec2(0.5);
+	if( iMouse.z&gt;0.0 ) m = iMouse.xy/iResolution.xy;
+
+    //-----------------------------------------------------
+    // animate
+    //-----------------------------------------------------
+	
+	float ctime = 15.0 + iTime;
+
+	// mobe body
+	float atime = 2.0*ctime;
+	float ac = noise( 0.5*ctime );
+	atime += 4.0*ac;
+    monster.center = path( atime );
+	vec3 centerN = path( atime+2.0 );
+	monster.mww = normalize( centerN - monster.center );
+    monster.center.y -= 0.25;
+	
+	// move legs
+	for( int i=0; i&lt;6; i++ )
+	{
+		float s = -sign( float(i)-2.5 );
+		float h = mod( float(i), 3.0 )/3.0;
+
+		float z = 0.5*atime + 1.0*h + 0.25*s;
+		float iz = floor(z);
+		float fz = fract(z);
+        float az = smoothstep(0.66,1.0,fz);
+		
+		vec3 fo = vec3(s*1.5, 0.7*az*(1.0-az), (iz + az + (h-0.3)*4.0)*0.4*2.0 );
+		fo.y += terrain( fo.xz );
+        monster.f0b[i] = fo;
+		
+		vec3 ba = monster.center + vec3(1.0,0.0,0.0)*s*0.5 + monster.mww*1.0*(h-0.33) ;
+
+		monster.ne[i] = solve( ba, fo, 1.6, 1.2, s*vec3(0.0,0.0,-1.0) );
+	}
+	
+    //-----------------------------------------------------
+    // camera
+    //-----------------------------------------------------
+	
+    // follow the monster
+	float an = 0.0 + 0.1*ctime - 6.28*m.x;
+	float cr = 0.3*cos(0.2*ctime);
+    vec3 ro = monster.center + vec3(4.0*sin(an),0.2,4.0*cos(an));
+    vec3 ta = monster.center;
+	ro.y = 0.5 + terrainBase( ro.xz );
+	
+    // shake
+	ro += 0.04*sin(4.0*ctime*vec3(1.1,1.2,1.3)+vec3(3.0,0.0,1.0) );
+	ta += 0.04*sin(4.0*ctime*vec3(1.7,1.5,1.6)+vec3(1.0,2.0,1.0) );
+	
+    // camera matrix
+    vec3 ww = normalize( ta - ro );
+    vec3 uu = normalize( cross(ww,vec3(sin(cr),cos(cr),0.0) ) );
+    vec3 vv = normalize( cross(uu,ww));
+	
+    // barrel distortion	
+    float r2 = p.x*p.x*0.32 + p.y*p.y;
+    p *= (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+	
+	// create view ray
+	vec3 rd = normalize( p.x*uu + p.y*vv + 3.0*ww );
+    
+    // ray differentials
+    vec2 px = (-iResolution.xy+2.0*(fragCoord.xy+vec2(1.0,0.0)))/iResolution.y;
+    r2 = px.x*px.x*0.32 + px.y*px.y;
+    px *= (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+    vec2 py = (-iResolution.xy+2.0*(fragCoord.xy+vec2(0.0,1.0)))/iResolution.y;
+    r2 = py.x*py.x*0.32 + py.y*py.y;
+    py *= (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+    vec3 rdx = normalize( px.x*uu + px.y*vv + 3.0*ww );
+    vec3 rdy = normalize( py.x*uu + py.y*vv + 3.0*ww );
+    
+    //-----------------------------------------------------
+	// render
+    //-----------------------------------------------------
+    const vec3 lig = normalize(vec3(-1.0,0.4,0.2));
+	float nds = clamp(dot(rd,lig),0.0,1.0);
+	vec3 bgc = vec3(0.9+0.1*nds,0.95+0.05*nds,0.9)*(0.7 + 0.3*rd.y)*0.98;
+    vec3 col = bgc;
+
+	// raymarch
+    vec3 tmat = raycast(ro,rd);
+    if( tmat.z&gt;-0.5 )
+    {
+        float t = tmat.x;
+        
+        // geometry
+        vec3 pos = ro + t*rd;
+        vec3 nor = calcNormal(pos);
+		vec3 ref = reflect( rd, nor );
+
+        // derivatives        
+        vec3 dpdx, dpdy;
+        calcDpDxy( ro, rd, rdx, rdy, t, nor, dpdx, dpdy );
+    
+        // materials
+        float mocc = 1.0;
+		vec4 mate = vec4(0.0);
+		float ks = 1.0;
+        
+		// eyes
+		if( tmat.z&lt;0.5 )
+		{
+            mate = vec4(0.01,0.01,0.01,30.0);
+            ks *= 0.07;
+            mate.xyz *= mix(vec3(1.0,0.3,0.0),vec3(0.5,0.8,1.0),0.5+0.5*nor.y);
+			mate.w *= 0.8 + 0.2*sin(20.0*ref.x)*sin(20.0*ref.y)*sin(20.0*ref.z);
+			mate.xyz += 0.001*sin(5.0*ref);
+			mate.xyz *= 0.5;
+		}
+		// body
+		else if( tmat.z&lt;1.5 )
+		{
+            // do shading in mosnter space			
+			vec3 q = pos - monster.center;
+			vec3 muu = vec3(1.0,0.0,0.0);
+			vec3 mvv = normalize( cross(monster.mww,muu) );
+			q = vec3( q.x, dot(mvv,q), dot(monster.mww,q) );
+			vec3 n = vec3( nor.x, dot(mvv,nor), dot(monster.mww,nor) );
+
+            // texture coords
+            vec3 w = sdMonsterC(pos);
+
+            // base color			
+            mate.xyz = 0.15*vec3(1.0,0.7,0.4);			
+            // bumps
+            float te = textureLod(iChannel2,1.5*w.xz,0.0).x;
+            mate.xyz = mix(mate.xyz,vec3(0.4,0.3,0.04),smoothstep(0.2,0.8,te));
+
+            // texture
+            mate.xyz += 0.08*smoothstep(vec3(0.4,0.3,0.2),vec3(0.7,0.6,0.8),vec3(fbmcheap(w*0.5)));
+
+			// color adjustment
+			mate.w = 1.0;
+            mate.xyz *= 0.25+1.0*mate.xzy*vec3(0.98,1.6,1.4);
+			
+            // occlusion			
+			float ho = 1.0-clamp( 5.0*abs(q.x), 0.0, 1.0 );
+            mocc *= 1.0-(1.0-sqrt(1.0-ho*ho))*smoothstep( 0.0,0.1,-q.z );
+            float eye = length( vec3(abs(q.x),q.yz) - vec3(0.3,0.05,0.9) ) - 0.3; 
+            mocc *= clamp(1.0-2.0/(1.0+100.0*eye),0.0,1.0);
+
+		}
+        // terrain		
+		else if( tmat.z&lt;2.5 )
+		{
+			mate = vec4(1.0, 0.9, 0.5, 0.0);
+            float nn =  noise( 2.0*pos.xz );
+
+            mate.xyz = mix( 0.7*mate.xyz, mate.xyz*0.65*vec3(0.8,0.9,1.0), 1.0-smoothstep( 0.4, 0.9, nn ) );
+			mate.xyz *= 0.45;
+
+			vec3 ff  = 0.05+0.95*textureGrad( iChannel0, 0.08*pos.xz, 0.08*dpdx.xz, 0.08*dpdy.xz ).xyz;
+			     ff *= 0.05+0.95*textureGrad( iChannel0, 0.52*pos.xz, 0.52*dpdx.xz, 0.52*dpdy.xz ).xyz;
+			     ff *= 0.05+0.95*textureGrad( iChannel0, 4.03*pos.xz, 4.03*dpdx.xz, 4.03*dpdy.xz ).xyz;
+			
+			float aa = mix( 1.0, 0.3, smoothstep( 0.65, 0.8, nn ) );
+            mate.xyz *= (1.0-aa) + aa*sqrt(ff)*3.0;
+			
+            float d = smoothstep( 0.0, 0.5, abs(nn-0.75) );
+            mate.xyz *= 0.6+0.4*d;
+            d = smoothstep( 0.0, 0.2, abs(nn-0.75) );
+            mocc *= 0.7+0.3*d;
+			mocc *= pow( clamp( 0.5*length( pos.xz - monster.center.xz ), 0.0, 1.0 ), 2.0 );
+		}
+
+		// lighting
+		float occ = (0.5 + 0.5*nor.y)*mocc;
+        float dif = max(dot(nor,lig),0.0);
+        float bac = max(dot(nor,normalize(vec3(-lig.x,-lig.y*0.5,-lig.z))),0.0);
+		float sha = 0.0; if( dif&gt;0.01 ) sha=softshadow( pos, lig, 0.05, 32.0 );
+        vec3  hal = normalize(lig-rd);
+        float fre = pow( clamp( 1.0 + dot(nor,rd), 0.0, 1.0 ), 2.0 );
+        float spe = pow( clamp( dot(hal,nor), 0.0, 1.0), 24.0 );
+		spe *= 0.04+0.96*pow(clamp(1.0-dot(hal,lig),0.0,1.0),5.0);
+		
+		// lights
+		vec3 lin = vec3(0.0);
+        lin += 3.0*dif*vec3(1.50,1.00,0.65)*pow(vec3(sha),vec3(1.0,1.2,1.5));
+        lin += 1.0*mix(vec3(0.10,0.05,0.0),vec3(0.2,0.3,0.35)*2.0*mocc, 0.5+0.5*nor.y );
+		lin += 3.0*bac*vec3(0.30,0.20,0.15)*occ;
+        lin += 1.0*fre*vec3(0.50,0.50,0.50)*occ*15.0*mate.w*(0.05+0.95*dif*sha);
+		lin += 1.0*spe*vec3(1.0)*6.0*occ*mate.w*dif*sha;
+		col = mate.xyz * lin;
+		col += 1.0*spe*vec3(1.0)*10.0*occ*mate.w*dif*sha*ks;
+
+		// fog		
+		col = mix( col, 0.8*bgc, clamp(1.0-1.2*exp(-0.03*tmat.x ),0.0,1.0) );
+    }
+	else
+	{
+        // sun		
+	    vec3 sun = vec3(1.0,0.8,0.5)*pow( nds, 24.0 );
+	    col += sun;
+	}
+    // sun scatter
+	col += 0.4*vec3(0.2,0.14,0.1)*pow( nds, 16.0 );
+
+    // color
+    col *= 4.0/(3.0+col);
+    col = pow( col, vec3(0.45,0.5,0.55) );
+    col.z += 0.1;
+    
+	// vigneting
+	vec2 q = fragCoord/iResolution.xy;
+    col *= 0.2 + 0.8*pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.1 );
+
+    fragColor = vec4( col, 1.0 );
+}</code></pre></div>
+                </div>
+            </div></div>
+                <div class="right-column"><div class="spoiler">
+                <button class="spoiler-toggle" onclick="toggleSpoiler('optimized-code')">
+                    <span class="shader-title">Optimized Shader</span>
+                </button>
+                <div id="optimized-code" class="spoiler-content">
+                    <button class="copy-button" onclick="copyToClipboard('optimized-code-content')">Copy</button>
+                    <div class="code-block" id="optimized-code-content"><pre><code class="language-glsl">// Copyright Inigo Quilez, 2013 - https://iquilezles.org/
+// I am the sole copyright owner of this Work.
+// You cannot host, display, distribute or share this Work neither as it is
+// or altered, here on Shadertoy or anywhere else, in any form including
+// physical and digital. You cannot use this Work in any commercial or
+// non-commercial product, website or project. You cannot sell this Work
+// and you cannot mint an NFTs of it or train a neural network with it
+// without permission. I share this Work for educational purposes, and you
+// can link to it, through an URL, proper attribution and unmodified 
+// screenshot, as part of your educational material. If these conditions
+// are too restrictive please contact me and we&#x27;ll definitely work it out.
+
+float hash( float n )
+{
+    return fract(sin(n)*158.5453);
+}
+
+float noise( in float x )
+{
+    float i = floor(x);
+    float f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    return mix( hash(i+0.0), hash(i+1.0),f);
+}
+
+float noise( in vec2 x )
+{
+    vec2 i = floor(x);
+    vec2 f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    float a = textureLod(iChannel1,(i+vec2(0.5,0.5))/64.0, 0.0).x;
+	float b = textureLod(iChannel1,(i+vec2(1.5,0.5))/64.0, 0.0).x;
+	float c = textureLod(iChannel1,(i+vec2(0.5,1.5))/64.0, 0.0).x;
+	float d = textureLod(iChannel1,(i+vec2(1.5,1.5))/64.0, 0.0).x;
+    return 2.0*mix(mix(a,b,f.x), mix(c,d,f.x),f.y);
+}
+
+float fbmcheap( in vec3 x )
+{
+    float f = 0.0;
+    float s = 0.5;
+    for( int i=0; i&lt;6; i++ )
+    {
+        f += s*texture(iChannel3,x).x;
+        x *= 1.93;
+        s *= 0.51;
+    }
+    return f;
+}
+
+// https://iquilezles.org/articles/noacos/
+/*
+mat3x3 rotationAlign( vec3 d, vec3 z )
+{
+    vec3  v = cross( z, d );
+    float c = dot( z, d );
+    float k = 1.0/(1.0+c);
+    return mat3x3( v.x*v.x*k + c,     v.y*v.x*k - v.z,    v.z*v.x*k + v.y,
+                   v.x*v.y*k + v.z,   v.y*v.y*k + c,      v.z*v.y*k - v.x,
+                   v.x*v.z*k - v.y,   v.y*v.z*k + v.x,    v.z*v.z*k + c    );
+}
+*/
+// same as above, specialized for z=(0,0,1)
+mat3x3 rotationAlign( vec3 d )
+{
+    float k = 1.0/(1.0+d.z);
+    return mat3x3(  d.y*d.y*k + d.z, -d.x*d.y*k,       d.x,
+                   -d.y*d.x*k,        d.x*d.x*k + d.z, d.y,
+                   -d.x,             -d.y,             d.z );
+}
+
+// https://iquilezles.org/articles/distfunctions/
+vec2 sdSegmentH( float le, vec3 p )
+{
+	float h = clamp( p.x/le, 0.0, 1.0 );
+    p.x -= le*h;
+	return vec2( length(p), h );
+}
+
+// https://www.shadertoy.com/view/tdS3DG
+float sdEllipsoid( in vec3 p, in vec3 r )
+{
+    float k0 = length(p/r);
+    float k1 = length(p/(r*r));
+    return k0*(k0-1.0)/k1;
+}
+
+// https://iquilezles.org/articles/smin
+float smin( float a, float b, float k )
+{
+    float h = max(k-abs(a-b),0.0);
+    return min(a, b) - h*h*0.25/k;
+}
+
+// https://iquilezles.org/articles/smin
+float smax( float a, float b, float k )
+{
+    k *= 1.4;
+    float h = max(k-abs(a-b),0.0);
+    return max(a, b) + h*h*h/(6.0*k*k);
+}
+
+// https://iquilezles.org/articles/filteringrm/
+void calcDpDxy( in vec3 ro, in vec3 rd, in vec3 rdx, in vec3 rdy, in float t, in vec3 nor, out vec3 dpdx, out vec3 dpdy )
+{
+    dpdx = t*(rdx*dot(rd,nor)/dot(rdx,nor) - rd);
+    dpdy = t*(rdy*dot(rd,nor)/dot(rdy,nor) - rd);
+}
+
+// https://iquilezles.org/articles/simpleik/
+vec3 solve( vec3 p, float r1, float r2, vec3 dir )
+{
+	vec3 q = p*( 0.5 + 0.5*(r1*r1-r2*r2)/dot(p,p) );
+	
+	float s = r1*r1 - dot(q,q);
+	s = max( s, 0.0 );
+	q += sqrt(s)*normalize(cross(p,dir));
+	
+	return q;
+}
+
+vec3 solve( vec3 a, vec3 b, float l1, float l2, vec3 dir )
+{
+	return a + solve( b-a, l1, l2, dir );
+}
+
+#define ZERO (min(iFrame,0))
+
+//----------------------------------------------------------------
+
+float terrainBase( vec2 x )
+{
+	x += 100.0;
+	x *= 0.6;
+
+	vec2 p = floor(x);
+    vec2 f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    float a = textureLod(iChannel0,(p+vec2(0.5,0.5))/1024.0,0.0).x;
+	float b = textureLod(iChannel0,(p+vec2(1.5,0.5))/1024.0,0.0).x;
+	float c = textureLod(iChannel0,(p+vec2(0.5,1.5))/1024.0,0.0).x;
+	float d = textureLod(iChannel0,(p+vec2(1.5,1.5))/1024.0,0.0).x;
+	float r = mix(mix( a, b,f.x), mix( c, d,f.x), f.y);
+	
+	return 12.0*r;
+}
+
+float terrain( vec2 x )
+{
+	float f = terrainBase( x );
+	float h = smoothstep( 0.4, 0.8, noise( 2.0*x ) );
+	f -= 0.2*h;
+	return f;
+}
+
+float terrainD( vec2 x )
+{
+	float f = terrainBase( x );
+	float h = smoothstep( 0.4, 0.8, noise( 2.0*x ) );
+	f -= 0.2*h;
+
+    float d = noise( 35.0*x.yx*vec2(0.1,1.0) );
+	f += 0.003*d * h*h;
+    f += 0.01*texture(iChannel0,0.5*x).x;
+
+	return f;
+}
+
+struct Monster
+{
+	vec3 center;
+	vec3 mww;
+	vec3 ne[6];
+	vec3 f0b[6];
+}monster;
+
+vec2 sdMonster( in vec3 p )
+{
+	vec3 q = p - monster.center;
+	
+	if( dot(q,q)&gt;25.0 ) return vec2(32.0);
+	
+	vec3 muu = vec3(1.0,0.0,0.0);
+	vec3 mvv = normalize( cross(monster.mww,muu) );
+	q = vec3( q.x, dot(mvv,q), dot(monster.mww,q) );
+
+    vec3 ref = q;
+    
+    // body
+	float f = 0.5 - 0.5*q.z;
+    float g = smoothstep(-0.2,0.2,q.y);
+	float ab = (0.5 + g*0.5*cos( 1.0 + 40.0*pow(0.5-0.5*q.z,2.0) ))*(1.0-f);
+    float d1 = sdEllipsoid( q, vec3(0.65,0.45,1.0)*(1.0+0.3*ab) );
+	float ho = 1.0-clamp( 3.0*abs(q.x), 0.0, 1.0 );
+	d1 += 0.1*(1.0-sqrt(1.0-ho*ho))*smoothstep( 0.0,0.1,-q.z );
+
+	float eye = length( vec3(abs(q.x),q.yz) - vec3(0.3,0.05,0.9) ) - 0.3; 
+	d1 = smax(d1,-eye,0.05);
+
+	float b = 1.0 + 5.0*sqrt(clamp(f,0.0,1.0))*g;
+    
+	// Novel optimization: legs only matter when close to body.
+	// If body distance is large, legs won&#x27;t blend in via smin,
+	// so skip the expensive 6-leg loop entirely.
+	if( d1 &gt; 2.0 )
+	{
+	    d1 -= (1.0+b)*0.02*(textureLod(iChannel2,1.5*ref.xz,0.0).x-0.15);
+	    vec2 res = vec2( 0.5*d1, 1.0 );
+	    if( eye&lt;res.x ) res = vec2( eye, 0.0 );
+	    return res;
+	}
+    
+	// legs
+	float s = sign(q.x);
+	for( int j=0; j&lt;3; j++ )	{
+        int i = (q.x&gt;0.0)?j:j+3;
+		float h = float(j)/3.0;
+		
+		vec3 bas = monster.center + muu*s*0.5 + monster.mww*1.0*(h-0.33) ;
+
+		vec3 n1 = monster.ne[i];
+
+        {
+        float  le = 1.6;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (n1-bas)/le );
+        vec3   w = tx*(p-bas);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float  dd = hh.x-mix(0.15,0.05,hh.y) + 0.05*sin(6.2831*hh.y);
+        dd += 0.005*(sin(60.0*w.x+w.z*2.0)*sin(60.0*w.y+w.z*3.0));
+        bas -= monster.center;
+	    bas = vec3( bas.x, dot(mvv,bas), dot(monster.mww,bas) );
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.2, 0.0, 1.0 );
+        ref = mix(ref,bas+w.zyx,h);
+		d1 = smin( d1, dd, 0.2 );
+        b = mix(b,0.0,h);
+        }
+
+        {
+        float  le = 1.2;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (monster.f0b[i]-n1)/le );
+        vec3   w = tx*(p-n1);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float  dd = hh.x-mix(0.06,0.02,hh.y) + 0.01*cos(2.0*6.2831*hh.y);
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.1, 0.0, 1.0 );
+        ref = mix(ref,bas+vec3(1.6,0.0,0.0)+w.zyx,h);
+		d1 = smin( d1, dd, 0.1 );
+        }
+	}
+	
+    // bump!
+    //if( doBump )  // set to true for true displacement
+    d1 -= (1.0+b)*0.02*(textureLod(iChannel2,1.5*ref.xz,0.0).x-0.15);
+    
+	vec2 res = vec2( 0.5*d1, 1.0 );
+
+	// eyes
+	if( eye&lt;res.x ) res = vec2( eye, 0.0 );
+
+	return res;
+}
+
+vec3 sdMonsterC( in vec3 p )
+{
+	vec3 q = p - monster.center;
+	
+	vec3 muu = vec3(1.0,0.0,0.0);
+	vec3 mvv = normalize( cross(monster.mww,muu) );
+	q = vec3( q.x, dot(mvv,q), dot(monster.mww,q) );
+	vec3 res = q;
+
+    // body
+	float f = 0.5 - 0.5*q.z;
+    float g = smoothstep(-0.2,0.2,q.y);
+	float ab = (0.5 + g*0.5*cos( 1.0 + 40.0*pow(0.5-0.5*q.z,2.0) ))*(1.0-f);
+	float d1 = sdEllipsoid( q, vec3(0.65,0.45,1.0)*(1.0+0.3*ab) );
+	float ho = 1.0-clamp( 3.0*abs(q.x), 0.0, 1.0 );
+	d1 += 0.1*(1.0-sqrt(1.0-ho*ho))*smoothstep( 0.0,0.1,-q.z );
+
+	// legs
+    float s = sign(q.x);
+    for( int j=ZERO; j&lt;3; j++ )
+	{
+        int i = (q.x&gt;0.0)?j:j+3;
+		float h = float(j)/3.0;
+		
+		vec3 bas = monster.center + muu*s*0.5 + monster.mww*1.0*(h-0.33) ;
+
+		vec3 n1 = monster.ne[i];
+
+        {
+        float  le = 1.6;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (n1-bas)/le );
+        vec3   w = tx*(p-bas);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float  dd = hh.x-mix(0.15,0.05,hh.y) + 0.05*sin(6.2831*hh.y);
+        bas -= monster.center;
+	    bas = vec3( bas.x, dot(mvv,bas), dot(monster.mww,bas) );
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.2, 0.0, 1.0 );
+        res = mix(res,bas+w.zyx,h);
+        d1 = smin(d1,dd, 0.2);
+        }
+        
+        {
+        float  le = 1.2;//length(n1-bas);
+        mat3x3 tx = rotationAlign( (monster.f0b[i]-n1)/le );
+        vec3   w = tx*(p-n1);
+        vec2   hh = sdSegmentH( le, w.zyx );
+        float dd = hh.x-mix(0.06,0.02,hh.y) + 0.01*cos(2.0*6.2831*hh.y);
+        float h = clamp( 0.5 + 0.5*(d1-dd)/0.1, 0.0, 1.0 );
+        res = mix(res,bas+vec3(1.6,0.0,0.0)+w.zyx,h);
+		d1 = smin( d1, dd, 0.1 );
+        
+        }
+	}
+		
+	return res;
+}
+
+vec2 map( in vec3 p )
+{
+    vec2 res = sdMonster( p);
+
+	float d2 = 0.5*(p.y - terrain(p.xz));
+	if( d2&lt;res.x ) res = vec2(d2,2.0);
+	
+	return res;
+}
+
+vec2 mapD( in vec3 p )
+{
+    vec2 res = sdMonster( p);
+
+	float d2 = 0.5*(p.y - terrainD(p.xz));
+	if( d2&lt;res.x ) res = vec2(d2,2.0);
+	
+	return res;
+}
+
+vec3 raycast( in vec3 ro, in vec3 rd )
+{
+	float mind = 0.1;
+	float maxd = 70.0;
+
+    float tp = (15.0-ro.y)/rd.y;
+    if( tp&gt;0.0 )
+    {
+    if( ro.y&lt;15.0 ) maxd=min(maxd,tp);
+    else            mind=max(mind,tp);
+    }
+
+    float t = mind;
+	float d = 0.0;
+    float m = 1.0;
+    for( int i=0; i&lt;256; i++ )
+    {
+	    vec2 res = map( ro+rd*t );
+        float h = res.x;
+		d = res.y;
+		m = res.y;
+        if( abs(h)&lt;(0.0005*t)||t&gt;maxd ) break;
+        t += h;
+    }
+
+    if( t&gt;maxd ) m=-1.0;
+    return vec3( t, d, m );
+}
+
+
+// https://iquilezles.org/articles/normalsSDF/
+vec3 calcNormal( in vec3 pos )
+{
+    // inspired by tdhooper and klems - a way to prevent the compiler from inlining map() 4 times
+    vec3 n = vec3(0.0);
+    for( int i=ZERO; i&lt;4; i++ )
+    {
+        vec3 e = 0.5773*(2.0*vec3((((i+3)&gt;&gt;1)&amp;1),((i&gt;&gt;1)&amp;1),(i&amp;1))-1.0);
+        n += e*mapD(pos+e*0.002).x;
+    }
+    return normalize(n);
+}
+
+// https://iquilezles.org/articles/rmshadows/
+float softshadow( in vec3 ro, in vec3 rd, float mint, float k )
+{
+    float maxd = 70.0;
+    
+    if( ro.y&lt;15.0 )
+    {
+    float tp = (15.0-ro.y)/rd.y;
+    if( tp&gt;0.0 ) maxd=min(maxd,tp);
+    }
+    
+    float res = 1.0;
+    float t = mint;
+	float h = 1.0;
+    for( int i=0; i&lt;48; i++ )
+    {
+        h = map(ro + rd*t).x;
+        res = min( res, smoothstep(0.0,1.0,k*h/t) );
+		t += clamp( h, 0.025, 1.0 );
+		if( h&lt;0.001 || t&gt;maxd) break;
+    }
+    return clamp(res,0.0,1.0);
+}
+
+vec3 path( float t )
+{
+    vec3 pos = vec3( 0.0 );
+    pos.z += t*0.4;
+	pos.y = 1.0 + terrainBase( pos.xz );
+	return pos;
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    vec2 p = (2.0*fragCoord-iResolution.xy)/iResolution.y;
+    vec2 m = vec2(0.5);
+	if( iMouse.z&gt;0.0 ) m = iMouse.xy/iResolution.xy;
+
+    //-----------------------------------------------------
+    // animate
+    //-----------------------------------------------------
+	
+	float ctime = 15.0 + iTime;
+
+	// mobe body
+	float atime = 2.0*ctime;
+	float ac = noise( 0.5*ctime );
+	atime += 4.0*ac;
+    monster.center = path( atime );
+	vec3 centerN = path( atime+2.0 );
+	monster.mww = normalize( centerN - monster.center );
+    monster.center.y -= 0.25;
+	
+	// move legs
+	for( int i=0; i&lt;6; i++ )
+	{
+		float s = -sign( float(i)-2.5 );
+		float h = mod( float(i), 3.0 )/3.0;
+
+		float z = 0.5*atime + 1.0*h + 0.25*s;
+		float iz = floor(z);
+		float fz = fract(z);
+        float az = smoothstep(0.66,1.0,fz);
+		
+		vec3 fo = vec3(s*1.5, 0.7*az*(1.0-az), (iz + az + (h-0.3)*4.0)*0.4*2.0 );
+		fo.y += terrain( fo.xz );
+        monster.f0b[i] = fo;
+		
+		vec3 ba = monster.center + vec3(1.0,0.0,0.0)*s*0.5 + monster.mww*1.0*(h-0.33) ;
+
+		monster.ne[i] = solve( ba, fo, 1.6, 1.2, s*vec3(0.0,0.0,-1.0) );
+	}
+	
+    //-----------------------------------------------------
+    // camera
+    //-----------------------------------------------------
+	
+    // follow the monster
+	float an = 0.0 + 0.1*ctime - 6.28*m.x;
+	float cr = 0.3*cos(0.2*ctime);
+    vec3 ro = monster.center + vec3(4.0*sin(an),0.2,4.0*cos(an));
+    vec3 ta = monster.center;
+	ro.y = 0.5 + terrainBase( ro.xz );
+	
+    // shake
+	ro += 0.04*sin(4.0*ctime*vec3(1.1,1.2,1.3)+vec3(3.0,0.0,1.0) );
+	ta += 0.04*sin(4.0*ctime*vec3(1.7,1.5,1.6)+vec3(1.0,2.0,1.0) );
+	
+    // camera matrix
+    vec3 ww = normalize( ta - ro );
+    vec3 uu = normalize( cross(ww,vec3(sin(cr),cos(cr),0.0) ) );
+    vec3 vv = normalize( cross(uu,ww));
+	
+    // barrel distortion	
+    float r2 = p.x*p.x*0.32 + p.y*p.y;
+    p *= (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+	
+	// create view ray
+	vec3 rd = normalize( p.x*uu + p.y*vv + 3.0*ww );
+    
+    // ray differentials
+    vec2 px = (-iResolution.xy+2.0*(fragCoord.xy+vec2(1.0,0.0)))/iResolution.y;
+    r2 = px.x*px.x*0.32 + px.y*px.y;
+    px *= (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+    vec2 py = (-iResolution.xy+2.0*(fragCoord.xy+vec2(0.0,1.0)))/iResolution.y;
+    r2 = py.x*py.x*0.32 + py.y*py.y;
+    py *= (7.0-sqrt(37.5-11.5*r2))/(r2+1.0);
+    vec3 rdx = normalize( px.x*uu + px.y*vv + 3.0*ww );
+    vec3 rdy = normalize( py.x*uu + py.y*vv + 3.0*ww );
+    
+    //-----------------------------------------------------
+	// render
+    //-----------------------------------------------------
+    const vec3 lig = normalize(vec3(-1.0,0.4,0.2));
+	float nds = clamp(dot(rd,lig),0.0,1.0);
+	vec3 bgc = vec3(0.9+0.1*nds,0.95+0.05*nds,0.9)*(0.7 + 0.3*rd.y)*0.98;
+    vec3 col = bgc;
+
+	// raymarch
+    vec3 tmat = raycast(ro,rd);
+    if( tmat.z&gt;-0.5 )
+    {
+        float t = tmat.x;
+        
+        // geometry
+        vec3 pos = ro + t*rd;
+        vec3 nor = calcNormal(pos);
+		vec3 ref = reflect( rd, nor );
+
+        // derivatives        
+        vec3 dpdx, dpdy;
+        calcDpDxy( ro, rd, rdx, rdy, t, nor, dpdx, dpdy );
+    
+        // materials
+        float mocc = 1.0;
+		vec4 mate = vec4(0.0);
+		float ks = 1.0;
+        
+		// eyes
+		if( tmat.z&lt;0.5 )
+		{
+            mate = vec4(0.01,0.01,0.01,30.0);
+            ks *= 0.07;
+            mate.xyz *= mix(vec3(1.0,0.3,0.0),vec3(0.5,0.8,1.0),0.5+0.5*nor.y);
+			mate.w *= 0.8 + 0.2*sin(20.0*ref.x)*sin(20.0*ref.y)*sin(20.0*ref.z);
+			mate.xyz += 0.001*sin(5.0*ref);
+			mate.xyz *= 0.5;
+		}
+		// body
+		else if( tmat.z&lt;1.5 )
+		{
+            // do shading in mosnter space			
+			vec3 q = pos - monster.center;
+			vec3 muu = vec3(1.0,0.0,0.0);
+			vec3 mvv = normalize( cross(monster.mww,muu) );
+			q = vec3( q.x, dot(mvv,q), dot(monster.mww,q) );
+			vec3 n = vec3( nor.x, dot(mvv,nor), dot(monster.mww,nor) );
+
+            // texture coords
+            vec3 w = sdMonsterC(pos);
+
+            // base color			
+            mate.xyz = 0.15*vec3(1.0,0.7,0.4);			
+            // bumps
+            float te = textureLod(iChannel2,1.5*w.xz,0.0).x;
+            mate.xyz = mix(mate.xyz,vec3(0.4,0.3,0.04),smoothstep(0.2,0.8,te));
+
+            // texture
+            mate.xyz += 0.08*smoothstep(vec3(0.4,0.3,0.2),vec3(0.7,0.6,0.8),vec3(fbmcheap(w*0.5)));
+
+			// color adjustment
+			mate.w = 1.0;
+            mate.xyz *= 0.25+1.0*mate.xzy*vec3(0.98,1.6,1.4);
+			
+            // occlusion			
+			float ho = 1.0-clamp( 5.0*abs(q.x), 0.0, 1.0 );
+            mocc *= 1.0-(1.0-sqrt(1.0-ho*ho))*smoothstep( 0.0,0.1,-q.z );
+            float eye = length( vec3(abs(q.x),q.yz) - vec3(0.3,0.05,0.9) ) - 0.3; 
+            mocc *= clamp(1.0-2.0/(1.0+100.0*eye),0.0,1.0);
+
+		}
+        // terrain		
+		else if( tmat.z&lt;2.5 )
+		{
+			mate = vec4(1.0, 0.9, 0.5, 0.0);
+            float nn =  noise( 2.0*pos.xz );
+
+            mate.xyz = mix( 0.7*mate.xyz, mate.xyz*0.65*vec3(0.8,0.9,1.0), 1.0-smoothstep( 0.4, 0.9, nn ) );
+			mate.xyz *= 0.45;
+
+			vec3 ff  = 0.05+0.95*textureGrad( iChannel0, 0.08*pos.xz, 0.08*dpdx.xz, 0.08*dpdy.xz ).xyz;
+			     ff *= 0.05+0.95*textureGrad( iChannel0, 0.52*pos.xz, 0.52*dpdx.xz, 0.52*dpdy.xz ).xyz;
+			     ff *= 0.05+0.95*textureGrad( iChannel0, 4.03*pos.xz, 4.03*dpdx.xz, 4.03*dpdy.xz ).xyz;
+			
+			float aa = mix( 1.0, 0.3, smoothstep( 0.65, 0.8, nn ) );
+            mate.xyz *= (1.0-aa) + aa*sqrt(ff)*3.0;
+			
+            float d = smoothstep( 0.0, 0.5, abs(nn-0.75) );
+            mate.xyz *= 0.6+0.4*d;
+            d = smoothstep( 0.0, 0.2, abs(nn-0.75) );
+            mocc *= 0.7+0.3*d;
+			mocc *= pow( clamp( 0.5*length( pos.xz - monster.center.xz ), 0.0, 1.0 ), 2.0 );
+		}
+
+		// lighting
+		float occ = (0.5 + 0.5*nor.y)*mocc;
+        float dif = max(dot(nor,lig),0.0);
+        float bac = max(dot(nor,normalize(vec3(-lig.x,-lig.y*0.5,-lig.z))),0.0);
+		float sha = 0.0; if( dif&gt;0.01 ) sha=softshadow( pos, lig, 0.05, 32.0 );
+        vec3  hal = normalize(lig-rd);
+        float fre = pow( clamp( 1.0 + dot(nor,rd), 0.0, 1.0 ), 2.0 );
+        float spe = pow( clamp( dot(hal,nor), 0.0, 1.0), 24.0 );
+		spe *= 0.04+0.96*pow(clamp(1.0-dot(hal,lig),0.0,1.0),5.0);
+		
+		// lights
+		vec3 lin = vec3(0.0);
+        lin += 3.0*dif*vec3(1.50,1.00,0.65)*pow(vec3(sha),vec3(1.0,1.2,1.5));
+        lin += 1.0*mix(vec3(0.10,0.05,0.0),vec3(0.2,0.3,0.35)*2.0*mocc, 0.5+0.5*nor.y );
+		lin += 3.0*bac*vec3(0.30,0.20,0.15)*occ;
+        lin += 1.0*fre*vec3(0.50,0.50,0.50)*occ*15.0*mate.w*(0.05+0.95*dif*sha);
+		lin += 1.0*spe*vec3(1.0)*6.0*occ*mate.w*dif*sha;
+		col = mate.xyz * lin;
+		col += 1.0*spe*vec3(1.0)*10.0*occ*mate.w*dif*sha*ks;
+
+		// fog		
+		col = mix( col, 0.8*bgc, clamp(1.0-1.2*exp(-0.03*tmat.x ),0.0,1.0) );
+    }
+	else
+	{
+        // sun		
+	    vec3 sun = vec3(1.0,0.8,0.5)*pow( nds, 24.0 );
+	    col += sun;
+	}
+    // sun scatter
+	col += 0.4*vec3(0.2,0.14,0.1)*pow( nds, 16.0 );
+
+    // color
+    col *= 4.0/(3.0+col);
+    col = pow( col, vec3(0.45,0.5,0.55) );
+    col.z += 0.1;
+    
+	// vigneting
+	vec2 q = fragCoord/iResolution.xy;
+    col *= 0.2 + 0.8*pow( 16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y), 0.1 );
+
+    fragColor = vec4( col, 1.0 );
+}
+</code></pre></div>
+                </div>
+            </div></div>
+            </div>
+        </div>
+
+        <div class="compact-section">
+            <h2>Generation History</h2>
+            <table>
+            <thead><tr><th>Gen</th><th>Render Time (ms)</th><th>Relative Time</th><th>Speedup</th><th>Max Error</th><th>Media</th></tr></thead>
+            <tbody><tr><td>3</td><td>6.1305</td><td>0.8942</td><td>1.12x</td><td>0.019495</td><td>Yes</td></tr><tr><td>2</td><td>6.4758</td><td>0.9539</td><td>1.05x</td><td>0.000000</td><td>Yes</td></tr></tbody>
+        </table>
+        </div>
+    </div>
+
+    <script>
+    // ========== Utility Functions ==========
+    function toggleCode(elementId) {
+        var element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle('code-block-expanded');
+        }
+    }
+
+    function toggleSpoiler(id) {
+        var content = document.getElementById(id);
+        if (content) {
+            content.classList.toggle('active');
+        }
+    }
+
+    function copyToClipboard(elementId) {
+        var element = document.getElementById(elementId);
+        if (!element) return;
+        var text = element.textContent || element.innerText;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                showCopySuccess(event.target);
+            }).catch(function() {
+                fallbackCopy(text, event.target);
+            });
+        } else {
+            fallbackCopy(text, event.target);
+        }
+    }
+
+    function showCopySuccess(button) {
+        var orig = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#28a745';
+        setTimeout(function() { button.textContent = orig; }, 2000);
+    }
+
+    function fallbackCopy(text, button) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { if (document.execCommand('copy') && button) showCopySuccess(button); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    // ========== Performance Distribution Chart ==========
+    (function() {
+        var data = {"original": {"bin_edges": [2.8769, 3.0965, 3.3162, 3.5358, 3.7554, 3.9751, 4.1947, 4.4143, 4.6339, 4.8536, 5.0732, 5.2928, 5.5125, 5.7321, 5.9517, 6.1714, 6.391, 6.6106, 6.8302, 7.0499, 7.2695, 7.4891, 7.7088, 7.9284, 8.148, 8.3676, 8.5873, 8.8069, 9.0265, 9.2462, 9.4658], "density": [0.0, 0.0, 0.4464, 0.0, 0.4464, 0.0, 0.4464, 0.0, 0.0, 1.3393, 2.6786, 1.7857, 3.125, 2.2321, 7.5893, 7.5893, 10.2679, 9.8214, 12.0536, 10.2679, 9.375, 5.8036, 2.6786, 1.7857, 5.3571, 1.3393, 1.7857, 1.3393, 0.4464, 0.0], "mean": 6.8528, "std": 0.9108, "n": 224}, "optimized": {"bin_edges": [2.8769, 3.0965, 3.3162, 3.5358, 3.7554, 3.9751, 4.1947, 4.4143, 4.6339, 4.8536, 5.0732, 5.2928, 5.5125, 5.7321, 5.9517, 6.1714, 6.391, 6.6106, 6.8302, 7.0499, 7.2695, 7.4891, 7.7088, 7.9284, 8.148, 8.3676, 8.5873, 8.8069, 9.0265, 9.2462, 9.4658], "density": [0.0, 0.6667, 0.0, 1.3333, 0.0, 0.3333, 0.6667, 1.0, 2.3333, 2.6667, 6.0, 4.6667, 5.6667, 11.0, 14.0, 10.3333, 12.0, 10.0, 5.3333, 4.0, 4.3333, 1.6667, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mean": 6.1305, "std": 0.8184, "n": 300}};
+        var canvas = document.getElementById('perfChart');
+        if (!canvas || !data || !data.original || !data.original.bin_edges || !data.original.bin_edges.length) {
+            if (canvas) {
+                var ctx = canvas.getContext('2d');
+                var rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.fillStyle = '#999';
+                ctx.font = '13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No performance data available yet', rect.width / 2, rect.height / 2);
+            }
+            return;
+        }
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 20, right: 20, bottom: 40, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        // X range from bin edges
+        var allEdges = data.original.bin_edges.concat(data.optimized.bin_edges || []);
+        var xMin = Math.min.apply(null, allEdges);
+        var xMax = Math.max.apply(null, allEdges);
+        var xRange = xMax - xMin || 1;
+
+        // Y range from density values
+        var allDens = data.original.density.concat(data.optimized.density || []);
+        var yMax = Math.max.apply(null, allDens) * 1.15;
+        var yRange = yMax || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toY(v) { return pad.top + plotH - (v / yRange) * plotH; }
+
+        // Draw histogram bars
+        function drawHist(series, fillColor, strokeColor) {
+            var edges = series.bin_edges, dens = series.density;
+            if (!edges || !dens || dens.length === 0) return;
+
+            // Semi-transparent fill
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = fillColor;
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]), yBot = toY(0);
+                ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            }
+
+            // Bold border
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            var baseline = toY(0);
+            ctx.moveTo(toX(edges[0]), baseline);
+            for (var i = 0; i < dens.length; i++) {
+                var x1 = toX(edges[i]), x2 = toX(edges[i + 1]);
+                var yTop = toY(dens[i]);
+                ctx.lineTo(x1, yTop);
+                ctx.lineTo(x2, yTop);
+            }
+            ctx.lineTo(toX(edges[edges.length - 1]), baseline);
+            ctx.stroke();
+        }
+
+        // Draw mean line
+        function drawMean(series, color, label, yOffset) {
+            if (!series.mean) return;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.globalAlpha = 0.9;
+            var mx = toX(series.mean);
+            ctx.beginPath();
+            ctx.moveTo(mx, pad.top);
+            ctx.lineTo(mx, pad.top + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Label
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(series.mean.toFixed(2) + ' ms', mx, pad.top + yOffset);
+        }
+
+        var C_ORIG = '#8856a7', C_OPT = '#43a2ca', C_ARROW = '#2E7D32';
+
+        // Draw original behind optimized
+        drawHist(data.original, C_ORIG, C_ORIG);
+        drawHist(data.optimized, C_OPT, C_OPT);
+        drawMean(data.original, C_ORIG, 'Original', 12);
+        drawMean(data.optimized, C_OPT, 'Optimized', 24);
+
+        // Speedup arrow
+        if (data.original.mean && data.optimized.mean && data.original.mean > data.optimized.mean) {
+            var speedup = (data.original.mean / data.optimized.mean).toFixed(1);
+            var arrowY = pad.top + plotH * 0.25;
+            var x1 = toX(data.original.mean), x2 = toX(data.optimized.mean);
+            // Dashed arrow line
+            ctx.strokeStyle = C_ARROW;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.moveTo(x1, arrowY);
+            ctx.lineTo(x2 + 6, arrowY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Arrowhead
+            ctx.fillStyle = C_ARROW;
+            ctx.beginPath();
+            ctx.moveTo(x2, arrowY);
+            ctx.lineTo(x2 + 10, arrowY - 5);
+            ctx.lineTo(x2 + 10, arrowY + 5);
+            ctx.closePath();
+            ctx.fill();
+            // Label
+            var midX = (x1 + x2) / 2;
+            ctx.fillStyle = C_ARROW;
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(speedup + 'x', midX, arrowY - 8);
+        }
+
+        // Axes - left and bottom spines
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (density)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var numYTicks = 5;
+        for (var i = 0; i <= numYTicks; i++) {
+            var val = (yRange / numYTicks) * i;
+            var gy = pad.top + plotH - (plotH / numYTicks) * i;
+            ctx.fillText(val.toFixed(2), pad.left - 4, gy + 3);
+        }
+
+        // X-axis labels (render time ms)
+        ctx.textAlign = 'center';
+        var numXTicks = 6;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(1), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Render Time (ms)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Legend
+        ctx.font = '11px sans-serif';
+        var legX = W - pad.right - 130, legY = pad.top + 14;
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_ORIG;
+        ctx.fillRect(legX, legY - 8, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_ORIG;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(legX, legY - 8, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText('Original (n=' + (data.original.n || '?') + ')', legX + 22, legY + 2);
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = C_OPT;
+        ctx.fillRect(legX, legY + 10, 16, 12);
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = C_OPT;
+        ctx.strokeRect(legX, legY + 10, 16, 12);
+        ctx.fillStyle = '#333';
+        ctx.fillText('Optimized (n=' + (data.optimized.n || '?') + ')', legX + 22, legY + 20);
+    })();
+
+    // ========== Validation Frames Chart ==========
+    
+
+    // ========== Error Distribution Chart ==========
+    (function() {
+        var data = {"bin_edges": [0.0, 0.000487, 0.000975, 0.001462, 0.00195, 0.002437, 0.002924, 0.003412, 0.003899, 0.004386, 0.004874, 0.005361, 0.005849, 0.006336, 0.006823, 0.007311, 0.007798, 0.008286, 0.008773, 0.00926, 0.009748, 0.010235, 0.010723, 0.01121, 0.011697, 0.012185, 0.012672, 0.013159, 0.013647, 0.014134, 0.014622, 0.015109, 0.015596, 0.016084, 0.016571, 0.017059, 0.017546, 0.018033, 0.018521, 0.019008, 0.019495], "counts": [51.4031, 15.574, 7.8571, 3.9413, 3.9796, 3.1122, 2.9847, 2.3342, 0.9184, 1.3648, 1.1224, 1.1352, 0.7781, 0.6888, 0.5995, 0.1658, 0.3571, 0.3061, 0.3827, 0.1786, 0.1276, 0.2296, 0.0765, 0.102, 0.0765, 0.0255, 0.051, 0.0, 0.0128, 0.0, 0.0638, 0.0, 0.0, 0.0383, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0128], "threshold": 0.01, "exceedance_rate": 0.01, "n_total": 7840, "k_exceedances": 58, "max_error": 0.019495, "mean_error": 0.001249};
+        var canvas = document.getElementById('errorDistChart');
+        if (!canvas || !data || !data.bin_edges || !data.bin_edges.length) return;
+
+        var ctx = canvas.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        var W = rect.width, H = rect.height;
+        var pad = {top: 25, right: 20, bottom: 45, left: 60};
+        var plotW = W - pad.left - pad.right;
+        var plotH = H - pad.top - pad.bottom;
+
+        var edges = data.bin_edges;
+        var counts = data.counts;
+        var threshold = data.threshold;
+        var exRate = data.exceedance_rate;
+        var ratePct = exRate * 100;
+
+        // X range
+        var xMin = edges[0], xMax = edges[edges.length - 1];
+        var xRange = xMax - xMin || 1;
+
+        // Y range (log scale) — find min non-zero count for log floor
+        var minNonZero = Infinity;
+        for (var i = 0; i < counts.length; i++) {
+            if (counts[i] > 0 && counts[i] < minNonZero) minNonZero = counts[i];
+        }
+        if (minNonZero === Infinity) minNonZero = 0.1;
+        var yFloor = minNonZero * 0.3;
+        var yMax = 110; // slightly above 100%
+        var logMin = Math.log10(yFloor);
+        var logMax = Math.log10(yMax);
+        var logRange = logMax - logMin || 1;
+
+        function toX(v) { return pad.left + ((v - xMin) / xRange) * plotW; }
+        function toLogY(v) {
+            if (v <= 0) return pad.top + plotH;
+            var lv = Math.log10(Math.max(v, yFloor));
+            return pad.top + plotH - ((lv - logMin) / logRange) * plotH;
+        }
+
+        var C_SAFE = '#43a2ca';
+        var C_EXCEED = '#dc3545';
+        var C_THRESH = '#e6550d';
+
+        // Draw histogram bars
+        for (var i = 0; i < counts.length; i++) {
+            var binLeft = edges[i], binRight = edges[i + 1];
+            var binMid = (binLeft + binRight) / 2;
+            var x1 = toX(binLeft), x2 = toX(binRight);
+            var yBot = pad.top + plotH;
+            var yTop = toLogY(counts[i]);
+            if (counts[i] <= 0) continue;
+
+            // Color: red if bin center >= threshold
+            var isExceed = binMid >= threshold;
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.fillRect(x1, yTop, x2 - x1, yBot - yTop);
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = isExceed ? C_EXCEED : C_SAFE;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x1, yTop, x2 - x1, yBot - yTop);
+        }
+
+        // Rejection zone rectangle (threshold to xMax, ratePct to 100)
+        var rzX = toX(threshold);
+        var rzY = toLogY(100);
+        var rzW = toX(xMax) - rzX;
+        var rzH = toLogY(ratePct) - rzY;
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = C_EXCEED;
+        ctx.fillRect(rzX, rzY, rzW, rzH);
+        ctx.globalAlpha = 1.0;
+
+        // Threshold vertical line
+        ctx.strokeStyle = C_THRESH;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        ctx.moveTo(toX(threshold), pad.top);
+        ctx.lineTo(toX(threshold), pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Threshold label
+        ctx.fillStyle = C_THRESH;
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('FLIP Threshold = ' + threshold.toFixed(3), toX(threshold) + 4, pad.top + 12);
+
+        // Exceedance rate horizontal line
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        var rateY = toLogY(ratePct);
+        ctx.moveTo(toX(threshold), rateY);
+        ctx.lineTo(pad.left + plotW, rateY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(ratePct.toFixed(0) + '% exceedance rate', pad.left + plotW - 4, rateY - 4);
+
+        // Axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        // Y-axis labels (log scale)
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        var yTicks = [0.01, 0.1, 1, 10, 100];
+        for (var i = 0; i < yTicks.length; i++) {
+            var val = yTicks[i];
+            if (val < yFloor || val > yMax) continue;
+            var gy = toLogY(val);
+            ctx.fillText(val < 1 ? val.toFixed(2) + '%' : val.toFixed(0) + '%', pad.left - 4, gy + 3);
+            // Grid line
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, gy);
+            ctx.lineTo(pad.left + plotW, gy);
+            ctx.stroke();
+        }
+
+        // X-axis labels
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        var numXTicks = 8;
+        for (var i = 0; i <= numXTicks; i++) {
+            var val = xMin + (xRange / numXTicks) * i;
+            var gx = pad.left + (plotW / numXTicks) * i;
+            ctx.fillText(val.toFixed(3), gx, pad.top + plotH + 16);
+        }
+
+        // Axis titles
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('FLIP Error (p99)', pad.left + plotW / 2, H - 4);
+        ctx.save();
+        ctx.translate(12, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Frequency (%)', 0, 0);
+        ctx.restore();
+
+        // Stats legend
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#333';
+        var legX = pad.left + 8, legY = pad.top + plotH - 40;
+        ctx.fillText('n=' + data.n_total + ', k=' + data.k_exceedances +
+            ', max=' + data.max_error.toFixed(4) +
+            ', mean=' + data.mean_error.toFixed(4), legX, legY);
+    })();
+    </script>
+</body>
+</html>

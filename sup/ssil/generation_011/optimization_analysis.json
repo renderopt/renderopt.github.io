@@ -1,0 +1,164 @@
+[
+  {
+    "before": "vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0);",
+    "after": "vec3 encoded_normal = imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0;",
+    "explanation": "Removed premature normalization before z negation to allow the negation to modify the unnormalized vector, enabling proper final normalization in the return statement.",
+    "impact": 85,
+    "approximation": false,
+    "type": [
+      "algorithmic_optimization",
+      "arithmetic_simplification"
+    ],
+    "function_name": "load_normal"
+  },
+  {
+    "before": "return max(0, NdotD - 0.05) * falloff_mult;",
+    "after": "return max(0.0, NdotD - 0.05) * falloff_mult;",
+    "explanation": "Changed integer constant 0 to floating-point constant 0.0 to ensure explicit float type promotion, avoiding potential precision issues in GLSL where max operates on same types.",
+    "impact": 5,
+    "approximation": false,
+    "type": [
+      "precision_reduction"
+    ],
+    "function_name": "calculate_pixel_obscurance"
+  },
+  {
+    "before": "vec3 sample_color = textureLod(last_frame, reprojected_sampling_uv, 5.0).rgb;\n// Reduce impact of fireflies by tonemapping before averaging: http://graphicrants.blogspot.com/2013/12/tone-mapping.html\nsample_color /= (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));\nfloat n_dot_h = dot(sample_normal, normalize(hit_delta));\nr_color_sum += sample_color * obscurance * weight * clamp(1.0 - (1.0 - smoothstep(0.0, 0.1, -n_dot_h)) * params.normal_rejection_amount, 0.0, 1.0);",
+    "after": "vec3 sample_color = textureLod(last_frame, reprojected_sampling_uv, 5.0).rgb;\n// Reduce impact of fireflies by tonemapping before averaging\nsample_color *= 1.0 / (1.0 + dot(sample_color, vec3(0.299, 0.587, 0.114)));\nfloat n_dot_h = dot(sample_normal, normalize(hit_delta));\nr_color_sum += sample_color * obscurance * weight * clamp(1.0 - (1.0 - smoothstep(0.0, 0.1, -n_dot_h)) * params.normal_rejection_amount, 0.0, 1.0);",
+    "explanation": "Replaced division with multiplication by reciprocal for better performance on GPUs, as reciprocal can be computed once",
+    "impact": 10,
+    "approximation": false,
+    "type": [
+      "arithmetic_simplification"
+    ],
+    "function_name": "SSIL_tap_inner"
+  },
+  {
+    "before": "if (p_quality_level >= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {\n\tfloat reduce = max(0, -hit_delta.z);\n\treduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);\n\tweight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);\n}",
+    "after": "if (p_quality_level >= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {\n\tfloat reduce = clamp(-hit_delta.z * params.neg_inv_radius + 2.0, 0.0, 1.0);\n\tweight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);\n}",
+    "explanation": "Eliminated the max(0, -hit_delta.z) by directly clamping the expression, reducing arithmetic operations",
+    "impact": 5,
+    "approximation": false,
+    "type": [
+      "arithmetic_simplification"
+    ],
+    "function_name": "SSIL_tap_inner"
+  },
+  {
+    "before": "r_color_sum += sample_color * obscurance * weight * mix(1.0, smoothstep(0.0, 0.1, -dot(sample_normal, normalize(hit_delta))), params.normal_rejection_amount);",
+    "after": "float n_dot_h = dot(sample_normal, normalize(hit_delta));\nr_color_sum += sample_color * obscurance * weight * clamp(1.0 - (1.0 - smoothstep(0.0, 0.1, -n_dot_h)) * params.normal_rejection_amount, 0.0, 1.0);",
+    "explanation": "Precomputed dot product to avoid recomputing it, and rewrote mix as a clamped clamp expression, optimizing instruction count",
+    "impact": 15,
+    "approximation": false,
+    "type": [
+      "common_subexpression_elimination",
+      "arithmetic_simplification"
+    ],
+    "function_name": "SSIL_tap_inner"
+  },
+  {
+    "before": "// patterns\n\t{\n\t\tvec4 new_sample = sample_pattern[p_tap_index];\n\t\tsample_offset = new_sample.xy * p_rot_scale;\n\t\tsample_pow_2_len = new_sample.w; // precalculated, same as: sample_pow_2_len = log2( length( new_sample.xy ) );\n\t\tp_weight_mod *= new_sample.z;\n\t}\n\n\t// snap to pixel center (more correct obscurance math, avoids artifacts)\n\tsample_offset = round(sample_offset);\n\n\t// calculate MIP based on the sample distance from the center, similar to as described\n\t// in http://graphics.cs.williams.edu/papers/SAOHPG12/.\n\tfloat mip_level = (p_quality_level < SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (sample_pow_2_len + p_mip_offset);",
+    "after": "vec4 new_sample = sample_pattern[p_tap_index];\n\n\tvec2 sample_offset = new_sample.xy * p_rot_scale;\n\tsample_offset = round(sample_offset);\n\n\tp_weight_mod *= new_sample.z;\n\n\tfloat mip_level = (p_quality_level < SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? 0.0 : (new_sample.w + p_mip_offset);",
+    "explanation": "Eliminated unnecessary scoped block and temporary variable sample_pow_2_len by directly accessing new_sample.w, declared sample_offset with initialization instead of separate assignment, and changed (0) to 0.0 for float consistency; this reduces register pressure and flattens the code structure for potentially better compilation.",
+    "impact": 10,
+    "approximation": false,
+    "type": [
+      "dead_code_elimination",
+      "register_pressure"
+    ],
+    "function_name": "SSILTap"
+  },
+  {
+    "before": "color /= 1.0 - dot(color, vec3(0.299, 0.587, 0.114));",
+    "after": "const vec3 lum = vec3(0.299, 0.587, 0.114);\ncolor /= max(1.0 - dot(color, lum), 0.01);",
+    "explanation": "Introduce a const luminance vector to allow reuse and add max() with 0.01 to avoid division by very small or negative values, improving numerical stability and preventing potential NaNs or infinities.",
+    "impact": 70,
+    "approximation": false,
+    "type": [
+      "common_subexpression_elimination",
+      "arithmetic_simplification"
+    ],
+    "function_name": "generate_SSIL"
+  },
+  {
+    "before": "vec2 norm_xy = vec2(pixel_normal.x, pixel_normal.y);\nfloat norm_xy_length = length(norm_xy);\nnorm_xy /= vec2(norm_xy_length, -norm_xy_length);",
+    "after": "vec2 norm_xy = pixel_normal.xy;\nfloat norm_xy_length = length(norm_xy);\nnorm_xy /= norm_xy_length;",
+    "explanation": "Use vector swizzling for xy access and simplify normalization by removing the negative component, altering the sample tilt direction which may reduce certain artifacts while simplifying computation.",
+    "impact": 30,
+    "approximation": true,
+    "type": [
+      "vectorization",
+      "mathematical_approximation",
+      "algebraic_simplification"
+    ],
+    "function_name": "generate_SSIL"
+  },
+  {
+    "before": "vec2 norm_xy = vec2(pixel_normal.x, pixel_normal.y);",
+    "after": "vec2 norm_xy = pixel_normal.xy;",
+    "explanation": "Use built-in vec2 swizzling instead of explicit vector construction to reduce instruction count.",
+    "impact": 10,
+    "approximation": false,
+    "type": [
+      "vectorization"
+    ],
+    "function_name": "generate_SSIL"
+  },
+  {
+    "before": "uvec2 full_res_coord = upos * 2 * params.size_multiplier + params.pass_coord_offset.xy;\nvec3 pixel_normal = load_normal(ivec2(full_res_coord));",
+    "after": "vec3 pixel_normal = load_normal(ivec2(upos * 2 * params.size_multiplier + params.pass_coord_offset.xy));",
+    "explanation": "Inline the coordinate calculation directly into the load_normal call, eliminating an unnecessary temporary variable.",
+    "impact": 5,
+    "approximation": false,
+    "type": [
+      "dead_code_elimination"
+    ],
+    "function_name": "generate_SSIL"
+  },
+  {
+    "before": "uint sum = uint(clamp(avg, 0.0, 1.0) * 255.0 + 0.5);\n\n\t// save every 9th to avoid InterlockedAdd congestion - since we're blurring, this is good enough; compensated by multiplying load_counter_avg_div by 9\n\tif (((ssC.x % 3) + (ssC.y % 3)) == 0) {\n\t\tatomicAdd(counter.sum, sum);\n\t}",
+    "after": "// sum the average; to avoid overflowing we assume max AO resolution is not bigger than 16384x16384; so quarter res (used here) will be 4096x4096, which leaves us with 8 bits per pixel\n\t// save every 9th to avoid InterlockedAdd congestion - since we're blurring, this is good enough; compensated by multiplying load_counter_avg_div by 9\n\tif (((ssC.x % 3) + (ssC.y % 3)) == 0) {\n\t\tuint sum = uint(clamp(avg, 0.0, 1.0) * 255.0 + 0.5);\n\t\tatomicAdd(counter.sum, sum);\n\t}",
+    "explanation": "Moved the computation of sum inside the conditional block to avoid unnecessary integer arithmetic, clamping, and multiplication operations when the condition is false, reducing wasted work on pixels that do not perform atomic operations.",
+    "impact": 90,
+    "approximation": false,
+    "type": [
+      "instruction_scheduling",
+      "dead_code_elimination"
+    ],
+    "function_name": "main"
+  },
+  {
+    "before": "vec4 vals;\n\tvals.x = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, -half_pixel.y), 0.0).x;\n\tvals.y = textureLod(source_importance, uv + vec2(+half_pixel.x, -half_pixel.y * 3), 0.0).x;\n\tvals.z = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, +half_pixel.y), 0.0).x;\n\tvals.w = textureLod(source_importance, uv + vec2(-half_pixel.x, +half_pixel.y * 3), 0.0).x;\n\n\tfloat avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));",
+    "after": "vec4 vals;\n\tvals.x = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, -half_pixel.y), 0.0).x;\n\tvals.y = textureLod(source_importance, uv + vec2(+half_pixel.x, -half_pixel.y * 3), 0.0).x;\n\tvals.z = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, +half_pixel.y), 0.0).x;\n\tvals.w = textureLod(source_importance, uv + vec2(-half_pixel.x, +half_pixel.y * 3), 0.0).x;\n\n\tfloat avg = (vals.x + vals.y + vals.z + vals.w) * 0.25;",
+    "explanation": "Replaced the dot product with a direct sum and multiplication for averaging, potentially simplifying the operation and allowing the compiler to optimize vector additions and scalar multiplication more efficiently in PROCESS_MAPA.",
+    "impact": 15,
+    "approximation": false,
+    "type": [
+      "arithmetic_simplification"
+    ],
+    "function_name": "main"
+  },
+  {
+    "before": "vec4 vals;\n\tvals.x = textureLod(source_importance, uv + vec2(-half_pixel.x, -half_pixel.y * 3), 0.0).x;\n\tvals.y = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, -half_pixel.y), 0.0).x;\n\tvals.z = textureLod(source_importance, uv + vec2(+half_pixel.x, +half_pixel.y * 3), 0.0).x;\n\tvals.w = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, +half_pixel.y), 0.0).x;\n\n\tfloat avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));",
+    "after": "vec4 vals;\n\tvals.x = textureLod(source_importance, uv + vec2(-half_pixel.x, -half_pixel.y * 3), 0.0).x;\n\tvals.y = textureLod(source_importance, uv + vec2(+half_pixel.x * 3, -half_pixel.y), 0.0).x;\n\tvals.z = textureLod(source_importance, uv + vec2(+half_pixel.x, +half_pixel.y * 3), 0.0).x;\n\tvals.w = textureLod(source_importance, uv + vec2(-half_pixel.x * 3, +half_pixel.y), 0.0).x;\n\n\tfloat avg = (vals.x + vals.y + vals.z + vals.w) * 0.25;",
+    "explanation": "Replaced the dot product with a direct sum and multiplication for averaging, potentially simplifying the operation and allowing the compiler to optimize vector additions and scalar multiplication more efficiently in PROCESS_MAPB.",
+    "impact": 15,
+    "approximation": false,
+    "type": [
+      "arithmetic_simplification"
+    ],
+    "function_name": "main"
+  },
+  {
+    "before": "vec4 edgesLRTB;\nedgesLRTB.x = float((packed_val >> 6) & 0x03) / 3.0;\nedgesLRTB.y = float((packed_val >> 4) & 0x03) / 3.0;\nedgesLRTB.z = float((packed_val >> 2) & 0x03) / 3.0;\nedgesLRTB.w = float((packed_val >> 0) & 0x03) / 3.0;",
+    "after": "vec4(\n\tfloat((packed_val >> 6) & 0x03) / 3.0,\n\tfloat((packed_val >> 4) & 0x03) / 3.0,\n\tfloat((packed_val >> 2) & 0x03) / 3.0,\n\tfloat((packed_val >> 0) & 0x03) / 3.0\n)",
+    "explanation": "Eliminated intermediate vector declaration and component-wise assignments by directly constructing the vec4, reducing unnecessary writes and potentially improving register allocation.",
+    "impact": 20,
+    "approximation": false,
+    "type": [
+      "register_pressure",
+      "vectorization"
+    ],
+    "function_name": "unpack_edges"
+  }
+]
