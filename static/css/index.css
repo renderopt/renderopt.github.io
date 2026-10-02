@@ -673,10 +673,11 @@ code {
 }
 
 .project-hero {
-  background:
-    radial-gradient(circle at top left, rgb(23 107 135 / 0.12), transparent 28%),
-    radial-gradient(circle at top right, rgb(217 119 6 / 0.12), transparent 24%),
-    linear-gradient(180deg, #faf7ef 0%, #f2ede2 100%);
+  background: #faf7ef;
+}
+
+.results-section {
+  background: #faf7ef;
 }
 
 .hero-note {
