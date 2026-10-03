@@ -416,14 +416,23 @@
       <figcaption><b>Figure 9.</b> Accepted patches, trimmed. Edits range from numerical and algebraic rewrites to domain-level shortcuts. In MaterialX, the search replaced a 64-sample Monte Carlo albedo with a fitted polynomial.</figcaption>
     </figure>
 
-    <figure class="fig">
-      <img src="static/fig/evolution.svg" alt="Evolution of 4ltfDr over 957 mutations across 4 islands, with the ancestry of the best shader" loading="lazy">
-      <figcaption><b>Figure 10.</b> One search on <span class="mono">4ltfDr</span>: best speedup over 957 mutations (top), four islands with migrations (middle), and the ancestry of the best program (bottom).
-        Gains accumulate along a lineage of small accepted edits; on average the best program appears at 68% of a run.</figcaption>
+    <figure class="fig" id="tree">
+      <div class="fig-tools">
+        <span class="seg sm" id="tree-pick"><button class="on" data-k="4ltfDr">traveler. (Shadertoy)</button><button data-k="ssil">SSIL pass (Godot)</button></span>
+        <button class="pill" id="tree-best">Show best</button>
+        <span class="cube-status" id="tree-hint">Hover or tap a dot to see its lineage and patch.</span>
+      </div>
+      <svg id="tree-svg" class="plot" viewBox="0 0 1000 382" role="img" aria-label="Search tree: accepted candidates by speedup over the run, rejected candidates as a strip below"></svg>
+      <div class="tree-detail">
+        <div class="tree-info" id="tree-info"></div>
+        <div class="code"><pre id="tree-diff"></pre></div>
+      </div>
+      <figcaption><b>Figure 10.</b> One full search, from the released session. Each dot is an accepted program at its proposal order (x) and speedup over the original (y), colored by island; the orange line is the best so far.
+        The strip below marks every rejected proposal. Selecting a program draws its lineage, the chain of accepted parents it was mutated from, and shows its accumulated change relative to the original shader (trimmed).</figcaption>
     </figure>
 
     <details class="more">
-      <summary>More analysis <span>Pareto fronts, uniform-threshold sweep, held-out audit, ablations, scaling</span></summary>
+      <summary>More analysis <span>Pareto fronts, uniform-threshold sweep, held-out audit, ablations, paper search figure, scaling</span></summary>
       <div class="inner">
         <h4>Trust-guided vs. static blending, per replay session</h4>
         <img src="static/fig/bayesian_pareto.svg" alt="EMA convergence of gamma_low, Pareto fronts and cumulative frames for five replay sessions" loading="lazy">
@@ -450,6 +459,9 @@
           <tr><td>three zero-shot views</td><td class="v">0.902</td><td></td><td></td><td></td><td></td></tr>
           <tr class="best"><td>all four views</td><td class="v">0.920</td><td>bad &minus; safe</td><td class="v">0.920</td><td>KTA-learned</td><td class="v">0.920</td></tr>
         </table></div>
+        <h4>Search dynamics as shown in the paper (4ltfDr, another run)</h4>
+        <img src="static/fig/evolution.svg" alt="Evolution of 4ltfDr over 957 mutations across 4 islands, with the ancestry of the best shader" loading="lazy">
+        <p class="caption">Best speedup over 957 mutations (top), four islands with migrations (middle), and the ancestry of the best program (bottom); on average the best program appears at 68% of a run.</p>
         <h4>Prompt augmentation and multi-GPU scaling</h4>
         <img src="static/fig/scalability.svg" alt="Prompt strategies with hardware metrics and scaling to 24 GPUs" loading="lazy">
         <p class="caption">(a) Hardware-counter prompts find early wins; mixed prompting is more reliable over long runs. (b) Sub-linear but useful scaling to 24 RTX 3060 GPUs.</p>

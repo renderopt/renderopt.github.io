@@ -319,6 +319,113 @@
     } else start();
   }
 
+  /* ================= search tree ================= */
+  function initTree() {
+    var svg = $('tree-svg'); if (!svg) return;
+    var ISL = ['#4c78b5', '#c8524a', '#4f9a63', '#d19a2b'];
+    var L = 64, R = 984, T = 26, B = 262, Y0 = 0.9, Y1 = 1.8, XMAX = 1000;  // XMAX: fixed per session
+    var RUG = [['V', 'rejected by validation', C.bad, 0.55], ['C', 'did not compile', '#8b9098', 0.55], ['L', 'LLM failure or duplicate', '#c3c6cb', 0.7]];
+    var cache = {}, D = null, key = '4ltfDr', sel = -1, best = -1, acc = [];
+    function X(s) { return L + (R - L) * s / XMAX; }
+    function Y(b) { return B - (B - T) * (Math.max(Y0, Math.min(Y1, b)) - Y0) / (Y1 - Y0); }
+    function chain(i) { var c = []; while (i >= 0 && c.length < 200) { c.unshift(i); var p = D[i].p; if (p < 0 || !D[p] || D[p].t !== 'A') break; i = p; } return c; }
+    var base = el('g', {}, svg), over = el('g', {}, svg);
+    function drawBase() {
+      clear(base);
+      // axes and grid (fixed for every session)
+      [1.0, 1.2, 1.4, 1.6, 1.8].forEach(function (t) {
+        el('line', { x1: L, y1: Y(t), x2: R, y2: Y(t), class: 'grid' }, base);
+        el('text', { x: L - 8, y: Y(t) + 4, class: 'tick', 'text-anchor': 'end' }, base, t.toFixed(1) + '×');
+      });
+      el('line', { x1: L, y1: Y(1), x2: R, y2: Y(1), stroke: '#c9ccd1' }, base);
+      el('text', { x: 14, y: (T + B) / 2, class: 'lbl', 'text-anchor': 'middle', transform: 'rotate(-90 14 ' + ((T + B) / 2) + ')' }, base, 'speedup');
+      // generation boundaries
+      var firstOfGen = {};
+      D.forEach(function (d) { if (d.g > 0 && (firstOfGen[d.g] == null || d.s < firstOfGen[d.g])) firstOfGen[d.g] = d.s; });
+      var gs = Object.keys(firstOfGen).map(Number).sort(function (a, b) { return a - b; });
+      gs.forEach(function (g) { var x = X(firstOfGen[g]); el('line', { x1: x, y1: T - 6, x2: x, y2: B, stroke: '#e3e3df', 'stroke-dasharray': '3 3' }, base); });
+      [0].concat(gs).forEach(function (g, k) {
+        var x0 = k === 0 ? X(0) : X(firstOfGen[g]), x1 = k + 1 < gs.length + 1 && gs[k] != null ? X(firstOfGen[gs[k]]) : X(D.length);
+        if (x1 - x0 > 34) el('text', { x: (x0 + x1) / 2, y: T - 10, class: 'tick', 'text-anchor': 'middle' }, base, 'gen ' + g);
+      });
+      // running best
+      var bestSoFar = 1, path = 'M' + X(0) + ',' + Y(1);
+      D.slice().sort(function (a, b) { return a.s - b.s; }).forEach(function (d) {
+        if (d.t === 'A' && d.b > bestSoFar) { path += ' H' + X(d.s).toFixed(1) + ' V' + Y(d.b).toFixed(1); bestSoFar = d.b; }
+      });
+      path += ' H' + X(D.length).toFixed(1);
+      el('path', { d: path, fill: 'none', stroke: C.ours, 'stroke-width': 2 }, base);
+      // accepted dots
+      acc.forEach(function (i) { var d = D[i]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 2.8, fill: d.i >= 0 ? ISL[d.i % 4] : C.ink, 'fill-opacity': 0.5 }, base); });
+      // rejected strip
+      RUG.forEach(function (r, k) {
+        var y = B + 22 + k * 15, n = 0, dpath = '';
+        D.forEach(function (d) { if (d.t === r[0]) { n++; dpath += 'M' + X(d.s).toFixed(1) + ',' + (y - 5) + 'v10'; } });
+        if (dpath) el('path', { d: dpath, stroke: r[2], 'stroke-opacity': r[3], 'stroke-width': 1 }, base);
+        el('text', { x: L - 8, y: y + 4, 'font-size': 10.5, fill: C.mute, 'text-anchor': 'end' }, base, n);
+      });
+      var lx = L;
+      RUG.forEach(function (r) {
+        el('rect', { x: lx, y: B + 66, width: 10, height: 3, fill: r[2] }, base);
+        var t = el('text', { x: lx + 14, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, r[1]); lx += 14 + r[1].length * 5.6 + 18;
+      });
+      ISL.forEach(function (c, k) { el('circle', { cx: lx + 4 + k * 10, cy: B + 67.5, r: 3.5, fill: c, 'fill-opacity': 0.7 }, base); });
+      el('text', { x: lx + 44, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'accepted, by island');
+      el('line', { x1: lx + 166, y1: B + 67.5, x2: lx + 182, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2 }, base);
+      el('text', { x: lx + 186, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'best so far');
+      [0, 0.2, 0.4, 0.6, 0.8, 1].map(function (f) { return Math.round(f * XMAX); }).forEach(function (t) { el('text', { x: X(t), y: B + 96, class: 'tick', 'text-anchor': 'middle' }, base, t); });
+      el('text', { x: (L + R) / 2, y: B + 110, class: 'tick', 'text-anchor': 'middle' }, base, 'candidate, in order of proposal');
+    }
+    function drawSel() {
+      clear(over);
+      if (sel < 0) return;
+      var c = chain(sel), pts = c.map(function (i) { return [X(D[i].s), Y(D[i].b)]; });
+      el('polyline', { points: pts.map(function (q) { return q.join(','); }).join(' '), fill: 'none', stroke: C.ink, 'stroke-width': 1.6 }, over);
+      c.forEach(function (i, k) {
+        var d = D[i], last = k === c.length - 1;
+        el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 7 : 4.5, fill: last ? C.ours : '#fff', stroke: C.ink, 'stroke-width': last ? 2 : 1.6 }, over);
+      });
+      var d = D[sel];
+      $('tree-info').innerHTML = '<span class="big">' + d.b.toFixed(2) + '&times;</span>' +
+        (sel === best ? 'Best program of the run. ' : '') + 'Candidate <b>#' + d.s + '</b>, generation <b>' + d.g + '</b>' + (d.i >= 0 ? ', island <b>' + d.i + '</b>' : '') +
+        '<br>worst sampled FLIP <b>' + (d.e || 0).toFixed(4) + '</b><br><b>' + (c.length - 1) + '</b> accepted edits from the original:' +
+        '<div class="lineage">' + c.map(function (i) { return '<button data-i="' + i + '"' + (i === sel ? ' class="on"' : '') + '>' + D[i].b.toFixed(2) + '&times;</button>'; }).join('<span>&rsaquo;</span>') + '</div>';
+      [].forEach.call($('tree-info').querySelectorAll('.lineage button'), function (b) { b.addEventListener('click', function () { sel = +b.dataset.i; drawSel(); }); });
+      var lines = d.d && d.d.length ? d.d : ['  (original program)'];
+      $('tree-diff').innerHTML = lines.map(function (l) {
+        var cls = l[0] === '+' ? 'a' : (l[0] === '-' ? 'd' : 'c'); if (l.charAt(1) === '\u2026') cls = 'c';
+        return '<span class="' + cls + '">' + l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\t/g, '    ') + '</span>';
+      }).join('');
+    }
+    function pick(e) {
+      if (!D) return;
+      var b = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+      var x = (e.clientX - b.left) * vb.width / b.width, y = (e.clientY - b.top) * vb.height / b.height, bi = -1, bd = 14 * 14;
+      acc.forEach(function (i) { var dx = X(D[i].s) - x, dy = Y(D[i].b) - y, q = dx * dx + dy * dy; if (q < bd) { bd = q; bi = i; } });
+      if (bi >= 0 && bi !== sel) { sel = bi; drawSel(); }
+    }
+    svg.addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse') pick(e); });
+    svg.addEventListener('pointerdown', pick);
+    function load(k) {
+      key = k;
+      function go(data) {
+        D = data; cache[k] = data; acc = []; best = -1; XMAX = Math.ceil(D.length / 100) * 100;
+        D.forEach(function (d, i) { if (d.t === 'A' && d.b != null) acc.push(i); if (d.best) best = i; });
+        sel = best; drawBase(); drawSel();
+      }
+      if (cache[k]) go(cache[k]);
+      else fetch('static/data/tree_' + k + '.json').then(function (r) { return r.json(); }).then(go).catch(function () { $('tree-hint').textContent = 'Could not load the search data.'; });
+    }
+    [].forEach.call($('tree-pick').querySelectorAll('button'), function (b) {
+      b.addEventListener('click', function () {
+        [].forEach.call(b.parentNode.children, function (c) { c.classList.toggle('on', c === b); });
+        load(b.dataset.k);
+      });
+    });
+    $('tree-best').addEventListener('click', function () { sel = best; drawSel(); });
+    load(key);
+  }
+
   /* ================= code tabs ================= */
   function initTabs() {
     var t = $('edit-tabs'); if (!t) return;
@@ -626,5 +733,5 @@
     });
   }
 
-  initPlayer(); initCube(); initTabs(); initFrames(); initSeq(); initSpeed(); initSave(); initLive(); initLOD(); initBib();
+  initPlayer(); initCube(); initTabs(); initTree(); initFrames(); initSeq(); initSpeed(); initSave(); initLive(); initLOD(); initBib();
 })();
