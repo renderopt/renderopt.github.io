@@ -214,25 +214,23 @@
 
     <figure class="fig" id="prps">
       <div class="fig-tools">
-        <span class="seg sm" id="cube-mode"><button class="on" data-m="0">Original</button><button data-m="1">Optimized</button><button data-m="2">|Difference| &times;20</button></span>
         <button class="pill" id="cube-sample">Sample a point</button>
         <button class="pill" id="cube-clear">Clear samples</button>
         <span class="cube-status" id="cube-status"></span>
       </div>
       <div class="cube-grid">
-        <div class="cube-left">
-          <svg id="cube-svg" class="plot" viewBox="0 0 320 290" role="img" aria-label="PRPS unit cube with the selected point; drag to move it"></svg>
-          <div class="cube-sliders" id="cube-sliders"></div>
-        </div>
-        <div class="cube-right">
-          <div class="cube-view"><canvas id="cube-gl" width="640" height="360"></canvas><img id="cube-fallback" src="static/img/thumbs/XdsGDB.jpg" alt="Buoy render"></div>
-          <table class="cube-map" id="cube-map"></table>
+        <svg id="cube-svg" class="plot" viewBox="0 0 320 290" role="img" aria-label="PRPS unit cube with the selected point; drag to move it"></svg>
+        <div class="cube-view" id="cube-view">
+          <canvas id="cube-gl" width="640" height="360"></canvas>
+          <img id="cube-fallback" src="static/img/thumbs/XdsGDB.jpg" alt="Buoy render">
+          <span class="split-lab" id="lab0">Original</span><span class="split-lab o" id="lab1">Ours</span><span class="split-lab" id="lab2">|Error| &times;20</span>
         </div>
       </div>
+      <div class="cube-rows" id="cube-rows"></div>
       <figcaption><b>Figure 3.</b> The Primary Render Parameters Space of <span class="mono">XdsGDB</span> (Buoy by TekF, CC BY-NC-SA 3.0), rendered live in your browser from the original and the LLM-optimized shader of the released session.
-        A point <i>r</i> in the 5D unit cube maps to the renderer's dynamic inputs through the session's PRPS ranges: time animates the waves and the boat, mouse-x orbits the camera, mouse-y changes its elevation.
-        Drag the point in the cube or use the sliders; <i>Sample a point</i> draws uniformly, as the validator does. The difference view shows which pixels change after the optimized ray march (at most 80 steps instead of 100, a shorter range, no march for upward rays).
-        The noise texture is regenerated in the browser, so waves differ in detail from Shadertoy.</figcaption>
+        A point <i>r</i> in the unit cube maps to the renderer's dynamic inputs through the session's PRPS ranges. Drag the point in the cube or use the sliders; <i>Sample a point</i> draws uniformly, as the validator does.
+        Drag the two diagonal dividers to compare original, optimized and their pixel difference (&times;20), which shows the effect of the shorter ray march (at most 80 steps instead of 100, a shorter range, no march for upward rays).
+        The session's PRPS has two more dimensions (the mouse click state) that this shader does not read; they are omitted here. The noise texture is regenerated in the browser, so waves differ in detail from Shadertoy.</figcaption>
     </figure>
   </div>
 </section>

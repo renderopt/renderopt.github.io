@@ -132,13 +132,11 @@
     var svg = $('cube-svg'); if (!svg) return;
     // PRPS of Xds3zN from the session config: iTime in [0,125], iMouse.xy in [0,1] (x resolution), iMouse.zw in [-1,1]
     var DIMS = [
-      { u: 'iTime', f: function (r) { return (125 * r).toFixed(1) + ' s'; }, used: true, note: 'waves and boat motion' },
-      { u: 'iMouse.x', f: function (r) { return Math.round(640 * r) + ' px'; }, used: true, note: 'orbits the camera' },
-      { u: 'iMouse.y', f: function (r) { return Math.round(360 * r) + ' px'; }, used: true, note: 'camera elevation' },
-      { u: 'iMouse.z', f: function (r) { return (2 * r - 1).toFixed(2); }, used: false, note: 'click state, not read' },
-      { u: 'iMouse.w', f: function (r) { return (2 * r - 1).toFixed(2); }, used: false, note: 'click state, not read' }
+      { u: 'iTime', f: function (r) { return (125 * r).toFixed(1) + ' s'; }, note: 'animates the waves and the boat' },
+      { u: 'iMouse.x', f: function (r) { return Math.round(640 * r) + ' px'; }, note: 'orbits the camera around the buoy' },
+      { u: 'iMouse.y', f: function (r) { return Math.round(360 * r) + ' px'; }, note: 'raises or lowers the camera' }
     ];
-    var r = [0.30, 0.12, 0.30, 0.85, 0.96], samples = [], mode = 0;
+    var r = [0.30, 0.12, 0.30], samples = [], split = [0.40, 0.70];
     // oblique projection of the first three axes
     var O = [62, 236], EX = [196, 0], EZ = [62, -46], EY = [0, -170];
     function P(a, b, c) { return [O[0] + a * EX[0] + b * EZ[0] + c * EY[0], O[1] + a * EX[1] + b * EZ[1] + c * EY[1]]; }
@@ -179,23 +177,21 @@
       el('line', { x1: fl[0], y1: fl[1], x2: az[0], y2: az[1], stroke: C.ours, 'stroke-opacity': 0.5, 'stroke-dasharray': '3 2' }, svg);
       el('circle', { cx: fl[0], cy: fl[1], r: 2.5, fill: C.ours, 'fill-opacity': 0.5 }, svg);
       el('circle', { cx: p[0], cy: p[1], r: 7, fill: C.ours, stroke: '#fff', 'stroke-width': 2 }, svg);
-      el('text', { x: 316, y: 16, 'font-size': 11, fill: C.mute, 'text-anchor': 'end' }, svg, 'r₄, r₅: sliders below');
     }
-    // sliders + mapping table
-    var sl = $('cube-sliders'), map = $('cube-map');
+    // one row per coordinate: slider, value, renderer uniform, meaning
+    var rows = $('cube-rows');
     DIMS.forEach(function (d, i) {
-      var l = document.createElement('label'); if (!d.used) l.className = 'dim';
-      l.innerHTML = '<i>r<sub>' + (i + 1) + '</sub></i><input type="range" min="0" max="1" step="0.001" id="cube-r' + i + '" aria-label="r' + (i + 1) + '"><output></output>';
-      sl.appendChild(l);
-      l.querySelector('input').addEventListener('input', function (e) { r[i] = +e.target.value; update(); });
+      var row = document.createElement('label'); row.className = 'cube-row';
+      row.innerHTML = '<i>r<sub>' + (i + 1) + '</sub></i><input type="range" min="0" max="1" step="0.001" id="cube-r' + i + '" aria-label="r' + (i + 1) + '"><output></output><span class="u"></span><span class="n">' + d.note + '</span>';
+      rows.appendChild(row);
+      row.querySelector('input').addEventListener('input', function (e) { r[i] = +e.target.value; update(); });
     });
     function updateUI() {
       DIMS.forEach(function (d, i) {
-        var l = sl.children[i]; l.querySelector('input').value = r[i]; l.querySelector('output').textContent = r[i].toFixed(2);
+        var row = rows.children[i];
+        row.querySelector('input').value = r[i]; row.querySelector('output').textContent = r[i].toFixed(2);
+        row.querySelector('.u').textContent = '\u2192 ' + d.u + ' = ' + d.f(r[i]);
       });
-      map.innerHTML = DIMS.map(function (d, i) {
-        return '<tr' + (d.used ? '' : ' class="dim"') + '><td>r<sub>' + (i + 1) + '</sub></td><td class="v">' + r[i].toFixed(2) + '</td><td class="arrow">&rarr;</td><td class="u">' + d.u + ' = ' + d.f(r[i]) + '</td><td class="n">' + d.note + '</td></tr>';
-      }).join('');
     }
     function update() { drawCube(); updateUI(); requestRender(); }
     // dragging in the (r1, r2) plane at the current r3
@@ -213,17 +209,37 @@
     svg.addEventListener('pointerup', function () { dragging = false; svg.classList.remove('drag'); });
     $('cube-sample').addEventListener('click', function () {
       samples.push(r.slice(0, 3)); if (samples.length > 40) samples.shift();
-      for (var i = 0; i < 5; i++) r[i] = Math.random();
+      for (var i = 0; i < 3; i++) r[i] = Math.random();
       update();
     });
     $('cube-clear').addEventListener('click', function () { samples = []; drawCube(); });
-    [].forEach.call($('cube-mode').querySelectorAll('button'), function (b) {
-      b.addEventListener('click', function () {
-        mode = +b.dataset.m;
-        [].forEach.call(b.parentNode.children, function (c) { c.classList.toggle('on', c === b); });
-        requestRender();
-      });
+    // two diagonal dividers: original | ours | error
+    var view = $('cube-view'), SLOPE = 0.35, dragSplit = -1;
+    function diag(e) {
+      var b = view.getBoundingClientRect(), x = (e.clientX - b.left) / b.width, y = (e.clientY - b.top) / b.height;
+      return (x * 16 + (1 - y) * 9 * SLOPE) / (16 + 9 * SLOPE);
+    }
+    function placeLabels() {
+      // x position (fraction of width) where a divider meets the top edge
+      function topX(s) { return (s * (16 + 9 * SLOPE) - 9 * SLOPE) / 16; }
+      var edges = [0, Math.max(0, topX(split[0])), Math.max(0, topX(split[1])), 1];
+      for (var i = 0; i < 3; i++) {
+        var lab = $('lab' + i), w = edges[i + 1] - edges[i];
+        lab.hidden = !ready || w < 0.12; lab.style.left = (100 * (edges[i] + edges[i + 1]) / 2) + '%';
+      }
+    }
+    view.addEventListener('pointerdown', function (e) {
+      var d = diag(e); dragSplit = Math.abs(d - split[0]) < Math.abs(d - split[1]) ? 0 : 1;
+      view.setPointerCapture(e.pointerId); move(e);
     });
+    function move(e) {
+      if (dragSplit < 0) return;
+      var d = Math.max(0.02, Math.min(0.98, diag(e)));
+      if (dragSplit === 0) split[0] = Math.min(d, split[1] - 0.04); else split[1] = Math.max(d, split[0] + 0.04);
+      placeLabels(); requestRender();
+    }
+    view.addEventListener('pointermove', move);
+    view.addEventListener('pointerup', function () { dragSplit = -1; });
 
     /* ---- WebGL2 renderer for the original and optimized shader ---- */
     var cv = $('cube-gl'), gl = null, progs = {}, fbs = [], show = null, pending = false, ready = false;
@@ -260,9 +276,12 @@
       return '#version 300 es\nprecision highp float;\nprecision highp int;\nuniform vec3 iResolution;\nuniform float iTime;\nuniform vec4 iMouse;\nuniform int iFrame;\nuniform sampler2D iChannel0;\n#define HW_PERFORMANCE 0\nout vec4 outColor_;\n' +
         src.replace(/\r/g, '') + '\nvoid main(){ vec4 c = vec4(0.0); mainImage(c, gl_FragCoord.xy); outColor_ = vec4(c.rgb, 1.0); }\n';
     }
-    var SHOW = '#version 300 es\nprecision highp float;\nuniform sampler2D A; uniform sampler2D B; uniform int mode; out vec4 o;\n' +
+    var SHOW = '#version 300 es\nprecision highp float;\nuniform sampler2D A; uniform sampler2D B; uniform vec2 split; uniform vec2 res; uniform float slope; out vec4 o;\n' +
       'void main(){ ivec2 p = ivec2(gl_FragCoord.xy); vec3 a = texelFetch(A, p, 0).rgb, b = texelFetch(B, p, 0).rgb;\n' +
-      ' if (mode == 0) o = vec4(a, 1.0); else if (mode == 1) o = vec4(b, 1.0); else { float d = length(a - b) * 20.0; o = vec4(vec3(min(d, 1.0)) * vec3(1.0, 0.62, 0.3) + vec3(0.0), 1.0); } }';
+      ' float d = (gl_FragCoord.x + gl_FragCoord.y * slope) / (res.x + res.y * slope);\n' +
+      ' vec3 c = d < split.x ? a : (d < split.y ? b : vec3(min(length(a - b) * 20.0, 1.0)) * vec3(1.0, 0.62, 0.3));\n' +
+      ' float px = 1.0 / (res.x + res.y * slope); if (abs(d - split.x) < 1.2 * px || abs(d - split.y) < 1.2 * px) c = vec3(1.0);\n' +
+      ' o = vec4(c, 1.0); }';
     function target() {
       var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -281,7 +300,7 @@
             try {
               progs[0] = program(wrap(src[0])); progs[1] = program(wrap(src[1])); show = program(SHOW);
               fbs = [target(), target()]; noise = noiseTex(); ready = true; status('');
-              $('cube-fallback').hidden = true; requestRender();
+              $('cube-fallback').hidden = true; placeLabels(); requestRender();
             } catch (err) { status('Could not compile the shader here; showing a pre-rendered frame.'); }
           }, 30);
         }).catch(function () { status('Could not load the shader; showing a pre-rendered frame.'); });
@@ -293,7 +312,7 @@
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbs[i].f); gl.viewport(0, 0, W, H);
       gl.uniform3f(gl.getUniformLocation(p, 'iResolution'), W, H, 1);
       gl.uniform1f(gl.getUniformLocation(p, 'iTime'), 125 * r[0]);
-      gl.uniform4f(gl.getUniformLocation(p, 'iMouse'), r[1] * W, r[2] * H, 2 * r[3] - 1, 2 * r[4] - 1);
+      gl.uniform4f(gl.getUniformLocation(p, 'iMouse'), r[1] * W, r[2] * H, 0, 0);
       gl.uniform1i(gl.getUniformLocation(p, 'iFrame'), 0);
       gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, noise); gl.uniform1i(gl.getUniformLocation(p, 'iChannel0'), 2);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -301,17 +320,18 @@
     }
     function render() {
       pending = false; if (!ready) return;
-      if (mode !== 1) pass(0);
-      if (mode !== 0) pass(1);
+      pass(0); pass(1);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.useProgram(show);
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, fbs[0].t);
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, fbs[1].t);
       gl.uniform1i(gl.getUniformLocation(show, 'A'), 0); gl.uniform1i(gl.getUniformLocation(show, 'B'), 1);
-      gl.uniform1i(gl.getUniformLocation(show, 'mode'), mode);
+      gl.uniform2f(gl.getUniformLocation(show, 'split'), split[0], split[1]);
+      gl.uniform2f(gl.getUniformLocation(show, 'res'), W, H);
+      gl.uniform1f(gl.getUniformLocation(show, 'slope'), SLOPE * W / 16 * 9 / H);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
     function requestRender() { if (!pending) { pending = true; requestAnimationFrame(render); } }
-    update();
+    update(); placeLabels();
     // compile lazily, once the figure is close to the viewport
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); start(); } }, { rootMargin: '400px' });
