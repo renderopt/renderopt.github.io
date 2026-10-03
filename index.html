@@ -1,341 +1,524 @@
-<!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <meta name="title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
-  <meta name="description" content="A project page for Efficient Validation for LLM-Generated Rendering Optimizations, introducing PRPS, Bayesian trust-guided validation, and distributed LLM-driven shader optimization.">
-  <meta name="keywords" content="rendering optimization, shader optimization, large language models, evolutionary search, PRPS, FLIP, Shadertoy, MaterialX, Godot, high-performance graphics">
-  <meta name="author" content="ADD_FINAL_AUTHOR_LIST">
-  <meta name="robots" content="index, follow">
-  <meta name="language" content="English">
-
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="Efficient Validation for LLM-Generated Rendering Optimizations">
-  <meta property="og:title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
-  <meta property="og:description" content="We optimize rendering programs with LLM-generated mutations, evolutionary search, and a trust-guided Bayesian validation framework over a renderer-agnostic Primary Render Parameters Space.">
-  <meta property="og:image" content="static/images/pipeline_overview.png">
-  <meta property="og:image:alt" content="Main architecture overview for the shader optimization pipeline">
-  <meta property="article:published_time" content="2026-04-01T00:00:00.000Z">
-  <meta property="article:section" content="Research">
-  <meta property="article:tag" content="Rendering">
-  <meta property="article:tag" content="Large Language Models">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
-  <meta name="twitter:description" content="LLM-driven shader optimization with PRPS-based validation, trust-guided early stopping, and distributed search across Shadertoy, Godot, and MaterialX.">
-  <meta name="twitter:image" content="static/images/pipeline_overview.png">
-  <meta name="twitter:image:alt" content="Main architecture overview for the shader optimization pipeline">
-
-  <meta name="citation_title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
-  <meta name="citation_publication_date" content="2026">
-  <meta name="citation_conference_title" content="High-Performance Graphics (HPG '26)">
-  <meta name="theme-color" content="#2563eb">
-  <meta name="msapplication-TileColor" content="#2563eb">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://ajax.googleapis.com">
-
-  <title>Efficient Validation for LLM-Generated Rendering Optimizations</title>
-
-  <link rel="icon" type="image/png" href="static/images/favicon-simple.png">
-  <link rel="apple-touch-icon" href="static/images/favicon-simple.png">
-
-  <link rel="stylesheet" href="static/css/bulma.min.css">
-  <link rel="stylesheet" href="static/css/index.css">
-  <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="static/css/bulma-slider.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-
-  <noscript>
-    <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
-    <link rel="stylesheet" href="static/css/bulma-slider.min.css">
-    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-  </noscript>
-
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-
-  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script defer src="static/js/fontawesome.all.min.js"></script>
-  <script defer src="static/js/bulma-carousel.min.js"></script>
-  <script defer src="static/js/bulma-slider.min.js"></script>
-  <script defer src="static/js/index.js"></script>
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ScholarlyArticle",
-    "headline": "Efficient Validation for LLM-Generated Rendering Optimizations",
-    "description": "We present a validation-centered pipeline for LLM-generated rendering optimizations, combining PRPS-based evaluation, Bayesian sequential testing, and trust-guided early stopping.",
-    "datePublished": "2026-04-01",
-    "publisher": {
-      "@type": "Organization",
-      "name": "ACM"
-    },
-    "isPartOf": {
-      "@type": "Periodical",
-      "name": "High-Performance Graphics (HPG '26)"
-    },
-    "keywords": ["rendering optimization", "LLM", "evolutionary search", "shader optimization", "PRPS", "MaterialX", "Godot", "Shadertoy"],
-    "abstract": "We study validation for LLM-generated rendering optimizations. To make approximate shader edits reliable, we define a renderer-agnostic Primary Render Parameters Space, formulate validation as Bayesian sequential classification under an exceedance-rate constraint, and adapt acceptance confidence using both optimization history and trust derived from LLM mutation embeddings.",
-    "mainEntity": {
-      "@type": "WebPage",
-      "@id": "#main-content"
-    }
-  }
-  </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Efficient Validation for LLM-Generated Rendering Optimizations</title>
+<meta name="description" content="LLM-driven evolutionary search proposes many approximate shader optimizations. We validate them cheaply: a Primary Render Parameters Space, a Bayesian sequential test over FLIP exceedances, and a trust-guided SAFE threshold from LLM mutation embeddings. Speedups up to 2.19x on Shadertoy, 1.89x on MaterialX, 1.70x on a Godot render pass, with 47-85% fewer validation frames.">
+<link rel="canonical" href="https://renderopt.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+<meta property="og:description" content="LLM-generated shader optimizations, validated over the rendering conditions an application exposes, with 47-85% fewer validation frames.">
+<meta property="og:url" content="https://renderopt.github.io/">
+<meta property="og:image" content="https://renderopt.github.io/static/videos/overview_poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+<meta name="citation_author" content="Dereviannykh, Mikhail">
+<meta name="citation_author" content="Klepikov, Dmitrii">
+<meta name="citation_author" content="Brucker, Hendrik">
+<meta name="citation_author" content="Wüst, Dominik">
+<meta name="citation_author" content="Krimmel, Benedikt">
+<meta name="citation_author" content="Dolp, Reiner">
+<meta name="citation_author" content="Dachsbacher, Carsten">
+<meta name="citation_publication_date" content="2026">
+<link rel="icon" href="static/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Castoro&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/css/site.css">
 </head>
 <body>
-  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
-    <i class="fas fa-chevron-up"></i>
-  </button>
 
-  <main id="main-content">
-    <section class="hero publication-header project-hero">
-      <div class="hero-body">
-        <div class="container is-max-desktop has-text-centered">
-          <h1 class="title is-1 publication-title">Efficient Validation for LLM-Generated Rendering Optimizations</h1>
+<!-- ======================= HERO ======================= -->
+<header class="hero container">
+  <h1>Efficient Validation for<br>LLM-Generated Rendering Optimizations</h1>
+  <div class="authors">
+    <span><a href="http://mishok43.com">Mikhail Dereviannykh</a></span>
+    <span><a href="https://www.linkedin.com/in/ibvfteh/">Dmitrii Klepikov</a></span>
+    <span>Hendrik Brucker</span>
+    <span>Dominik Wüst</span>
+    <span>Benedikt Krimmel</span>
+    <span>Reiner Dolp</span>
+    <span>Carsten Dachsbacher</span>
+  </div>
+  <div class="affils"><a href="https://www.kit.edu">Karlsruhe Institute of Technology</a></div>
+  <div class="buttons">
+    <span class="btn disabled" title="Coming soon"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6zM14 3v5h5"/></svg>Paper <small>(soon)</small></span>
+    <a class="btn" href="#video"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Video</a>
+    <a class="btn" href="#sessions"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg>Interactive reports</a>
+    <a class="btn" href="https://bwsyncandshare.kit.edu/s/AoYJ4XGpS4JPqcR"><svg viewBox="0 0 24 24"><path d="M11 3h2v10l3.5-3.5 1.4 1.4L12 16.8l-5.9-5.9 1.4-1.4L11 13zM4 18h16v3H4z"/></svg>Supplementary <small>(326 MB)</small></a>
+    <a class="btn" href="#bibtex"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5zm3 6h8v2H8zm0 4h8v2H8z"/></svg>BibTeX</a>
+  </div>
+</header>
 
-          <div class="publication-links compact-links">
-            <span class="link-block">
-              <a href="#tldr" class="external-link button is-normal is-rounded is-dark">
-                <span class="icon"><i class="fas fa-scroll"></i></span>
-                <span>TL;DR</span>
-              </a>
-            </span>
-            <span class="link-block">
-              <a class="external-link button is-normal is-rounded is-dark" aria-label="arXiv paper, coming soon" aria-disabled="true">
-                <span class="icon"><i class="fas fa-file-alt"></i></span>
-                <span>arXiv (soon)</span>
-              </a>
-            </span>
-            <span class="link-block">
-              <a href="#method" class="external-link button is-normal is-rounded is-dark">
-                <span class="icon"><i class="fas fa-diagram-project"></i></span>
-                <span>Mutation</span>
-              </a>
-            </span>
-            <span class="link-block">
-              <a href="#cases" class="external-link button is-normal is-rounded is-dark">
-                <span class="icon"><i class="fas fa-images"></i></span>
-                <span>Results</span>
-              </a>
-            </span>
-            <span class="link-block">
-              <a href="#evidence" class="external-link button is-normal is-rounded is-dark">
-                <span class="icon"><i class="fas fa-chart-bar"></i></span>
-                <span>Evidence</span>
-              </a>
-            </span>
+<nav class="topnav"><div class="container">
+  <a href="#results">Results</a><a href="#video">Video</a><a href="#method">Method</a><a href="#validation">Validation</a><a href="#trust">Trust</a><a href="#numbers">Numbers</a><a href="#sessions">Reports</a><a href="#bibtex">BibTeX</a>
+</div></nav>
+
+<!-- ======================= TEASER / RESULTS PLAYER ======================= -->
+<section id="results">
+  <div class="container">
+    <div class="player" id="player">
+      <div class="cols"><span>Original</span><span class="o">Optimized (LLM + validation)</span><span>FLIP error</span></div>
+      <div class="stage"><video id="pv" autoplay muted loop playsinline preload="auto"></video></div>
+      <div class="meta">
+        <div class="name" id="pname"></div>
+        <div class="nums" id="pnums"></div>
+        <div class="links" id="plinks"></div>
+      </div>
+      <div class="chips" id="pchips"></div>
+      <p class="caption">Each clip is rendered at the <b>worst sampled point</b> of the render-parameter space, the configuration with the highest FLIP error the validator saw.
+        A black error panel means no visible difference. Click a scene to switch; times are mean GPU render times over the sampled space.</p>
+    </div>
+
+    <div class="tldr"><span class="tldr-tag">TL;DR</span>
+      <p>An LLM-driven search can propose a thousand candidate shader patches in about an hour. Many are <i>approximate</i>, so each one must be checked across camera, time, lighting and material settings before it can be trusted.
+      That check, not the code generation, is the bottleneck. We make it cheap: sample conditions from a <b>Primary Render Parameters Space</b>, decide with a
+      <b>Bayesian sequential test</b> over how often FLIP error exceeds a threshold, and let a <span class="ours">trust score from LLM mutation embeddings</span>
+      decide how much evidence each candidate needs. The candidate's own rendered frames still decide. Trust only sets how early it may be accepted.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>2.19&times;</b><span>best Shadertoy speedup at &epsilon;&nbsp;=&nbsp;0.01; up to <b style="display:inline;font:inherit;color:var(--ink)">3.38&times;</b> when the error budget is loosened</span></div>
+      <div class="stat"><b>1.89&times; / 1.70&times;</b><span>MaterialX material (Linen) and Godot's engine SSIL render pass</span></div>
+      <div class="stat"><b>47&ndash;85%</b><span>fewer validation frames than conservative validation, in replay and live runs</span></div>
+      <div class="stat"><b>0.92</b><span>AUC for ranking safe vs. bad mutations from LLM embeddings alone (5,491 shaders)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= VIDEO ======================= -->
+<section id="video">
+  <div class="container">
+    <h2>Video</h2>
+    <div class="video-wrap">
+      <video controls preload="metadata" playsinline poster="static/videos/overview_poster.jpg">
+        <source src="static/videos/overview.mp4" type="video/mp4">
+      </video>
+    </div>
+    <p class="caption">80-second overview. A higher-quality version is in the <a href="https://bwsyncandshare.kit.edu/s/AoYJ4XGpS4JPqcR">supplementary archive</a>.</p>
+  </div>
+</section>
+
+<!-- ======================= METHOD ======================= -->
+<section id="method">
+  <div class="container">
+    <h2>How it works</h2>
+    <p class="lead">The search loop follows FunSearch and AlphaEvolve: an LLM proposes source patches, and an island-based evolution keeps the fast ones.
+      What changes for rendering is <b>correctness</b>. It is perceptual, it depends on the rendering conditions, and it can only be sampled. So the validator is the center of the system.</p>
+
+    <figure class="wide">
+      <svg viewBox="0 0 1000 320" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator with trust-guided threshold, profiler, feedback to population">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker>
+          <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d9711c"/></marker>
+        </defs>
+        <g font-size="11.5" fill="#5b616b" text-anchor="middle">
+          <!-- program -->
+          <rect x="8" y="50" width="118" height="96" rx="10" fill="#f3f3f1" stroke="#c9c9c4"/>
+          <text x="67" y="86" font-size="14" font-weight="600" fill="#1f2328">Render</text>
+          <text x="67" y="103" font-size="14" font-weight="600" fill="#1f2328">program</text>
+          <text x="67" y="124">shader / pass</text>
+          <!-- evolution -->
+          <rect x="156" y="50" width="140" height="96" rx="10" fill="#eaf0fa" stroke="#9db5dd"/>
+          <text x="226" y="80" font-size="14" font-weight="600" fill="#1f2328">Evolutionary</text>
+          <text x="226" y="97" font-size="14" font-weight="600" fill="#1f2328">search</text>
+          <text x="226" y="118">islands, parent</text>
+          <text x="226" y="133">+ prior programs</text>
+          <!-- llm -->
+          <rect x="326" y="50" width="140" height="96" rx="10" fill="#fbecec" stroke="#e3a9a9"/>
+          <text x="396" y="88" font-size="14" font-weight="600" fill="#1f2328">LLM mutator</text>
+          <text x="396" y="112">SEARCH / REPLACE</text>
+          <text x="396" y="127">patch &#8594; candidate</text>
+          <!-- validator -->
+          <rect x="496" y="18" width="344" height="168" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
+          <text x="668" y="42" font-size="14" font-weight="600" fill="#1f2328">Bayesian sequential validator <tspan fill="#d9711c">(ours)</tspan></text>
+          <g>
+            <rect x="508" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
+            <text x="546" y="75" fill="#1f2328">sample <tspan font-style="italic">r</tspan></text>
+            <text x="546" y="91">&#8712; [0,1]<tspan font-size="8" dy="-5">D</tspan></text>
+            <rect x="592" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
+            <text x="630" y="75" fill="#1f2328">render ref.</text>
+            <text x="630" y="91">+ candidate</text>
+            <rect x="676" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
+            <text x="714" y="75" fill="#1f2328">FLIP &gt; <tspan font-style="italic">&#949;</tspan> ?</text>
+            <text x="714" y="91">exceedance</text>
+            <rect x="760" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
+            <text x="798" y="75" fill="#1f2328">posterior</text>
+            <text x="798" y="91">over rate <tspan font-style="italic">p</tspan></text>
+            <path d="M584 79 H590" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <path d="M668 79 H674" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <path d="M752 79 H758" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <path d="M798 102 V116 H546 V106" fill="none" stroke="#c9a47c" stroke-dasharray="3 3" marker-end="url(#aho)"/>
+            <text x="672" y="129" font-size="10.5" fill="#9a7a58">undecided: render the next batch</text>
+          </g>
+          <rect x="508" y="142" width="104" height="32" rx="7" fill="#e6f4ea" stroke="#2e8b57"/>
+          <text x="560" y="162" fill="#1d5e35" font-weight="600">SAFE &#8594; accept</text>
+          <rect x="620" y="142" width="104" height="32" rx="7" fill="#fbe9e7" stroke="#c8423b"/>
+          <text x="672" y="162" fill="#8d2a24" font-weight="600">BAD &#8594; reject</text>
+          <rect x="732" y="142" width="104" height="32" rx="7" fill="#f1f1ef" stroke="#a9adb3"/>
+          <text x="784" y="162" fill="#4b4f55" font-size="10.5">no decision &#8594; reject</text>
+          <!-- profiler -->
+          <rect x="870" y="50" width="122" height="96" rx="10" fill="#fdf6dc" stroke="#e2c86b"/>
+          <text x="931" y="90" font-size="14" font-weight="600" fill="#1f2328">Profiler</text>
+          <text x="931" y="112">timing for SAFE</text>
+          <text x="931" y="127">candidates only</text>
+          <!-- trust -->
+          <rect x="556" y="220" width="224" height="66" rx="10" fill="#fff" stroke="#d9711c" stroke-dasharray="5 3"/>
+          <text x="668" y="243" font-size="13" font-weight="600" fill="#1f2328">Trust-guided threshold <tspan fill="#d9711c">(ours)</tspan></text>
+          <text x="668" y="261">LLM mutation embeddings vs. history</text>
+          <text x="668" y="276">&#8594; per-candidate SAFE threshold</text>
+          <!-- arrows -->
+          <path d="M126 98 H153" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M296 98 H323" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M466 98 H493" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M840 98 H867" stroke="#2e8b57" stroke-width="1.5" marker-end="url(#ah)"/>
+          <path d="M668 220 V190" stroke="#d9711c" stroke-width="1.5" marker-end="url(#aho)"/>
+          <text x="676" y="208" text-anchor="start" fill="#d9711c" font-style="italic">&#947;<tspan font-size="8" dy="3">safe</tspan><tspan dy="-3">(i)</tspan></text>
+          <path d="M820 186 V253 H783" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
+          <text x="826" y="222" text-anchor="start">labels, rates</text>
+          <path d="M396 146 V253 H553" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
+          <text x="402" y="222" text-anchor="start">diff</text>
+          <path d="M931 146 V306 H226 V149" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+          <text x="420" y="300">accepted program, render time and error &#8594; population; prior programs guide later mutations</text>
+        </g>
+      </svg>
+    </figure>
+    <p class="caption">The validator and orchestration are shared across backends; only the parameter-space adapter and the rendering hooks are backend-specific.
+      Validation runs on distributed GPU workers that report errors after every batch, so a candidate can stop as soon as the evidence is decisive.</p>
+
+    <!-- step 1 -->
+    <div class="step" id="prps">
+      <h3><span class="n">1</span>Primary Render Parameters Space</h3>
+      <p>Validation needs a common way to say "a rendering condition". Inspired by primary sample space in Monte Carlo rendering, every dynamic parameter the application exposes
+        (camera, animation time, lighting, material inputs, environment choice) is mapped to one coordinate of a unit hypercube <i class="m">r</i>&nbsp;&isin;&nbsp;[0,1]<sup><i class="m">D</i></sup>.
+        The validator only sees points in the cube; a small backend adapter turns them into renderer state.</p>
+      <div class="widget">
+        <div class="controls">
+          <span class="seg" id="prps-shader"><button class="on" data-k="xds">Raymarching Primitives (Xds3zN)</button><button data-k="sc">GLSL Ray Tracing Test (3sc3z4)</button></span>
+          <span style="color:var(--mute)">Click a point or a line.</span>
+        </div>
+        <div class="prps">
+          <div><svg id="prps-plot" class="plot" viewBox="0 0 520 250"></svg></div>
+          <figure><img id="prps-img" alt="Render at the selected PRPS point" src="static/img/prps/xds_1.jpg"><figcaption id="prps-cap"></figcaption></figure>
+        </div>
+        <p class="caption left" style="margin-top:6px">Three points of a 5D Shadertoy PRPS (<span class="mono">iTime</span> and <span class="mono">iMouse</span>). One point changes both what is on screen and how long it takes to render.
+          A single screenshot cannot validate an edit; a distribution over the cube can.</p>
+      </div>
+      <div class="dims">
+        <div><b>Shadertoy<span>1&ndash;5D</span></b>animation time and mouse uniforms</div>
+        <div><b>Godot<span>7D</span></b>camera position in volume-weighted scene boxes, view direction, time</div>
+        <div><b>MaterialX<span>&le;&nbsp;34D</span></b>camera, environment map and intensity, every material input</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= VALIDATION ======================= -->
+<section id="validation">
+  <div class="container">
+    <div class="step" style="margin-top:0">
+      <h3><span class="n">2</span>Validation as a Bayesian sequential test</h3>
+      <p>Average error hides rare visible failures, and worst-case error over a continuous space is intractable. We use two interpretable knobs:
+        a FLIP threshold <i class="m">&epsilon;</i> (how bad is too bad) and a tolerated exceedance rate <i class="m">&tau;</i> (how often is too often, here 1%).
+        After <i class="m">n</i> sampled conditions with <i class="m">k</i> exceedances, the unknown rate <i class="m">p</i> has a Beta posterior, and the validator stops as soon as it is decisive.</p>
+      <div class="eq"><i>p</i> | <i>k</i>, <i>n</i> ~ Beta(1+<i>k</i>, 1+<i>n</i>&minus;<i>k</i>), &nbsp;&nbsp;&nbsp; P(<i>p</i> &lt; <i>&tau;</i> | <i>k</i>, <i>n</i>) = <i>I</i><sub><i>&tau;</i></sub>(1+<i>k</i>, 1+<i>n</i>&minus;<i>k</i>)</div>
+      <div class="rules">
+        <div class="s"><b class="safe">SAFE</b>P(<i>p</i>&lt;<i>&tau;</i>) &ge; <i>&gamma;</i><sub>safe</sub>(<i>i</i>) &rarr; accept and profile</div>
+        <div class="b"><b class="bad">BAD</b>P(<i>p</i>&lt;<i>&tau;</i>) &le; 1&minus;<i>&gamma;</i><sub>high</sub> &rarr; reject (always strict)</div>
+        <div><b>UNDETERMINED</b>render another batch, reject when the frame budget runs out</div>
+      </div>
+
+      <div class="widget" id="seq" style="margin-top:14px">
+        <div class="controls">
+          <span>True rate of the candidate:</span>
+          <span class="seg" id="seq-p">
+            <button data-p="0.001" class="on">safe &middot; 0.1%</button>
+            <button data-p="0.02">borderline bad &middot; 2%</button>
+            <button data-p="0.15">bad &middot; 15%</button>
+          </span>
+          <label class="slider">trust <input id="seq-trust" type="range" min="0" max="1" step="0.01" value="0"><output id="seq-trust-o">0.00</output></label>
+          <button class="pill dark" id="seq-run">&#9654; Run</button>
+          <button class="pill" id="seq-reset">New draw</button>
+        </div>
+        <div class="two" style="gap:16px">
+          <div><p class="chart-title">Posterior over the exceedance rate <i>p</i> <span>(green: mass below &tau; = 1%)</span></p><svg id="seq-post" class="plot" viewBox="0 0 460 220"></svg></div>
+          <div><p class="chart-title">P(<i>p</i> &lt; &tau;) as frames come in <span>(red ticks: exceedances)</span></p><svg id="seq-trace" class="plot" viewBox="0 0 460 220"></svg></div>
+        </div>
+        <div class="readout" id="seq-read"></div>
+        <p class="caption left" style="margin-top:6px">Toy simulation of the real decision rule (&tau; = 1%, &gamma;<sub>high</sub> = 0.99, &gamma;<sub>low</sub> = 0.16 as learned on <span class="mono">XtyGWD</span>, <i>p</i> = 2 for the trust exponent).
+          At trust 0 a clean candidate needs 458 samples (916 renders). At trust 1 it needs 17. Now give a borderline-bad candidate high trust and run it a few times: it often slips through.
+          That is why trust is assigned <b>per candidate</b> from its similarity to validated mutations, and never as one global knob.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <h3>Why conservative validation is expensive</h3>
+      <div class="two">
+        <div>
+          <p class="chart-title">Renders needed to accept a clean candidate <span>(0 exceedances, &tau; = 1%)</span></p>
+          <svg id="frames-plot" class="plot" viewBox="0 0 470 280"></svg>
+          <p class="caption left">The SAFE threshold sets the price of every accepted candidate. The curve is exact: 2&middot;&lfloor;ln(1&minus;&gamma;)/ln(1&minus;&tau;)&rfloor; renders (reference + candidate).
+            Dots: <span class="ours">&gamma;<sub>low</sub></span> learned online in five sessions, between 34 and 140 renders, versus 916 at the conservative 0.99.</p>
+        </div>
+        <div>
+          <p class="chart-title">Exceedance rates of rejected candidates <span>(from the paper)</span></p>
+          <img src="static/fig/justification.svg" alt="Histogram of exceedance rates of bad candidates for lsf3zr and 4sX3Rn, with frames needed to detect them" loading="lazy">
+          <p class="caption left">Most bad candidates fail on a large fraction of frames and are rejected within tens of frames. A thin tail near the tolerance (1&ndash;5%, orange) needs 180&ndash;610.
+            Under one fixed 99% policy, <b>every safe candidate</b> pays for ruling out that tail.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= TRUST ======================= -->
+<section id="trust">
+  <div class="container">
+    <div class="step" style="margin-top:0">
+      <h3><span class="n o">3</span>Trust-guided SAFE threshold</h3>
+      <p>We adapt <b>only</b> how much clean evidence acceptance requires. A session-level bound <i class="m">&gamma;</i><sub>low</sub> is learned from the 25th percentile of observed bad rates (EMA), so it tightens as soon as borderline failures appear.
+        Per candidate, an LLM describes the mutation from four angles; their embeddings are compared with already validated candidates. Mutations that look like known safe edits get high trust and stop early. Risky ones stay conservative.</p>
+      <figure class="wide">
+        <svg viewBox="0 0 1000 250" role="img" aria-label="Trust pipeline: diff, four LLM representations, contrast against nearest safe and bad neighbors, fused rank, trust, interpolated SAFE threshold">
+          <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker></defs>
+          <g font-size="11.5" fill="#5b616b">
+            <!-- diff -->
+            <text x="90" y="22" text-anchor="middle" font-weight="600" fill="#1f2328" font-size="13">Candidate diff</text>
+            <rect x="10" y="34" width="160" height="150" rx="8" fill="#fff" stroke="#d9d9d4"/>
+            <g font-family="ui-monospace, Menlo, monospace" font-size="9.5">
+              <rect x="11" y="46" width="158" height="14" fill="#fde8e7"/><text x="16" y="56" fill="#8d2a24">- for (i&lt;200; i++)</text>
+              <rect x="11" y="60" width="158" height="14" fill="#e6f4ea"/><text x="16" y="70" fill="#1d5e35">+ for (i&lt;180; i++)</text>
+              <text x="16" y="88" fill="#8b9098">  float t = ...;</text>
+              <rect x="11" y="94" width="158" height="14" fill="#fde8e7"/><text x="16" y="104" fill="#8d2a24">- c = a / b;</text>
+              <rect x="11" y="108" width="158" height="14" fill="#e6f4ea"/><text x="16" y="118" fill="#1d5e35">+ c = a * inv_b;</text>
+              <text x="16" y="136" fill="#8b9098">  ...</text>
+            </g>
+            <text x="90" y="204" text-anchor="middle">new mutation <tspan font-style="italic">i</tspan></text>
+            <path d="M172 109 H203" stroke="#7d8188" marker-end="url(#ah2)"/>
+            <!-- LLM views -->
+            <text x="300" y="22" text-anchor="middle" font-weight="600" fill="#1f2328" font-size="13">LLM describes it</text>
+            <g>
+              <rect x="208" y="34" width="184" height="32" rx="7" fill="#f4f0fb" stroke="#cdbfe6"/><circle cx="222" cy="50" r="5" fill="#8a6bbf"/>
+              <text x="234" y="47" fill="#1f2328" font-weight="600">mechanism</text><text x="234" y="60" font-size="10.5">what computation changed</text>
+              <rect x="208" y="72" width="184" height="32" rx="7" fill="#eef5fb" stroke="#b9d3ea"/><circle cx="222" cy="88" r="5" fill="#3a8fc4"/>
+              <text x="234" y="85" fill="#1f2328" font-weight="600">guard</text><text x="234" y="98" font-size="10.5">which conditions are at risk</text>
+              <rect x="208" y="110" width="184" height="32" rx="7" fill="#eef7f1" stroke="#bcdcc7"/><circle cx="222" cy="126" r="5" fill="#2e8b57"/>
+              <text x="234" y="123" fill="#1f2328" font-weight="600">visual</text><text x="234" y="136" font-size="10.5">what a viewer would see</text>
+              <rect x="208" y="148" width="184" height="32" rx="7" fill="#fdf4ea" stroke="#f1d9bf"/><circle cx="222" cy="164" r="5" fill="#d9711c"/>
+              <text x="234" y="161" fill="#1f2328" font-weight="600">mechcal</text><text x="234" y="174" font-size="10.5">calibrated on validated neighbors</text>
+            </g>
+            <text x="300" y="204" text-anchor="middle">one embedding per view</text>
+            <path d="M394 109 H425" stroke="#7d8188" marker-end="url(#ah2)"/>
+            <!-- embedding space -->
+            <text x="525" y="22" text-anchor="middle" font-weight="600" fill="#1f2328" font-size="13">Contrast with history</text>
+            <rect x="430" y="34" width="190" height="150" rx="8" fill="#fafaf8" stroke="#e1e1dc"/>
+            <g>
+              <line x1="520" y1="104" x2="492" y2="78" stroke="#2e8b57" stroke-width="1.6"/>
+              <line x1="520" y1="104" x2="584" y2="130" stroke="#c8423b" stroke-width="1.2" stroke-dasharray="3 2"/>
+              <line x1="520" y1="104" x2="566" y2="64" stroke="#c8423b" stroke-width="1.2" stroke-dasharray="3 2"/>
+              <line x1="520" y1="104" x2="548" y2="160" stroke="#c8423b" stroke-width="1.2" stroke-dasharray="3 2"/>
+              <g fill="#2e8b57"><circle cx="492" cy="78" r="4.5"/><circle cx="468" cy="98" r="4.5"/><circle cx="476" cy="62" r="4.5"/><circle cx="458" cy="130" r="4.5"/><circle cx="502" cy="140" r="4.5"/><circle cx="448" cy="72" r="4.5"/><circle cx="486" cy="114" r="4.5"/></g>
+              <g fill="#c8423b" fill-opacity=".85"><circle cx="584" cy="130" r="6.5"/><circle cx="566" cy="64" r="4"/><circle cx="548" cy="160" r="5.5"/><circle cx="600" cy="92" r="7"/><circle cx="604" cy="160" r="4"/><circle cx="590" cy="52" r="5"/></g>
+              <path d="M520 95 l2.6 5.6 6 .7 -4.5 4.1 1.2 6 -5.3-3 -5.3 3 1.2-6 -4.5-4.1 6-.7z" fill="#1f2328"/>
+            </g>
+            <text x="525" y="204" text-anchor="middle">nearest <tspan fill="#2e8b57" font-weight="600">safe</tspan> vs. 3 nearest <tspan fill="#c8423b" font-weight="600">bad</tspan> (rate-weighted)</text>
+            <text x="525" y="222" text-anchor="middle" font-style="italic">RC<tspan font-size="8" dy="3">v</tspan><tspan dy="-3"> = bad_score</tspan><tspan font-size="8" dy="3">v</tspan><tspan dy="-3"> &#8722; safe_max</tspan><tspan font-size="8" dy="3">v</tspan></text>
+            <path d="M622 109 H653" stroke="#7d8188" marker-end="url(#ah2)"/>
+            <!-- fuse & rank -->
+            <text x="735" y="22" text-anchor="middle" font-weight="600" fill="#1f2328" font-size="13">Fuse and rank</text>
+            <rect x="658" y="34" width="154" height="44" rx="7" fill="#fff" stroke="#d9d9d4"/>
+            <text x="735" y="52" text-anchor="middle" fill="#1f2328" font-style="italic">s(i) = &#931;<tspan font-size="8" dy="3">v</tspan><tspan dy="-3"> w</tspan><tspan font-size="8" dy="3">v</tspan><tspan dy="-3"> RC</tspan><tspan font-size="8" dy="3">v</tspan></text>
+            <text x="735" y="68" text-anchor="middle" font-size="10.5">KTA-learned weights</text>
+            <path d="M735 78 V90" stroke="#7d8188" marker-end="url(#ah2)"/>
+            <rect x="658" y="92" width="154" height="36" rx="7" fill="#fff" stroke="#d9d9d4"/>
+            <text x="735" y="114" text-anchor="middle" fill="#1f2328">rank among <tspan font-style="italic">N</tspan> candidates</text>
+            <path d="M735 128 V140" stroke="#7d8188" marker-end="url(#ah2)"/>
+            <rect x="658" y="142" width="154" height="40" rx="7" fill="#fdf4ea" stroke="#d9711c"/>
+            <text x="735" y="166" text-anchor="middle" fill="#1f2328" font-style="italic">trust = exp(&#8722;rank / N)</text>
+            <path d="M814 162 H835" stroke="#7d8188" marker-end="url(#ah2)"/>
+            <!-- threshold gauge -->
+            <text x="905" y="22" text-anchor="middle" font-weight="600" fill="#1f2328" font-size="13">SAFE threshold</text>
+            <rect x="852" y="40" width="22" height="140" rx="4" fill="url(#gg)"/>
+            <defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3366b0"/><stop offset="1" stop-color="#d9711c"/></linearGradient></defs>
+            <text x="882" y="48" fill="#3366b0" font-style="italic">&#947;<tspan font-size="8" dy="3">high</tspan><tspan dy="-3"> = 0.99</tspan></text>
+            <text x="882" y="62" font-size="10.5">trust 0: 916 renders</text>
+            <text x="882" y="168" fill="#d9711c" font-style="italic">&#947;<tspan font-size="8" dy="3">low</tspan><tspan dy="-3"> (learned)</tspan></text>
+            <text x="882" y="182" font-size="10.5">trust 1: few renders</text>
+            <path d="M844 120 l8 0" stroke="#1f2328" stroke-width="2"/><path d="M838 114 l8 6 -8 6z" fill="#1f2328"/>
+            <text x="890" y="222" text-anchor="middle" font-style="italic" fill="#1f2328">&#947;<tspan font-size="8" dy="3">eff</tspan><tspan dy="-3"> = &#947;</tspan><tspan font-size="8" dy="3">high</tspan><tspan dy="-3"> + (&#947;</tspan><tspan font-size="8" dy="3">low</tspan><tspan dy="-3"> &#8722; &#947;</tspan><tspan font-size="8" dy="3">high</tspan><tspan dy="-3">) &#183; trust</tspan><tspan font-size="8" dy="-5">p</tspan></text>
+          </g>
+        </svg>
+      </figure>
+      <p class="caption">Trust never adds evidence and never makes rejection easier: the BAD threshold stays at 1&minus;&gamma;<sub>high</sub>, and a candidate's posterior holds only its own rendered frames.
+        Other candidates only shape how strict its SAFE threshold is. Leave-one-out AUC of the trust ranking: 0.920 (all four views), 0.698 without the safe anchor.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= NUMBERS ======================= -->
+<section id="numbers">
+  <div class="container">
+    <h2>Results</h2>
+    <p class="lead">Three settings: public Shadertoy fragment shaders, MaterialX materials compiled to GLSL, and two Godot workloads, one of them an engine-internal render pass.
+      Speedups are mean GPU render time over the sampled space, each at its stated error threshold with &tau; = 1%.</p>
+
+    <div class="two">
+      <div class="card">
+        <p class="chart-title">Speedup of the best accepted program <span>(paper results)</span></p>
+        <svg id="speed-plot" class="plot" viewBox="0 0 470 430"></svg>
+      </div>
+      <div>
+        <div class="card">
+          <p class="chart-title">Validation work vs. conservative <span>(session replay: same candidates, only the policy changes)</span></p>
+          <svg id="save-plot" class="plot" viewBox="0 0 470 205"></svg>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <p class="chart-title">Validation samples per candidate <span>(live full-pipeline runs)</span></p>
+          <svg id="live-plot" class="plot" viewBox="0 0 470 150"></svg>
+          <p class="caption left" style="margin-top:2px">The trust views cost extra LLM calls: total cost per candidate rises 34&ndash;45% at $0.05 per GPU-hour, while GPU validation work drops 73%.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOD -->
+    <div class="step" id="lod">
+      <h3>The error threshold is a quality knob</h3>
+      <p>Since &epsilon; says how much per-frame perceptual error counts as a failure, sweeping it turns one shader into a ladder of levels of detail.
+        On <span class="mono">XtyGWD</span> (Multiple Transparency, reference 11.5&nbsp;ms), the best speedup grows from 1.26&times; to 3.38&times; while the acceptance rate rises from 41% to 89%.</p>
+      <div class="widget">
+        <div class="controls">
+          <label class="slider" style="gap:10px">&epsilon; <input id="lod-s" type="range" min="0" max="3" step="1" value="1" style="width:220px"><output id="lod-o"></output></label>
+          <span class="readout" id="lod-read" style="margin:0"></span>
+        </div>
+        <div class="two" style="grid-template-columns: 2fr 1fr; gap:16px; align-items:center">
+          <div class="lod-imgs">
+            <figure><img id="lod-r" alt="Optimized render" src="static/img/lod/render_1.jpg"><figcaption>optimized</figcaption></figure>
+            <figure><img id="lod-f" alt="FLIP error map" src="static/img/lod/flip_1.jpg"><figcaption id="lod-fc">FLIP</figcaption></figure>
+          </div>
+          <svg id="lod-plot" class="plot" viewBox="0 0 300 220"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- code -->
+    <div class="step" id="edits">
+      <h3>What the search finds</h3>
+      <p>Accepted edits range from algebra to domain-level shortcuts. Each card is a real accepted patch (trimmed).</p>
+      <div class="codes">
+        <div class="code">
+          <header><b>Negligible noise removed</b><span class="mono">NtlSDs</span></header>
+<pre><span class="c">// SDF distance computation</span><span class="d">-  float fb = fbm(vec3(10.1*x+offx, 10.1*y, 10.1*z));</span><span class="d">-  if( fb&gt;0.0 )</span><span class="d">-      di = di + 0.00000003*fb;</span><span class="a">+  // 3e-8 perturbation is below float precision</span><span class="a">+  // at this scale: skip the FBM entirely</span><span>   return sqrt(di);</span></pre>
+          <footer>Numerical reasoning: an expensive noise call that cannot change the result.</footer>
+        </div>
+        <div class="code">
+          <header><b>Beat-conditional geometry</b><span class="mono">4ltfDr &middot; 1.69&times;</span></header>
+<pre><span class="c">// audio-reactive second stage</span><span class="d">-  intersectStage(surface, pp,</span><span class="d">-      rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  if (beat &gt;= 32.0) {</span><span class="a">+      intersectStage(surface, pp,</span><span class="a">+          rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  }</span></pre>
+          <footer>Domain reasoning: the second stage is invisible before beat 32, so it is skipped there. Also hoists loop invariants out of the fractal.</footer>
+        </div>
+        <div class="code">
+          <header><b>Fewer taps in an engine pass</b><span class="mono">Godot SSIL &middot; 1.66&times;</span></header>
+<pre><span class="c">// taps per quality preset (2 depth samples each)</span><span class="d">-  const int num_taps[5] = { 3, 5, 12, 0, 0 };</span><span class="a">+  const int num_taps[5] = { 2, 3, 6, 0, 0 };</span><span class="c">   ...</span><span class="c">   // plus: merged max/clamp pairs, reciprocal</span><span class="c">   // multiplies, shared subexpressions</span></pre>
+          <footer>Approximate by design: roughly half the samples per pixel, worst sampled FLIP 0.106 at &epsilon; = 0.1, still within the 1% exceedance budget.</footer>
+        </div>
+        <div class="code">
+          <header><b>Polynomial instead of atan + cos</b><span class="mono">from the paper</span></header>
+<pre><span class="c">// lighthouse stripe pattern</span><span class="d">-  cos(atan(pos.x, pos.z) * 6.0)</span><span class="a">+  float r_inv = inversesqrt(dot(pos.xz, pos.xz));</span><span class="a">+  float c = pos.z * r_inv, c2 = c*c, c4 = c2*c2;</span><span class="a">+  // T_6(x) = 32x^6 - 48x^4 + 18x^2 - 1</span><span class="a">+  32.*c4*c2 - 48.*c4 + 18.*c2 - 1.;</span></pre>
+          <footer>Math reasoning: cos(6&theta;) is the Chebyshev polynomial T<sub>6</sub>(cos&nbsp;&theta;), so the transcendental pair disappears.</footer>
+        </div>
+      </div>
+      <p class="caption">MaterialX runs found similar patterns, for example replacing the 64-sample Monte Carlo directional albedo with a fitted polynomial, or returning early from transmission when it contributes nothing.</p>
+    </div>
+
+    <!-- evolution -->
+    <div class="step">
+      <h3>Search dynamics</h3>
+      <img src="static/fig/evolution.svg" alt="Evolution of 4ltfDr over 957 mutations across 4 islands, with the ancestry of the best shader" loading="lazy">
+      <p class="caption">One run on <span class="mono">4ltfDr</span>: best speedup over 957 mutations (top), four islands with migrations (middle), and the ancestry of the best program (bottom).
+        Gains accumulate along a lineage of small accepted edits; across Shadertoy runs the best program appears on average at 68% of the run.</p>
+    </div>
+
+    <details class="more">
+      <summary>More analysis <span>trust Pareto fronts, uniform-confidence sweep, held-out audit, ablations, scaling</span></summary>
+      <div class="inner">
+        <h4>Trust-guided vs. static blending, per replay session</h4>
+        <img src="static/fig/bayesian_pareto.svg" alt="EMA convergence of gamma_low, Pareto fronts and cumulative frames for five replay sessions" loading="lazy">
+        <p class="caption">Top: &gamma;<sub>low</sub> converges to session-specific values. Middle: trust-guided (orange) dominates a static global blend (red) on the disagreement vs. frames frontier, using 19&ndash;42% fewer frames at equal disagreement. Bottom: cumulative frames.</p>
+        <div class="two" style="margin-top:14px">
+          <div>
+            <h4>One global threshold is not enough</h4>
+            <img src="static/fig/flat_policy.svg" alt="Uniform confidence sweep across five replay sessions" loading="lazy">
+            <p class="caption left">At &gamma; = 0.80 a uniform policy saves 65% of renders with 0.10% bad-to-SAFE disagreements, but the zero-disagreement point stays at full cost for two sessions.</p>
+          </div>
+          <div>
+            <h4>Held-out audit of accepted candidates</h4>
+            <img src="static/fig/heldout.svg" alt="Held-out validation of accepted Shadertoy candidates on 20k to 102.6k fresh samples" loading="lazy">
+            <p class="caption left">Re-rendering on 20k&ndash;102.6k fresh samples keeps 9 of 10 SAFE labels; the one change is a borderline <span class="mono">4ltfDr</span> candidate at the tolerance boundary.</p>
           </div>
         </div>
+        <h4>Ablation of the trust estimate (leave-one-out AUC-ROC, 7 sessions, 5,491 shaders)</h4>
+        <table class="abl">
+          <tr><th>Representations</th><th>AUC</th><th>Contrast scoring</th><th>AUC</th><th>Fusion weights</th><th>AUC</th></tr>
+          <tr><td>visual</td><td class="v">0.781</td><td>bad only</td><td class="v">0.698</td><td>best single view</td><td class="v">0.901</td></tr>
+          <tr><td>mechanism</td><td class="v">0.871</td><td>&minus;safe only</td><td class="v">0.837</td><td>uniform</td><td class="v">0.913</td></tr>
+          <tr><td>guard</td><td class="v">0.889</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>mechcal</td><td class="v">0.898</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>three zero-shot views</td><td class="v">0.902</td><td></td><td></td><td></td><td></td></tr>
+          <tr class="best"><td>all four views</td><td class="v">0.920</td><td>bad &minus; safe</td><td class="v">0.920</td><td>KTA-learned</td><td class="v">0.920</td></tr>
+        </table>
+        <h4>Prompt augmentation and multi-GPU scaling</h4>
+        <img src="static/fig/scalability.svg" alt="Prompt strategies with hardware metrics and scaling to 24 GPUs" loading="lazy">
+        <p class="caption">(a) Hardware-counter prompts find early wins; mixed prompting is more reliable over long runs. (b) Sub-linear but useful scaling to 24 RTX 3060 GPUs; parallel workers render some redundant frames before an early stop.</p>
       </div>
-    </section>
+    </details>
+  </div>
+</section>
 
-    <section class="hero teaser system-teaser">
-      <div class="hero-body">
-        <div class="container is-max-widescreen showcase-shell">
-          <div class="teaser-frame teaser-frame-wide">
-            <img src="static/images/pipeline_overview.png" alt="Pipeline overview" loading="eager">
-          </div>
-        </div>
-      </div>
-    </section>
+<!-- ======================= SESSIONS ======================= -->
+<section id="sessions">
+  <div class="container">
+    <h2>Interactive reports</h2>
+    <p class="lead">Every released session ships with a live report (timings, FLIP distribution, the full diff, generation history) and its complete mutation tree.</p>
+    <div class="sessions" id="sess-grid"></div>
+    <p class="caption">Numbers are from the released sessions. Paper figures for MaterialX use other runs (Bricks 1.79&times;, Car Paint 1.47&times;).
+      <span class="mono">NtlSDs</span> is discussed as a limitation case in the paper: FLIP accepts it, while LPIPS and DISTS would reject it.</p>
+  </div>
+</section>
 
-    <section class="section" id="tldr">
-      <div class="container is-max-desktop">
-        <h2 class="title is-3 has-text-centered">TL;DR</h2>
-        <div class="callout-card compact-callout tldr-card">
-          <p>
-            We optimize rendering programs by generating candidate code changes with LLMs, validating them over a renderer-specific parameter space, and evolving only the visually safe ones. The core technical point is not mutation alone but cheap rejection of unsafe candidates through Bayesian sequential validation in PRPS.
-          </p>
-        </div>
-      </div>
-    </section>
+<!-- ======================= LIMITATIONS ======================= -->
+<section id="scope">
+  <div class="container">
+    <h2>Scope</h2>
+    <ul class="lim">
+      <li>Guarantees are over <b>sampled</b> PRPS evidence. Rare unsampled failures remain possible, and uniform sampling covers high-dimensional or constrained spaces weakly.</li>
+      <li>"Backend-agnostic" holds for the validator and orchestration; each renderer still needs a PRPS adapter and rendering hooks.</li>
+      <li>Validation is per-frame, so shaders that accumulate across frames are excluded. FLIP is the acceptance metric; LPIPS, DISTS or MSE change some borderline labels.</li>
+      <li>Comparisons against other optimizer families (black-box search, NAS/HPO, larger models) are left to future work.</li>
+    </ul>
+  </div>
+</section>
 
-    <section class="section" id="method">
-      <div class="container is-max-widescreen showcase-shell">
-        <h2 class="title is-3 has-text-centered">Mutation</h2>
-        <article class="figure-showcase-card figure-showcase-single">
-          <div class="figure-showcase-copy">
-            <p class="case-kicker">Search dynamics</p>
-            <h3>Accepted ancestry chain</h3>
-            <p>
-              The mutation figure follows one successful run and shows how useful edits accumulate along the accepted lineage instead of appearing as one-shot improvements.
-            </p>
-          </div>
-          <div class="image-panel">
-            <img src="static/images/evolution_figure.png" alt="Mutation evolution figure" loading="lazy">
-          </div>
-        </article>
-      </div>
-    </section>
+<!-- ======================= BIBTEX ======================= -->
+<section id="bibtex">
+  <div class="container">
+    <h2>BibTeX</h2>
+    <div class="bib-wrap">
+      <button class="pill" id="bib-copy">Copy</button>
+<pre class="bib" id="bib">@misc{dereviannykh2026renderopt,
+  title  = {Efficient Validation for LLM-Generated Rendering Optimizations},
+  author = {Dereviannykh, Mikhail and Klepikov, Dmitrii and Brucker, Hendrik and
+            W{\"u}st, Dominik and Krimmel, Benedikt and Dolp, Reiner and
+            Dachsbacher, Carsten},
+  year   = {2026}
+}</pre>
+    </div>
+  </div>
+</section>
 
-    <section class="section hero results-section" id="cases">
-      <div class="container is-max-widescreen showcase-shell">
-        <h2 class="title is-3 has-text-centered">Results</h2>
-        <div class="case-study-grid">
-          <article class="case-study-card">
-            <div class="case-study-head">
-              <div>
-                <p class="case-kicker">Shadertoy · traveler.</p>
-                <h3>4ltfDr</h3>
-              </div>
-              <span class="case-boost">+69.0%</span>
-            </div>
-            <div class="case-compare">
-              <figure class="case-frame">
-                <img src="sup/4ltfDr/generation_005/media/first_frame_original.png" alt="Original frame for 4ltfDr" loading="lazy">
-                <figcaption>Original · 7.944 ms</figcaption>
-              </figure>
-              <div class="case-arrow" aria-hidden="true">
-                <div class="case-arrow-glyph">→</div>
-                <div class="case-arrow-text">4.701 ms</div>
-                <div class="case-arrow-meta">saved 3.243 ms on the measured frame</div>
-              </div>
-              <figure class="case-frame">
-                <img src="sup/4ltfDr/generation_005/media/first_frame_optimized.png" alt="Optimized frame for 4ltfDr" loading="lazy">
-                <figcaption>Optimized · 4.701 ms</figcaption>
-              </figure>
-            </div>
-            <div class="case-links">
-              <a href="sup/4ltfDr/live_report.html" target="_blank" rel="noopener">Live report</a>
-              <a href="sup/4ltfDr/mutation_tree.html" target="_blank" rel="noopener">Mutation tree</a>
-            </div>
-          </article>
+<footer class="site"><div class="container">
+  Karlsruhe Institute of Technology &middot; Shadertoy shaders belong to their authors (IDs link to shadertoy.com in the reports).
+</div></footer>
 
-          <article class="case-study-card">
-            <div class="case-study-head">
-              <div>
-                <p class="case-kicker">Shadertoy · Protean Clouds</p>
-                <h3>NtlSDs</h3>
-              </div>
-              <span class="case-boost">+56.5%</span>
-            </div>
-            <div class="case-compare">
-              <figure class="case-frame">
-                <img src="sup/NtlSDs/generation_005/media/first_frame_original.png" alt="Original frame for NtlSDs" loading="lazy">
-                <figcaption>Original · 7.875 ms</figcaption>
-              </figure>
-              <div class="case-arrow" aria-hidden="true">
-                <div class="case-arrow-glyph">→</div>
-                <div class="case-arrow-text">5.032 ms</div>
-                <div class="case-arrow-meta">saved 2.844 ms on the measured frame</div>
-              </div>
-              <figure class="case-frame">
-                <img src="sup/NtlSDs/generation_005/media/first_frame_optimized.png" alt="Optimized frame for NtlSDs" loading="lazy">
-                <figcaption>Optimized · 5.032 ms</figcaption>
-              </figure>
-            </div>
-            <div class="case-links">
-              <a href="sup/NtlSDs/live_report.html" target="_blank" rel="noopener">Live report</a>
-              <a href="sup/NtlSDs/mutation_tree.html" target="_blank" rel="noopener">Mutation tree</a>
-            </div>
-          </article>
-
-          <article class="case-study-card">
-            <div class="case-study-head">
-              <div>
-                <p class="case-kicker">Godot · SSIL render pass</p>
-                <h3>ssil</h3>
-              </div>
-              <span class="case-boost">+65.9%</span>
-            </div>
-            <div class="case-compare">
-              <figure class="case-frame">
-                <img src="sup/ssil/generation_011/media/first_frame_original.png" alt="Original frame for ssil" loading="lazy">
-                <figcaption>Original · 4.036 ms</figcaption>
-              </figure>
-              <div class="case-arrow" aria-hidden="true">
-                <div class="case-arrow-glyph">→</div>
-                <div class="case-arrow-text">2.433 ms</div>
-                <div class="case-arrow-meta">saved 1.603 ms on the measured frame</div>
-              </div>
-              <figure class="case-frame">
-                <img src="sup/ssil/generation_011/media/first_frame_optimized.png" alt="Optimized frame for ssil" loading="lazy">
-                <figcaption>Optimized · 2.433 ms</figcaption>
-              </figure>
-            </div>
-            <div class="case-links">
-              <a href="sup/ssil/live_report.html" target="_blank" rel="noopener">Live report</a>
-              <a href="sup/ssil/mutation_tree.html" target="_blank" rel="noopener">Mutation tree</a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="evidence">
-      <div class="container is-max-widescreen showcase-shell">
-        <h2 class="title is-3 has-text-centered">Evidence</h2>
-        <div class="results-overview-grid">
-          <article class="results-overview-card evidence-figure-card">
-            <div class="results-copy">
-              <p class="case-kicker">PRPS example</p>
-              <h3>Primary Render Parameters Space</h3>
-              <p>
-                Xds3zN is a concrete PRPS example from the paper: validation samples points in a renderer-specific parameter space rather than relying on one screenshot. In the MaterialX setting, this space reaches up to 34 dimensions.
-              </p>
-            </div>
-            <div class="image-panel evidence-image-panel">
-              <img src="static/images/ttttt.png" alt="Xds3zN Primary Render Parameters Space example" loading="lazy">
-            </div>
-          </article>
-
-          <article class="results-overview-card evidence-figure-card">
-            <div class="results-copy">
-              <p class="case-kicker">Validation cost</p>
-              <h3>Borderline bad candidates dominate cost</h3>
-              <p>
-                Most bad candidates are rejected quickly, but candidates near the tolerance boundary need hundreds of frames. Under a conservative 99% policy, those borderline cases force 5-10x more frames on every safe candidate.
-              </p>
-            </div>
-            <div class="image-panel evidence-image-panel">
-              <img src="static/images/exceedance_figure.png" alt="Exceedance-rate distributions of bad candidates across replay sessions" loading="lazy">
-            </div>
-          </article>
-
-          <article class="results-overview-card chart-card">
-            <div class="results-copy">
-              <p class="case-kicker">Local summary</p>
-              <h3>Reported boosts</h3>
-              <p>
-                The chart below is generated directly from the local session summary and shows the measured spread of reported boosts across the reviewer packages.
-              </p>
-            </div>
-            <img src="static/images/supplementary_boosts.svg" alt="Boost chart for the supplementary sessions" class="summary-chart" loading="lazy">
-          </article>
-
-          <article class="results-overview-card session-index-card">
-            <div class="results-copy">
-              <p class="case-kicker">Sessions</p>
-              <h3>Local evidence</h3>
-            </div>
-            <div class="session-index-grid">
-              <a class="session-chip" href="sup/3lsSzf/live_report.html" target="_blank" rel="noopener"><span>3lsSzf</span><small>Happy Jumping · +22.9%</small></a>
-              <a class="session-chip" href="sup/3sc3z4/live_report.html" target="_blank" rel="noopener"><span>3sc3z4</span><small>Shadertoy · +13.6%</small></a>
-              <a class="session-chip" href="sup/4ltfDr/live_report.html" target="_blank" rel="noopener"><span>4ltfDr</span><small>traveler. · +69.0%</small></a>
-              <a class="session-chip" href="sup/4sX3Rn/live_report.html" target="_blank" rel="noopener"><span>4sX3Rn</span><small>Menger Sponge · +10.0%</small></a>
-              <a class="session-chip" href="sup/black_hole_2/live_report.html" target="_blank" rel="noopener"><span>black_hole_2</span><small>Godot · +17.1%</small></a>
-              <a class="session-chip" href="sup/brick/live_report.html" target="_blank" rel="noopener"><span>brick</span><small>MaterialX · +44.4%</small></a>
-              <a class="session-chip" href="sup/carpaint/live_report.html" target="_blank" rel="noopener"><span>carpaint</span><small>MaterialX · +28.3%</small></a>
-              <a class="session-chip" href="sup/lsf3zr/live_report.html" target="_blank" rel="noopener"><span>lsf3zr</span><small>Columns and Lights · +7.6%</small></a>
-              <a class="session-chip" href="sup/Mss3zM/live_report.html" target="_blank" rel="noopener"><span>Mss3zM</span><small>Shadertoy · +11.8%</small></a>
-              <a class="session-chip" href="sup/NtlSDs/live_report.html" target="_blank" rel="noopener"><span>NtlSDs</span><small>Protean Clouds · +56.5%</small></a>
-              <a class="session-chip" href="sup/ssil/live_report.html" target="_blank" rel="noopener"><span>ssil</span><small>Godot · +65.9%</small></a>
-              <a class="session-chip" href="sup/Xds3zN/live_report.html" target="_blank" rel="noopener"><span>Xds3zN</span><small>Shadertoy · +28.2%</small></a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-  </main>
+<script src="static/js/site.js"></script>
 </body>
 </html>
