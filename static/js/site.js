@@ -132,13 +132,13 @@
     var svg = $('cube-svg'); if (!svg) return;
     // PRPS of Xds3zN from the session config: iTime in [0,125], iMouse.xy in [0,1] (x resolution), iMouse.zw in [-1,1]
     var DIMS = [
-      { u: 'iTime', f: function (r) { return (125 * r).toFixed(1) + ' s'; }, used: true, note: 'animation time' },
+      { u: 'iTime', f: function (r) { return (125 * r).toFixed(1) + ' s'; }, used: true, note: 'waves and boat motion' },
       { u: 'iMouse.x', f: function (r) { return Math.round(640 * r) + ' px'; }, used: true, note: 'orbits the camera' },
-      { u: 'iMouse.y', f: function (r) { return Math.round(360 * r) + ' px'; }, used: false, note: 'not read by this shader' },
+      { u: 'iMouse.y', f: function (r) { return Math.round(360 * r) + ' px'; }, used: true, note: 'camera elevation' },
       { u: 'iMouse.z', f: function (r) { return (2 * r - 1).toFixed(2); }, used: false, note: 'click state, not read' },
       { u: 'iMouse.w', f: function (r) { return (2 * r - 1).toFixed(2); }, used: false, note: 'click state, not read' }
     ];
-    var r = [0.10, 0.39, 0.74, 0.85, 0.96], samples = [], mode = 0;
+    var r = [0.30, 0.12, 0.30, 0.85, 0.96], samples = [], mode = 0;
     // oblique projection of the first three axes
     var O = [62, 236], EX = [196, 0], EZ = [62, -46], EY = [0, -170];
     function P(a, b, c) { return [O[0] + a * EX[0] + b * EZ[0] + c * EY[0], O[1] + a * EX[1] + b * EZ[1] + c * EY[1]]; }
@@ -227,7 +227,21 @@
 
     /* ---- WebGL2 renderer for the original and optimized shader ---- */
     var cv = $('cube-gl'), gl = null, progs = {}, fbs = [], show = null, pending = false, ready = false;
-    var W = cv.width, H = cv.height;
+    var W = cv.width, H = cv.height, noise = null;
+    // Shadertoy's 256x256 "RGBA Noise Small" layout: G and A repeat R and B shifted by (37, 17)
+    function noiseTex() {
+      var N = 256, d = new Uint8Array(N * N * 4), rnd = mulberry(1234), R = new Uint8Array(N * N), B = new Uint8Array(N * N);
+      for (var i = 0; i < N * N; i++) { R[i] = rnd() * 256; B[i] = rnd() * 256; }
+      for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+        var o = (y * N + x) * 4, sx = (x - 37 + N) % N, sy = (y - 17 + N) % N, s = sy * N + sx;
+        d[o] = R[y * N + x]; d[o + 1] = R[s]; d[o + 2] = B[y * N + x]; d[o + 3] = B[s];
+      }
+      var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, N, N, 0, gl.RGBA, gl.UNSIGNED_BYTE, d);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      return t;
+    }
     function status(t) { $('cube-status').textContent = t; }
     function compile(type, src) {
       var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
@@ -243,7 +257,7 @@
       return p;
     }
     function wrap(src) {
-      return '#version 300 es\nprecision highp float;\nprecision highp int;\nuniform vec3 iResolution;\nuniform float iTime;\nuniform vec4 iMouse;\nuniform int iFrame;\n#define HW_PERFORMANCE 0\nout vec4 outColor_;\n' +
+      return '#version 300 es\nprecision highp float;\nprecision highp int;\nuniform vec3 iResolution;\nuniform float iTime;\nuniform vec4 iMouse;\nuniform int iFrame;\nuniform sampler2D iChannel0;\n#define HW_PERFORMANCE 0\nout vec4 outColor_;\n' +
         src.replace(/\r/g, '') + '\nvoid main(){ vec4 c = vec4(0.0); mainImage(c, gl_FragCoord.xy); outColor_ = vec4(c.rgb, 1.0); }\n';
     }
     var SHOW = '#version 300 es\nprecision highp float;\nuniform sampler2D A; uniform sampler2D B; uniform int mode; out vec4 o;\n' +
@@ -261,12 +275,12 @@
       gl = cv.getContext('webgl2', { antialias: false, preserveDrawingBuffer: true });
       if (!gl) { status('WebGL2 is not available; showing a pre-rendered frame.'); return; }
       status('Compiling shaders…');
-      Promise.all(['static/shaders/xds3zn_original.frag', 'static/shaders/xds3zn_optimized.frag'].map(function (u) { return fetch(u).then(function (x) { if (!x.ok) throw new Error(u); return x.text(); }); }))
+      Promise.all(['static/shaders/xdsgdb_original.frag', 'static/shaders/xdsgdb_optimized.frag'].map(function (u) { return fetch(u).then(function (x) { if (!x.ok) throw new Error(u); return x.text(); }); }))
         .then(function (src) {
           setTimeout(function () {
             try {
               progs[0] = program(wrap(src[0])); progs[1] = program(wrap(src[1])); show = program(SHOW);
-              fbs = [target(), target()]; ready = true; status('');
+              fbs = [target(), target()]; noise = noiseTex(); ready = true; status('');
               $('cube-fallback').hidden = true; requestRender();
             } catch (err) { status('Could not compile the shader here; showing a pre-rendered frame.'); }
           }, 30);
@@ -281,6 +295,7 @@
       gl.uniform1f(gl.getUniformLocation(p, 'iTime'), 125 * r[0]);
       gl.uniform4f(gl.getUniformLocation(p, 'iMouse'), r[1] * W, r[2] * H, 2 * r[3] - 1, 2 * r[4] - 1);
       gl.uniform1i(gl.getUniformLocation(p, 'iFrame'), 0);
+      gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, noise); gl.uniform1i(gl.getUniformLocation(p, 'iChannel0'), 2);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       fbs[i].key = key;
     }
@@ -342,15 +357,18 @@
   var framesMarker = null;
   function initSeq() {
     var post = $('seq-post'), trace = $('seq-trace'); if (!post) return;
-    var trueP = 0.001, trust = 0, seed = 7, hist = [], n = 0, k = 0, state = 'UNDET', timer = null;
+    var SEEDS = { '0.001': 6, '0.015': 9, '0.15': 1 };
+    var trueP = 0.015, trust = 0, seed = SEEDS['0.015'], hist = [], n = 0, k = 0, state = 'UNDET', timer = null;
     var exc = [];
-    function reset() {
+    function reset(quiet) {
       if (timer) { clearInterval(timer); timer = null; }
       n = 0; k = 0; hist = [[0, probSafe(0, 0)]]; exc = []; state = 'UNDET';
       rng = mulberry(seed);
-      $('seq-run').innerHTML = '&#9654; Run';
-      render();
+      $('seq-run').innerHTML = '&#9654; Replay';
+      if (!quiet) render();
     }
+    // run the whole draw at once, so every setting shows a finished, representative run
+    function complete() { reset(true); step(NMAX + 1); }
     var rng = mulberry(seed);
     function step(count) {
       var gs = gammaEff(trust);
@@ -361,7 +379,7 @@
         else if (n >= NMIN && P <= 1 - GH) state = 'BAD';
         else if (n >= NMAX) state = 'REJECT';
       }
-      if (state !== 'UNDET' && timer) { clearInterval(timer); timer = null; $('seq-run').innerHTML = '&#9654; Run'; }
+      if (state !== 'UNDET' && timer) { clearInterval(timer); timer = null; $('seq-run').innerHTML = '&#9654; Replay'; }
       render();
     }
     function render() {
@@ -374,8 +392,7 @@
       var N = 260, pts = [], ymax = 0;
       for (var i = 0; i <= N; i++) {
         var lp = LX0 + (LX1 - LX0) * i / N, p = Math.pow(10, lp);
-        // density of log p is proportional to p * f(p)
-        var ld = Math.log(Math.max(p, 1e-12)) + (a - 1) * Math.log(Math.max(p, 1e-12)) + (b - 1) * Math.log(Math.max(1 - p, 1e-12));
+        var ld = (a - 1) * Math.log(Math.max(p, 1e-12)) + (b - 1) * Math.log(Math.max(1 - p, 1e-12));
         pts.push([p, ld]); if (i === 0 || ld > ymax) ymax = ld;
       }
       pts.forEach(function (q) { q[1] = Math.exp(q[1] - ymax); });
@@ -383,7 +400,7 @@
       [0, 0.5, 1].forEach(function (t) { el('text', { x: L - 6, y: Y(t) + 4, class: 'tick', 'text-anchor': 'end' }, post, t); });
       el('line', { x1: L, y1: B, x2: R, y2: B, class: 'ax' }, post);
       el('text', { x: (L + R) / 2, y: B + 31, class: 'tick', 'text-anchor': 'middle' }, post, 'exceedance rate p (log scale)');
-      el('text', { x: 12, y: (T + B) / 2, class: 'tick', 'text-anchor': 'middle', transform: 'rotate(-90 12 ' + ((T + B) / 2) + ')' }, post, 'posterior (peak = 1)');
+      el('text', { x: 12, y: (T + B) / 2, class: 'tick', 'text-anchor': 'middle', transform: 'rotate(-90 12 ' + ((T + B) / 2) + ')' }, post, 'density (peak = 1)');
       var area = 'M' + X(pts[0][0]) + ',' + B, line = '';
       pts.forEach(function (q) { if (q[0] <= TAU) area += ' L' + X(q[0]).toFixed(1) + ',' + Y(q[1]).toFixed(1); });
       area += ' L' + X(TAU) + ',' + B + ' Z';
@@ -391,7 +408,7 @@
       pts.forEach(function (q, j2) { line += (j2 ? ' L' : 'M') + X(q[0]).toFixed(1) + ',' + Y(q[1]).toFixed(1); });
       el('path', { d: line, fill: 'none', stroke: C.ink, 'stroke-width': 1.8 }, post);
       el('line', { x1: X(TAU), y1: T, x2: X(TAU), y2: B, stroke: C.safe, 'stroke-dasharray': '4 3', 'stroke-width': 1.5 }, post);
-      el('text', { x: X(TAU) + 5, y: T + 12, 'font-size': 11.5, fill: C.safe, 'font-style': 'italic' }, post, '\u03C4 = 1%');
+      el('text', { x: X(TAU) - 5, y: T + 12, 'font-size': 11.5, fill: C.safe, 'font-style': 'italic', 'text-anchor': 'end' }, post, '\u03C4 = 1%');
       el('line', { x1: X(trueP), y1: B - 8, x2: X(trueP), y2: B, stroke: C.bad, 'stroke-width': 2.5 }, post);
       el('text', { x: X(trueP) + 4, y: B - 10, 'font-size': 10.5, fill: C.bad }, post, 'true p');
 
@@ -409,7 +426,7 @@
       el('line', { x1: L2, y1: Y2(gs), x2: R2, y2: Y2(gs), stroke: C.ours, 'stroke-width': 1.6, 'stroke-dasharray': '6 3' }, trace);
       el('text', { x: R2 - 4, y: Y2(gs) - 5, 'font-size': 11, fill: C.ours, 'text-anchor': 'end' }, trace, 'γsafe = ' + gs.toFixed(2) + ' (accept above)');
       el('line', { x1: L2, y1: Y2(1 - GH), x2: R2, y2: Y2(1 - GH), stroke: C.bad, 'stroke-width': 1.3, 'stroke-dasharray': '6 3' }, trace);
-      el('text', { x: R2 - 4, y: Y2(1 - GH) - 5, 'font-size': 11, fill: C.bad, 'text-anchor': 'end' }, trace, 'reject below 0.01');
+      el('text', { x: L2 + 4, y: Y2(1 - GH) - 5, 'font-size': 11, fill: C.bad }, trace, 'reject below 0.01');
       var d = '';
       hist.forEach(function (h, j) { d += (j ? ' L' : 'M') + X2(h[0]).toFixed(1) + ',' + Y2(h[1]).toFixed(1); });
       el('path', { d: d, fill: 'none', stroke: C.ink, 'stroke-width': 1.8 }, trace);
@@ -428,23 +445,23 @@
     }
     $('seq-trust').addEventListener('input', function (e) {
       trust = +e.target.value; $('seq-trust-o').textContent = trust.toFixed(2);
-      if (n === 0) render(); else reset();
+      complete();
     });
     [].forEach.call($('seq-p').querySelectorAll('button'), function (b) {
       b.addEventListener('click', function () {
-        trueP = +b.dataset.p;
+        trueP = +b.dataset.p; seed = SEEDS[b.dataset.p];
         [].forEach.call(b.parentNode.children, function (c) { c.classList.toggle('on', c === b); });
-        reset();
+        complete();
       });
     });
     $('seq-run').addEventListener('click', function () {
-      if (timer) { clearInterval(timer); timer = null; this.innerHTML = '&#9654; Run'; return; }
-      if (state !== 'UNDET') reset();
+      if (timer) { clearInterval(timer); timer = null; this.innerHTML = '&#9654; Replay'; return; }
+      if (state !== 'UNDET' || n > 0) reset();
       this.innerHTML = '&#10074;&#10074; Pause';
       timer = setInterval(function () { step(Math.max(2, Math.ceil(n / 18))); }, 35);
     });
-    $('seq-reset').addEventListener('click', function () { seed = (seed * 9301 + 49297) % 233280; reset(); });
-    reset();
+    $('seq-reset').addEventListener('click', function () { seed = 1 + Math.floor(Math.random() * 1e6); complete(); });
+    complete();
   }
 
   /* ================= renders needed vs gamma ================= */
