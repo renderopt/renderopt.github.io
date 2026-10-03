@@ -194,7 +194,7 @@
         Distributed GPU workers report errors after every batch, so a candidate stops as soon as the evidence is decisive. Only accepted candidates are profiled.</figcaption>
     </figure>
 
-    <div class="ideas">
+    <div class="ideas" id="ideas">
       <div>
         <h3><span class="n">1</span>Render-parameter space</h3>
         <p>Every dynamic input the application exposes (camera, time, lights, material inputs, environment) becomes one coordinate of a unit cube <i class="m">r</i>&nbsp;&isin;&nbsp;[0,1]<sup><i class="m">D</i></sup>.
@@ -213,10 +213,25 @@
     </div>
 
     <figure class="fig" id="prps">
-      <div class="fig-tools"><span class="seg sm" id="prps-shader"><button class="on" data-k="xds">Raymarching Primitives</button><button data-k="sc">GLSL Ray Tracing Test</button></span></div>
-      <div class="prps-row" id="prps-row"></div>
-      <figcaption><b>Figure 3.</b> Three points of a 5D Shadertoy PRPS (<span class="mono">iTime</span>, <span class="mono">iMouse</span>). The bars show each point's normalized coordinates <i>r</i><sub>1</sub>&hellip;<i>r</i><sub>5</sub>.
-        A single point changes both the image and its render time, so one screenshot cannot validate an edit.</figcaption>
+      <div class="fig-tools">
+        <span class="seg sm" id="cube-mode"><button class="on" data-m="0">Original</button><button data-m="1">Optimized</button><button data-m="2">|Difference| &times;20</button></span>
+        <button class="pill" id="cube-sample">Sample a point</button>
+        <button class="pill" id="cube-clear">Clear samples</button>
+        <span class="cube-status" id="cube-status"></span>
+      </div>
+      <div class="cube-grid">
+        <div class="cube-left">
+          <svg id="cube-svg" class="plot" viewBox="0 0 320 290" role="img" aria-label="PRPS unit cube with the selected point; drag to move it"></svg>
+          <div class="cube-sliders" id="cube-sliders"></div>
+        </div>
+        <div class="cube-right">
+          <div class="cube-view"><canvas id="cube-gl" width="640" height="360"></canvas><img id="cube-fallback" src="static/img/prps/xds_1.jpg" alt="Raymarching Primitives render"></div>
+          <table class="cube-map" id="cube-map"></table>
+        </div>
+      </div>
+      <figcaption><b>Figure 3.</b> The Primary Render Parameters Space of <span class="mono">Xds3zN</span> (Raymarching Primitives, MIT-licensed), rendered live in your browser with the shaders from the released session.
+        A point <i>r</i> in the 5D unit cube maps to the renderer's dynamic inputs (<span class="mono">iTime</span>, <span class="mono">iMouse</span>) through the session's PRPS ranges. Drag the point in the cube (time and mouse-x) or use the sliders.
+        <i>Sample a point</i> draws uniformly, as the validator does. This shader reads only <span class="mono">iTime</span> and <span class="mono">iMouse.x</span>; the validator samples all five dimensions anyway, because it does not know that.</figcaption>
     </figure>
   </div>
 </section>
@@ -239,7 +254,7 @@
           <img src="static/fig/justification.svg" alt="Histogram of exceedance rates of bad candidates for lsf3zr and 4sX3Rn, with frames needed to detect them" loading="lazy">
         </div>
       </div>
-      <figcaption><b>Figure 4.</b> (a) The SAFE threshold <i>&gamma;</i> sets the price of every accepted candidate; the curve is exact, 2&lfloor;ln(1&minus;<i>&gamma;</i>)/ln(1&minus;<i>&tau;</i>)&rfloor; renders at <i>&tau;</i> = 1%.
+      <figcaption><b>Figure 4.</b> (a) The SAFE threshold <i>&gamma;</i> sets the price of every accepted candidate (log scale); the curve is exact, 2&lfloor;ln(1&minus;<i>&gamma;</i>)/ln(1&minus;<i>&tau;</i>)&rfloor; renders at <i>&tau;</i> = 1%.
         Orange dots: <i>&gamma;</i><sub>low</sub> learned online per session (34&ndash;140 renders). (b) From the paper: borderline bad candidates (orange) need 180&ndash;610 frames to detect, the clear ones (red) far fewer.</figcaption>
     </figure>
 

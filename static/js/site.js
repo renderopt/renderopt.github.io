@@ -127,45 +127,181 @@
     tb.innerHTML = h;
   }
 
-  /* ================= PRPS parallel coordinates ================= */
-  var PRPS = {
-    xds: { img: 'xds', pts: [[0.10, 0.39, 0.74, 0.85, 0.96, 14.0], [0.03, 0.45, 0.61, 0.62, 0.40, 18.6], [0.41, 0.76, 0.96, 0.18, 0.34, 14.3]] },
-    sc: { img: 'sc', pts: [[0.210, 0.029, 0.136, 0.190, 0.107, 15.7], [0.442, 0.109, 0.962, 0.280, 0.090, 16.4], [0.759, 0.464, 0.762, 0.967, 0.790, 13.8]] }
-  };
-  var PCOL = ['#d9534f', '#3f9a5a', '#3b78d8'];
-  function initPRPS() {
-    var row = $('prps-row'); if (!row) return;
-    var key = 'xds';
-    function bars(p) {
-      var svg = el('svg', { viewBox: '0 0 120 54', role: 'img', 'aria-label': 'normalized coordinates' });
-      el('line', { x1: 0, y1: 40, x2: 120, y2: 40, class: 'ax' }, svg);
-      p.slice(0, 5).forEach(function (v, d) {
-        var x = 4 + d * 23, hgt = 34 * v;
-        el('rect', { x: x, y: 6, width: 16, height: 34, fill: '#f1f1ee', rx: 1.5 }, svg);
-        el('rect', { x: x, y: 40 - hgt, width: 16, height: hgt, fill: C.ours, rx: 1.5 }, svg);
-        var t = el('text', { x: x + 8, y: 51, 'font-size': 8.5, fill: C.mute, 'text-anchor': 'middle', 'font-style': 'italic' }, svg, 'r');
-        el('tspan', { 'font-size': 6.5, dy: 2 }, t, String(d + 1));
+  /* ================= PRPS hypercube + live WebGL render ================= */
+  function initCube() {
+    var svg = $('cube-svg'); if (!svg) return;
+    // PRPS of Xds3zN from the session config: iTime in [0,125], iMouse.xy in [0,1] (x resolution), iMouse.zw in [-1,1]
+    var DIMS = [
+      { u: 'iTime', f: function (r) { return (125 * r).toFixed(1) + ' s'; }, used: true, note: 'animation time' },
+      { u: 'iMouse.x', f: function (r) { return Math.round(640 * r) + ' px'; }, used: true, note: 'orbits the camera' },
+      { u: 'iMouse.y', f: function (r) { return Math.round(360 * r) + ' px'; }, used: false, note: 'not read by this shader' },
+      { u: 'iMouse.z', f: function (r) { return (2 * r - 1).toFixed(2); }, used: false, note: 'click state, not read' },
+      { u: 'iMouse.w', f: function (r) { return (2 * r - 1).toFixed(2); }, used: false, note: 'click state, not read' }
+    ];
+    var r = [0.10, 0.39, 0.74, 0.85, 0.96], samples = [], mode = 0;
+    // oblique projection of the first three axes
+    var O = [62, 236], EX = [196, 0], EZ = [62, -46], EY = [0, -170];
+    function P(a, b, c) { return [O[0] + a * EX[0] + b * EZ[0] + c * EY[0], O[1] + a * EX[1] + b * EZ[1] + c * EY[1]]; }
+    function drawCube() {
+      clear(svg);
+      var corners = [];
+      for (var i = 0; i < 8; i++) corners.push([i & 1, (i >> 1) & 1, (i >> 2) & 1]);
+      var edges = [];
+      corners.forEach(function (c, i) { for (var d = 0; d < 3; d++) if (!c[d]) { var j = i | (1 << d); edges.push([c, corners[j]]); } });
+      edges.forEach(function (e) {
+        var hid = function (c) { return c[0] === 0 && c[1] === 1 && c[2] === 0; }, back = hid(e[0]) || hid(e[1]);
+        var a = P(e[0][0], e[0][1], e[0][2]), b = P(e[1][0], e[1][1], e[1][2]);
+        el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#c3c6cb', 'stroke-width': 1.2, 'stroke-dasharray': back ? '3 3' : '' }, svg);
       });
-      return svg;
-    }
-    function draw() {
-      row.innerHTML = '';
-      PRPS[key].pts.forEach(function (p, i) {
-        var d = document.createElement('div');
-        d.innerHTML = '<img alt="Render at PRPS point P' + (i + 1) + '" src="static/img/prps/' + PRPS[key].img + '_' + (i + 1) + '.jpg">' +
-          '<div class="pmeta"><span><b>P' + (i + 1) + '</b><br>' + p[5].toFixed(1) + ' ms</span></div>';
-        d.querySelector('.pmeta').appendChild(bars(p));
-        row.appendChild(d);
+      // floor tint
+      var f = [P(0, 0, 0), P(1, 0, 0), P(1, 1, 0), P(0, 1, 0)];
+      el('path', { d: 'M' + f.map(function (q) { return q.join(','); }).join(' L') + 'Z', fill: C.ours, 'fill-opacity': 0.05 }, svg);
+      // axis labels
+      function lab(pt, t, sub, anchor) {
+        var tx = el('text', { x: pt[0], y: pt[1], 'font-size': 12.5, fill: C.ink, 'font-style': 'italic', 'text-anchor': anchor || 'middle', 'font-family': 'Castoro, Georgia, serif' }, svg, 'r');
+        el('tspan', { 'font-size': 9, dy: 3 }, tx, sub);
+        el('tspan', { 'font-size': 10.5, dy: -3, 'font-style': 'normal', fill: C.mute, 'font-family': 'Noto Sans, sans-serif' }, tx, ' ' + t);
+      }
+      var a1 = P(0.5, 0, 0), a2 = P(1, 0.5, 0), a3 = P(0, 0, 0.5);
+      lab([a1[0], a1[1] + 20], 'iTime', '1');
+      var a2b = P(0, 0.62, 0); lab([a2b[0] - 8, a2b[1] + 4], 'iMouse.x', '2', 'end');
+      lab([a3[0] - 8, a3[1] - 20], 'iMouse.y', '3', 'end');
+      ['0', '1'].forEach(function (t, k) { var q = P(k, 0, 0); el('text', { x: q[0], y: q[1] + 14, class: 'tick', 'text-anchor': 'middle' }, svg, t); });
+      // previous samples
+      samples.forEach(function (s) {
+        var q = P(s[0], s[1], s[2]);
+        el('circle', { cx: q[0], cy: q[1], r: 2.6, fill: C.faint, 'fill-opacity': 0.7 }, svg);
       });
+      // drop lines
+      var p = P(r[0], r[1], r[2]), fl = P(r[0], r[1], 0), ax = P(r[0], 0, 0), az = P(0, r[1], 0);
+      el('line', { x1: p[0], y1: p[1], x2: fl[0], y2: fl[1], stroke: C.ours, 'stroke-dasharray': '3 2' }, svg);
+      el('line', { x1: fl[0], y1: fl[1], x2: ax[0], y2: ax[1], stroke: C.ours, 'stroke-opacity': 0.5, 'stroke-dasharray': '3 2' }, svg);
+      el('line', { x1: fl[0], y1: fl[1], x2: az[0], y2: az[1], stroke: C.ours, 'stroke-opacity': 0.5, 'stroke-dasharray': '3 2' }, svg);
+      el('circle', { cx: fl[0], cy: fl[1], r: 2.5, fill: C.ours, 'fill-opacity': 0.5 }, svg);
+      el('circle', { cx: p[0], cy: p[1], r: 7, fill: C.ours, stroke: '#fff', 'stroke-width': 2 }, svg);
+      el('text', { x: 316, y: 16, 'font-size': 11, fill: C.mute, 'text-anchor': 'end' }, svg, 'r₄, r₅: sliders below');
     }
-    [].forEach.call($('prps-shader').querySelectorAll('button'), function (b) {
+    // sliders + mapping table
+    var sl = $('cube-sliders'), map = $('cube-map');
+    DIMS.forEach(function (d, i) {
+      var l = document.createElement('label'); if (!d.used) l.className = 'dim';
+      l.innerHTML = '<i>r<sub>' + (i + 1) + '</sub></i><input type="range" min="0" max="1" step="0.001" id="cube-r' + i + '" aria-label="r' + (i + 1) + '"><output></output>';
+      sl.appendChild(l);
+      l.querySelector('input').addEventListener('input', function (e) { r[i] = +e.target.value; update(); });
+    });
+    function updateUI() {
+      DIMS.forEach(function (d, i) {
+        var l = sl.children[i]; l.querySelector('input').value = r[i]; l.querySelector('output').textContent = r[i].toFixed(2);
+      });
+      map.innerHTML = DIMS.map(function (d, i) {
+        return '<tr' + (d.used ? '' : ' class="dim"') + '><td>r<sub>' + (i + 1) + '</sub></td><td class="v">' + r[i].toFixed(2) + '</td><td class="arrow">&rarr;</td><td class="u">' + d.u + ' = ' + d.f(r[i]) + '</td><td class="n">' + d.note + '</td></tr>';
+      }).join('');
+    }
+    function update() { drawCube(); updateUI(); requestRender(); }
+    // dragging in the (r1, r2) plane at the current r3
+    var dragging = false;
+    function toCube(e) {
+      var b = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+      var x = (e.clientX - b.left) * vb.width / b.width, y = (e.clientY - b.top) * vb.height / b.height;
+      var bx = x - O[0] - r[2] * EY[0], by = y - O[1] - r[2] * EY[1];
+      var det = EX[0] * EZ[1] - EX[1] * EZ[0];
+      var a = (bx * EZ[1] - by * EZ[0]) / det, c = (EX[0] * by - EX[1] * bx) / det;
+      r[0] = Math.max(0, Math.min(1, a)); r[1] = Math.max(0, Math.min(1, c)); update();
+    }
+    svg.addEventListener('pointerdown', function (e) { dragging = true; svg.classList.add('drag'); svg.setPointerCapture(e.pointerId); toCube(e); });
+    svg.addEventListener('pointermove', function (e) { if (dragging) toCube(e); });
+    svg.addEventListener('pointerup', function () { dragging = false; svg.classList.remove('drag'); });
+    $('cube-sample').addEventListener('click', function () {
+      samples.push(r.slice(0, 3)); if (samples.length > 40) samples.shift();
+      for (var i = 0; i < 5; i++) r[i] = Math.random();
+      update();
+    });
+    $('cube-clear').addEventListener('click', function () { samples = []; drawCube(); });
+    [].forEach.call($('cube-mode').querySelectorAll('button'), function (b) {
       b.addEventListener('click', function () {
-        key = b.dataset.k;
+        mode = +b.dataset.m;
         [].forEach.call(b.parentNode.children, function (c) { c.classList.toggle('on', c === b); });
-        draw();
+        requestRender();
       });
     });
-    draw();
+
+    /* ---- WebGL2 renderer for the original and optimized shader ---- */
+    var cv = $('cube-gl'), gl = null, progs = {}, fbs = [], show = null, pending = false, ready = false;
+    var W = cv.width, H = cv.height;
+    function status(t) { $('cube-status').textContent = t; }
+    function compile(type, src) {
+      var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    }
+    var VS = '#version 300 es\nvoid main(){ vec2 p = vec2((gl_VertexID<<1)&2, gl_VertexID&2); gl_Position = vec4(p*2.0-1.0, 0.0, 1.0); }';
+    function program(fs) {
+      var p = gl.createProgram();
+      gl.attachShader(p, compile(gl.VERTEX_SHADER, VS)); gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      return p;
+    }
+    function wrap(src) {
+      return '#version 300 es\nprecision highp float;\nprecision highp int;\nuniform vec3 iResolution;\nuniform float iTime;\nuniform vec4 iMouse;\nuniform int iFrame;\n#define HW_PERFORMANCE 0\nout vec4 outColor_;\n' +
+        src.replace(/\r/g, '') + '\nvoid main(){ vec4 c = vec4(0.0); mainImage(c, gl_FragCoord.xy); outColor_ = vec4(c.rgb, 1.0); }\n';
+    }
+    var SHOW = '#version 300 es\nprecision highp float;\nuniform sampler2D A; uniform sampler2D B; uniform int mode; out vec4 o;\n' +
+      'void main(){ ivec2 p = ivec2(gl_FragCoord.xy); vec3 a = texelFetch(A, p, 0).rgb, b = texelFetch(B, p, 0).rgb;\n' +
+      ' if (mode == 0) o = vec4(a, 1.0); else if (mode == 1) o = vec4(b, 1.0); else { float d = length(a - b) * 20.0; o = vec4(vec3(min(d, 1.0)) * vec3(1.0, 0.62, 0.3) + vec3(0.0), 1.0); } }';
+    function target() {
+      var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      var f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+      return { t: t, f: f, key: '' };
+    }
+    function start() {
+      gl = cv.getContext('webgl2', { antialias: false, preserveDrawingBuffer: true });
+      if (!gl) { status('WebGL2 is not available; showing a pre-rendered frame.'); return; }
+      status('Compiling shaders…');
+      Promise.all(['static/shaders/xds3zn_original.frag', 'static/shaders/xds3zn_optimized.frag'].map(function (u) { return fetch(u).then(function (x) { if (!x.ok) throw new Error(u); return x.text(); }); }))
+        .then(function (src) {
+          setTimeout(function () {
+            try {
+              progs[0] = program(wrap(src[0])); progs[1] = program(wrap(src[1])); show = program(SHOW);
+              fbs = [target(), target()]; ready = true; status('');
+              $('cube-fallback').hidden = true; requestRender();
+            } catch (err) { status('Could not compile the shader here; showing a pre-rendered frame.'); }
+          }, 30);
+        }).catch(function () { status('Could not load the shader; showing a pre-rendered frame.'); });
+    }
+    function pass(i) {
+      var key = r.join(',');
+      if (fbs[i].key === key) return;
+      var p = progs[i]; gl.useProgram(p);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbs[i].f); gl.viewport(0, 0, W, H);
+      gl.uniform3f(gl.getUniformLocation(p, 'iResolution'), W, H, 1);
+      gl.uniform1f(gl.getUniformLocation(p, 'iTime'), 125 * r[0]);
+      gl.uniform4f(gl.getUniformLocation(p, 'iMouse'), r[1] * W, r[2] * H, 2 * r[3] - 1, 2 * r[4] - 1);
+      gl.uniform1i(gl.getUniformLocation(p, 'iFrame'), 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      fbs[i].key = key;
+    }
+    function render() {
+      pending = false; if (!ready) return;
+      if (mode !== 1) pass(0);
+      if (mode !== 0) pass(1);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.useProgram(show);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, fbs[0].t);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, fbs[1].t);
+      gl.uniform1i(gl.getUniformLocation(show, 'A'), 0); gl.uniform1i(gl.getUniformLocation(show, 'B'), 1);
+      gl.uniform1i(gl.getUniformLocation(show, 'mode'), mode);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    function requestRender() { if (!pending) { pending = true; requestAnimationFrame(render); } }
+    update();
+    // compile lazily, once the figure is close to the viewport
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); start(); } }, { rootMargin: '400px' });
+      io.observe(cv);
+    } else start();
   }
 
   /* ================= code tabs ================= */
@@ -230,43 +366,45 @@
     }
     function render() {
       var gs = gammaEff(trust);
-      /* posterior */
+      /* posterior: fixed log-scaled x (p from 0.01% to 100%), peak-normalized y */
       clear(post);
-      var L = 44, R = 450, T = 12, B = 186, a = 1 + k, b = 1 + n - k;
-      var mean = a / (a + b), sd = Math.sqrt(a * b / ((a + b) * (a + b) * (a + b + 1)));
-      var xmax = Math.min(1, Math.max(0.04, mean + 4.5 * sd));
-      if (xmax > 0.04) xmax = Math.ceil(xmax * 20) / 20;
-      var N = 220, xs = [], ys = [], ymax = 0;
-      for (var i = 0; i <= N; i++) { var x = xmax * i / N; var y = betaPdf(Math.max(x, 1e-6), a, b); if (a === 1 && b === 1) y = 1; xs.push(x); ys.push(y); ymax = Math.max(ymax, y); }
-      ymax *= 1.1;
-      function X(x) { return L + (R - L) * x / xmax; }
-      function Y(y) { return B - (B - T) * y / ymax; }
-      var ticks = xmax <= 0.05 ? [0, 0.01, 0.02, 0.03, 0.04, 0.05] : (xmax <= 0.2 ? [0, 0.05, 0.1, 0.15, 0.2] : [0, 0.25, 0.5, 0.75, 1]);
-      ticks.forEach(function (t) { if (t > xmax + 1e-9) return; el('line', { x1: X(t), y1: T, x2: X(t), y2: B, class: 'grid' }, post); el('text', { x: X(t), y: B + 15, class: 'tick', 'text-anchor': 'middle' }, post, (t * 100).toFixed(0) + '%'); });
+      var L = 44, R = 450, T = 14, B = 186, a = 1 + k, b = 1 + n - k, LX0 = -4, LX1 = 0;
+      function X(p) { return L + (R - L) * (Math.log10(p) - LX0) / (LX1 - LX0); }
+      function Y(y) { return B - (B - T) * y; }
+      var N = 260, pts = [], ymax = 0;
+      for (var i = 0; i <= N; i++) {
+        var lp = LX0 + (LX1 - LX0) * i / N, p = Math.pow(10, lp);
+        // density of log p is proportional to p * f(p)
+        var ld = Math.log(Math.max(p, 1e-12)) + (a - 1) * Math.log(Math.max(p, 1e-12)) + (b - 1) * Math.log(Math.max(1 - p, 1e-12));
+        pts.push([p, ld]); if (i === 0 || ld > ymax) ymax = ld;
+      }
+      pts.forEach(function (q) { q[1] = Math.exp(q[1] - ymax); });
+      [1e-4, 1e-3, 1e-2, 1e-1, 1].forEach(function (t) { el('line', { x1: X(t), y1: T, x2: X(t), y2: B, class: 'grid' }, post); el('text', { x: X(t), y: B + 15, class: 'tick', 'text-anchor': 'middle' }, post, (t * 100 >= 1 ? (t * 100).toFixed(0) : (t * 100).toFixed(t < 1e-3 ? 2 : 1)) + '%'); });
+      [0, 0.5, 1].forEach(function (t) { el('text', { x: L - 6, y: Y(t) + 4, class: 'tick', 'text-anchor': 'end' }, post, t); });
       el('line', { x1: L, y1: B, x2: R, y2: B, class: 'ax' }, post);
-      el('text', { x: (L + R) / 2, y: B + 31, class: 'tick', 'text-anchor': 'middle' }, post, 'exceedance rate p');
-      el('text', { x: 12, y: (T + B) / 2, class: 'tick', 'text-anchor': 'middle', transform: 'rotate(-90 12 ' + ((T + B) / 2) + ')' }, post, 'density');
-      var area = 'M' + X(0) + ',' + B, line = '';
-      for (i = 0; i <= N; i++) { if (xs[i] > TAU) break; area += ' L' + X(xs[i]) + ',' + Y(ys[i]); }
-      area += ' L' + X(Math.min(TAU, xmax)) + ',' + B + ' Z';
+      el('text', { x: (L + R) / 2, y: B + 31, class: 'tick', 'text-anchor': 'middle' }, post, 'exceedance rate p (log scale)');
+      el('text', { x: 12, y: (T + B) / 2, class: 'tick', 'text-anchor': 'middle', transform: 'rotate(-90 12 ' + ((T + B) / 2) + ')' }, post, 'posterior (peak = 1)');
+      var area = 'M' + X(pts[0][0]) + ',' + B, line = '';
+      pts.forEach(function (q) { if (q[0] <= TAU) area += ' L' + X(q[0]).toFixed(1) + ',' + Y(q[1]).toFixed(1); });
+      area += ' L' + X(TAU) + ',' + B + ' Z';
       el('path', { d: area, fill: C.safe, 'fill-opacity': 0.22 }, post);
-      for (i = 0; i <= N; i++) line += (i ? ' L' : 'M') + X(xs[i]) + ',' + Y(ys[i]);
+      pts.forEach(function (q, j2) { line += (j2 ? ' L' : 'M') + X(q[0]).toFixed(1) + ',' + Y(q[1]).toFixed(1); });
       el('path', { d: line, fill: 'none', stroke: C.ink, 'stroke-width': 1.8 }, post);
       el('line', { x1: X(TAU), y1: T, x2: X(TAU), y2: B, stroke: C.safe, 'stroke-dasharray': '4 3', 'stroke-width': 1.5 }, post);
-      el('text', { x: X(TAU) + 5, y: T + 12, 'font-size': 11.5, fill: C.safe, 'font-style': 'italic' }, post, 'τ = 1%');
-      el('line', { x1: X(Math.min(trueP, xmax)), y1: B - 7, x2: X(Math.min(trueP, xmax)), y2: B, stroke: C.bad, 'stroke-width': 2.5 }, post);
-      el('text', { x: X(Math.min(trueP, xmax)) + 4, y: B - 10, 'font-size': 10.5, fill: C.bad }, post, 'true p');
+      el('text', { x: X(TAU) + 5, y: T + 12, 'font-size': 11.5, fill: C.safe, 'font-style': 'italic' }, post, '\u03C4 = 1%');
+      el('line', { x1: X(trueP), y1: B - 8, x2: X(trueP), y2: B, stroke: C.bad, 'stroke-width': 2.5 }, post);
+      el('text', { x: X(trueP) + 4, y: B - 10, 'font-size': 10.5, fill: C.bad }, post, 'true p');
 
       /* trace */
       clear(trace);
       var L2 = 44, R2 = 450, T2 = 12, B2 = 186;
-      var nx = Math.max(64, Math.min(NMAX, Math.pow(2, Math.ceil(Math.log2(Math.max(n, 1) * 1.15)))));
-      function X2(v) { return L2 + (R2 - L2) * v / nx; }
+      function X2(v) { return L2 + (R2 - L2) * Math.log(1 + v) / Math.log(1 + NMAX); }
       function Y2(v) { return B2 - (B2 - T2) * v; }
       [0, 0.25, 0.5, 0.75, 1].forEach(function (t) { el('line', { x1: L2, y1: Y2(t), x2: R2, y2: Y2(t), class: 'grid' }, trace); el('text', { x: L2 - 6, y: Y2(t) + 4, class: 'tick', 'text-anchor': 'end' }, trace, t); });
-      for (var q = 0; q <= 4; q++) { var tv = Math.round(nx * q / 4); el('text', { x: X2(tv), y: B2 + 15, class: 'tick', 'text-anchor': 'middle' }, trace, tv); }
+      [0, 4, 16, 64, 256, 1024].forEach(function (tv) { el('line', { x1: X2(tv), y1: B2, x2: X2(tv), y2: B2 + 4, class: 'ax' }, trace); el('text', { x: X2(tv), y: B2 + 15, class: 'tick', 'text-anchor': 'middle' }, trace, tv); });
+      [[17, 'trust 1'], [458, 'trust 0']].forEach(function (m) { el('line', { x1: X2(m[0]), y1: T2, x2: X2(m[0]), y2: B2, stroke: C.faint, 'stroke-dasharray': '2 3' }, trace); el('text', { x: X2(m[0]) + 3, y: (T2 + B2) / 2 + 30, 'font-size': 10, fill: C.faint }, trace, m[1] + ': ' + m[0]); });
       el('line', { x1: L2, y1: B2, x2: R2, y2: B2, class: 'ax' }, trace);
-      el('text', { x: (L2 + R2) / 2, y: B2 + 31, class: 'tick', 'text-anchor': 'middle' }, trace, 'sampled conditions n (renders = 2n)');
+      el('text', { x: (L2 + R2) / 2, y: B2 + 31, class: 'tick', 'text-anchor': 'middle' }, trace, 'sampled conditions n (log scale; renders = 2n)');
       el('rect', { x: L2, y: Y2(1), width: R2 - L2, height: Y2(gs) - Y2(1), fill: C.safe, 'fill-opacity': 0.07 }, trace);
       el('line', { x1: L2, y1: Y2(gs), x2: R2, y2: Y2(gs), stroke: C.ours, 'stroke-width': 1.6, 'stroke-dasharray': '6 3' }, trace);
       el('text', { x: R2 - 4, y: Y2(gs) - 5, 'font-size': 11, fill: C.ours, 'text-anchor': 'end' }, trace, 'γsafe = ' + gs.toFixed(2) + ' (accept above)');
@@ -314,16 +452,16 @@
     var svg = $('frames-plot'); if (!svg) return;
     var L = 62, R = 455, T = 14, B = 236;
     function X(g) { return L + (R - L) * g; }
-    function Y(f) { return B - (B - T) * f / 1000; }
-    [0, 200, 400, 600, 800, 1000].forEach(function (t) { el('line', { x1: L, y1: Y(t), x2: R, y2: Y(t), class: 'grid' }, svg); el('text', { x: L - 6, y: Y(t) + 4, class: 'tick', 'text-anchor': 'end' }, svg, t); });
+    function Y(f) { return B - (B - T) * (Math.log10(Math.max(f, 10)) - 1) / 2; }
+    [10, 30, 100, 300, 1000].forEach(function (t) { el('line', { x1: L, y1: Y(t), x2: R, y2: Y(t), class: 'grid' }, svg); el('text', { x: L - 6, y: Y(t) + 4, class: 'tick', 'text-anchor': 'end' }, svg, t); });
     [0, 0.2, 0.4, 0.6, 0.8, 1].forEach(function (t) { el('text', { x: X(t), y: B + 16, class: 'tick', 'text-anchor': 'middle' }, svg, t); });
     el('line', { x1: L, y1: B, x2: R, y2: B, class: 'ax' }, svg);
     el('line', { x1: L, y1: T, x2: L, y2: B, class: 'ax' }, svg);
     var tl = el('text', { x: (L + R) / 2, y: B + 34, class: 'lbl', 'text-anchor': 'middle' }, svg, 'SAFE threshold ');
     el('tspan', { 'font-style': 'italic' }, tl, '\u03B3');
-    el('text', { x: 14, y: (T + B) / 2, class: 'lbl', 'text-anchor': 'middle', transform: 'rotate(-90 14 ' + ((T + B) / 2) + ')' }, svg, 'renders per accepted candidate');
+    el('text', { x: 14, y: (T + B) / 2, class: 'lbl', 'text-anchor': 'middle', transform: 'rotate(-90 14 ' + ((T + B) / 2) + ')' }, svg, 'renders per accepted candidate (log)');
     var d = '';
-    for (var i = 0; i <= 600; i++) { var g = 0.995 * i / 600; d += (i ? ' L' : 'M') + X(g).toFixed(1) + ',' + Y(rendersToAccept(g)).toFixed(1); }
+    for (var i = 0, first = true; i <= 600; i++) { var g = 0.995 * i / 600; if (2 * Math.log(1 - g) / Math.log(1 - TAU) < 10) continue; d += (first ? 'M' : ' L'); first = false; d += '' + X(g).toFixed(1) + ',' + Y(2 * Math.log(1 - g) / Math.log(1 - TAU)).toFixed(1); }
     el('path', { d: d, fill: 'none', stroke: C.ink, 'stroke-width': 1.8 }, svg);
     el('circle', { cx: X(0.99), cy: Y(916), r: 5.5, fill: C.cons }, svg);
     el('text', { x: X(0.99) - 9, y: Y(916) + 4, 'font-size': 11.5, fill: C.cons, 'text-anchor': 'end' }, svg, 'conservative 0.99: 916');
@@ -331,18 +469,18 @@
     pts.forEach(function (p) { el('circle', { cx: X(p[1]), cy: Y(p[2]), r: 4.5, fill: C.ours, stroke: '#fff', 'stroke-width': 1.2 }, svg); });
     var lab = [['ldlcRf 0.51: 140', 0.51, 140], ['4sX3Rn 0.33: 78', 0.33, 78], ['lsf3zr 0.17: 36', 0.17, 36], ['XtyGWD, Mss3zM 0.16: 34', 0.16, 34]];
     lab.forEach(function (p, j) {
-      var ly = Y(300) - 16 * (3 - j), lx = X(0.08);
+      var ly = Y(700) + 16 * j, lx = X(0.05);
       el('text', { x: lx, y: ly, 'font-size': 11, fill: C.ours }, svg, p[0]);
-      el('line', { x1: X(p[1]), y1: Y(p[2]) - 5, x2: X(p[1]), y2: ly + 3, stroke: C.ours, 'stroke-opacity': 0.35 }, svg);
+      el('line', { x1: X(p[1]), y1: Y(p[2]) - 5, x2: X(p[1]), y2: Y(700) + 16 * 3 + 6, stroke: C.ours, 'stroke-opacity': 0.35 }, svg);
     });
-    el('text', { x: X(0.08), y: Y(300) - 66, 'font-size': 11, fill: C.mute }, svg, 'learned \u03B3low per session:');
+    el('text', { x: X(0.05), y: Y(700) - 16, 'font-size': 11, fill: C.mute }, svg, 'learned \u03B3low per session:');
     var mk = el('g', {}, svg);
     framesMarker = function (g) {
       clear(mk);
       var f = rendersToAccept(g);
       el('line', { x1: X(g), y1: Y(f), x2: X(g), y2: B, stroke: C.faint, 'stroke-dasharray': '3 3' }, mk);
       el('circle', { cx: X(g), cy: Y(f), r: 6, fill: 'none', stroke: C.ink, 'stroke-width': 1.8 }, mk);
-      el('text', { x: X(g) - 8, y: Y(f) + (f > 700 ? 22 : -10), 'font-size': 10.5, fill: C.ink, 'text-anchor': 'end' }, mk, 'widget: ' + f);
+      if (g < GH - 1e-6) el('text', { x: X(g) + 8, y: Y(f) + 14, 'font-size': 10.5, fill: C.ink }, mk, 'simulator: ' + f);
     };
     framesMarker(GH);
   }
@@ -471,5 +609,5 @@
     });
   }
 
-  initPlayer(); initPRPS(); initTabs(); initFrames(); initSeq(); initSpeed(); initSave(); initLive(); initLOD(); initBib();
+  initPlayer(); initCube(); initTabs(); initFrames(); initSeq(); initSpeed(); initSave(); initLive(); initLOD(); initBib();
 })();
