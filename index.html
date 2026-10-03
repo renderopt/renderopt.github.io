@@ -225,13 +225,14 @@
           <div class="cube-sliders" id="cube-sliders"></div>
         </div>
         <div class="cube-right">
-          <div class="cube-view"><canvas id="cube-gl" width="640" height="360"></canvas><img id="cube-fallback" src="static/img/prps/xds_1.jpg" alt="Raymarching Primitives render"></div>
+          <div class="cube-view"><canvas id="cube-gl" width="640" height="360"></canvas><img id="cube-fallback" src="static/img/thumbs/XdsGDB.jpg" alt="Buoy render"></div>
           <table class="cube-map" id="cube-map"></table>
         </div>
       </div>
-      <figcaption><b>Figure 3.</b> The Primary Render Parameters Space of <span class="mono">Xds3zN</span> (Raymarching Primitives, MIT-licensed), rendered live in your browser with the shaders from the released session.
-        A point <i>r</i> in the 5D unit cube maps to the renderer's dynamic inputs (<span class="mono">iTime</span>, <span class="mono">iMouse</span>) through the session's PRPS ranges. Drag the point in the cube (time and mouse-x) or use the sliders.
-        <i>Sample a point</i> draws uniformly, as the validator does. This shader reads only <span class="mono">iTime</span> and <span class="mono">iMouse.x</span>; the validator samples all five dimensions anyway, because it does not know that.</figcaption>
+      <figcaption><b>Figure 3.</b> The Primary Render Parameters Space of <span class="mono">XdsGDB</span> (Buoy by TekF, CC BY-NC-SA 3.0), rendered live in your browser from the original and the LLM-optimized shader of the released session.
+        A point <i>r</i> in the 5D unit cube maps to the renderer's dynamic inputs through the session's PRPS ranges: time animates the waves and the boat, mouse-x orbits the camera, mouse-y changes its elevation.
+        Drag the point in the cube or use the sliders; <i>Sample a point</i> draws uniformly, as the validator does. The difference view shows which pixels change after the optimized ray march (at most 80 steps instead of 100, a shorter range, no march for upward rays).
+        The noise texture is regenerated in the browser, so waves differ in detail from Shadertoy.</figcaption>
     </figure>
   </div>
 </section>
@@ -334,15 +335,15 @@
     </figure>
 
     <figure class="fig try" id="seq">
-      <div class="try-head"><span class="try-tag">Try it</span><span>Run the decision rule on a simulated candidate.</span></div>
+      <div class="try-head"><span class="try-tag">Try it</span><span>The decision rule on a simulated candidate. Change the trust or the candidate and the run updates; <i>Replay</i> animates it.</span></div>
       <div class="controls">
         <span class="seg sm" id="seq-p">
-          <button data-p="0.001" class="on">safe &middot; 0.1%</button>
-          <button data-p="0.02">borderline &middot; 2%</button>
+          <button data-p="0.001">safe &middot; 0.1%</button>
+          <button data-p="0.015" class="on">borderline &middot; 1.5%</button>
           <button data-p="0.15">bad &middot; 15%</button>
         </span>
         <label class="slider">trust <input id="seq-trust" type="range" min="0" max="1" step="0.01" value="0"><output id="seq-trust-o">0.00</output></label>
-        <button class="pill dark" id="seq-run">&#9654; Run</button>
+        <button class="pill dark" id="seq-run">&#9654; Replay</button>
         <button class="pill" id="seq-reset">New draw</button>
       </div>
       <div class="two" style="gap:18px">
@@ -350,8 +351,9 @@
         <div><p class="panel-title">P(<i>p</i> &lt; &tau;) as frames arrive</p><svg id="seq-trace" class="plot" viewBox="0 0 460 220"></svg></div>
       </div>
       <div class="readout" id="seq-read"></div>
-      <figcaption><b>Figure 6.</b> Interactive version of the decision rule (<i>&tau;</i> = 1%, <i>&gamma;</i><sub>high</sub> = 0.99, <i>&gamma;</i><sub>low</sub> = 0.16 as learned on <span class="mono">XtyGWD</span>, trust exponent 2).
-        At trust 0 a clean candidate needs 458 samples; at trust 1 it needs 17. Give a borderline candidate high trust and it often slips through, which is why trust must come from each candidate's own neighborhood and not from one global setting.</figcaption>
+      <figcaption><b>Figure 6.</b> Interactive version of the decision rule (<i>&tau;</i> = 1%, <i>&gamma;</i><sub>high</sub> = 0.99, <i>&gamma;</i><sub>low</sub> = 0.16 as learned on <span class="mono">XtyGWD</span>, trust exponent 2); both axes are fixed and logarithmic in <i>p</i> and <i>n</i>.
+        The default is a borderline candidate failing on 1.5% of conditions: under conservative validation it never settles and is rejected when the 1024-sample budget runs out, the expensive tail from Figure 4.
+        Raise its trust and it is accepted. In 500 simulated draws of this candidate, conservative validation accepts one; at trust 1, 76% slip through. That is why trust must come from each candidate's own neighborhood, not from one global setting.</figcaption>
     </figure>
   </div>
 </section>
