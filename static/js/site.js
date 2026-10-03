@@ -95,7 +95,7 @@
         stage.classList.toggle('wipe', mode === 'wipe');
         var cols = $('pcols');
         cols.classList.toggle('two', mode === 'wipe');
-        cols.innerHTML = mode === 'wipe' ? '<span>&larr; Original</span><span class="o">Optimized &rarr;</span>' : '<span>Original</span><span class="o">Optimized (LLM + validation)</span><span>FLIP error</span>';
+        cols.innerHTML = mode === 'wipe' ? '<span>&larr; Original</span><span class="o">Optimized &rarr;</span>' : '<span>Original</span><span class="o">Optimized</span><span>FLIP error</span>';
         $('pamp').disabled = mode === 'wipe';
       });
     });
@@ -108,22 +108,23 @@
       var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
       $('pname').innerHTML = s.name + '<small>' + s.g + (s.g === 'Shadertoy' ? ' ' + s.id + ' by ' + s.by : ' &middot; ' + s.by) + '</small>';
       $('pnums').innerHTML = '<span><b>' + fmt(s.o, 2) + '</b> &rarr; <b>' + fmt(s.n, 2) + ' ms</b></span>' +
-        '<span><b class="sp">' + fmt(s.sp, 2) + '&times;</b> faster</span>' +
-        '<span>worst sampled FLIP <b>' + fmt(s.flip, 4) + '</b> (&epsilon; = ' + s.eps + ')</span>' +
-        '<span>PRPS ' + s.d + '</span>' + (s.note ? '<span style="color:var(--bad)">' + s.note + '</span>' : '');
-      $('plinks').innerHTML = '<a href="' + report(s) + '">report &amp; diff</a><a href="' + tree(s) + '">mutation tree</a>';
+        '<span><b class="sp">' + fmt(s.sp, 2) + '&times;</b></span>' +
+        '<span>worst FLIP <b>' + fmt(s.flip, 4) + '</b> at &epsilon; = ' + s.eps + '</span>' +
+        (s.note ? '<span class="bad" style="font-weight:400">' + s.note + '</span>' : '') +
+        '<span><a href="' + report(s) + '">report</a> &middot; <a href="' + tree(s) + '">tree</a></span>';
       [].forEach.call(chips.querySelectorAll('.chip'), function (c) { c.classList.toggle('on', +c.dataset.i === i); });
     }
     show(0);
 
-    var grid = $('sess-grid');
+    var tb = $('rep-table'), last = '';
+    var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th>Open</th></tr>';
     SCENES.forEach(function (s) {
-      var d = document.createElement('div'); d.className = 'sess';
-      d.innerHTML = '<img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt="' + s.name + '"><div><b>' + s.name + '<em>' + fmt(s.sp, 2) + '&times;</em></b>' +
-        '<small>' + s.g + ' &middot; ' + (s.g === 'Shadertoy' ? s.id : s.by) + '</small>' +
-        '<a href="' + report(s) + '">report</a><a href="' + tree(s) + '">tree</a></div>';
-      grid.appendChild(d);
+      if (s.g !== last) { h += '<tr class="grp"><td colspan="7">' + s.g + ' <span style="text-transform:none;letter-spacing:0">&middot; &epsilon; = ' + s.eps + '</span></td></tr>'; last = s.g; }
+      h += '<tr><td><img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""></td><td>' + s.name + ' <span class="mono" style="color:var(--faint)">' + (s.g === 'Shadertoy' ? s.id : '') + '</span></td>' +
+        '<td class="num">' + fmt(s.o, 2) + ' ms</td><td class="num">' + fmt(s.n, 2) + ' ms</td><td class="num sp">' + fmt(s.sp, 2) + '&times;</td><td class="num">' + fmt(s.flip, 4) + '</td>' +
+        '<td><a href="' + report(s) + '">report</a><a href="' + tree(s) + '">mutation tree</a></td></tr>';
     });
+    tb.innerHTML = h;
   }
 
   /* ================= PRPS parallel coordinates ================= */
@@ -133,42 +134,50 @@
   };
   var PCOL = ['#d9534f', '#3f9a5a', '#3b78d8'];
   function initPRPS() {
-    var svg = $('prps-plot'); if (!svg) return;
-    var key = 'xds', sel = 0;
-    function draw() {
-      clear(svg);
-      var L = 46, R = 500, T = 26, B = 206, D = 5, P = PRPS[key].pts;
-      function X(d) { return L + (R - L) * d / (D - 1); }
-      function Y(v) { return B - (B - T) * v; }
-      [0, 0.5, 1].forEach(function (t) { el('text', { x: L - 22, y: Y(t) + 4, class: 'tick', 'text-anchor': 'end' }, svg, t); });
-      for (var d = 0; d < D; d++) {
-        el('line', { x1: X(d), y1: T, x2: X(d), y2: B, class: 'ax' }, svg);
-        var t = el('text', { x: X(d), y: B + 20, class: 'lbl', 'text-anchor': 'middle', 'font-style': 'italic' }, svg, 'r');
-        el('tspan', { 'font-size': 9, dy: 3 }, t, String(d + 1));
-      }
-      el('text', { x: L - 30, y: T - 10, class: 'tick' }, svg, 'normalized value');
-      P.forEach(function (p, i) {
-        var pts = p.slice(0, D).map(function (v, d) { return X(d) + ',' + Y(v); }).join(' ');
-        var g = el('g', { style: 'cursor:pointer' }, svg);
-        el('polyline', { points: pts, fill: 'none', stroke: PCOL[i], 'stroke-width': i === sel ? 3 : 1.5, 'stroke-opacity': i === sel ? 1 : 0.45 }, g);
-        el('polyline', { points: pts, fill: 'none', stroke: 'transparent', 'stroke-width': 14 }, g);
-        p.slice(0, D).forEach(function (v, d) { el('circle', { cx: X(d), cy: Y(v), r: i === sel ? 5 : 3.5, fill: PCOL[i], stroke: '#fff', 'stroke-width': 1.5 }, g); });
-        el('text', { x: R + 4, y: Y(p[D - 1]) + 4, 'font-size': 11, fill: PCOL[i], 'font-weight': 600 }, g, 'P' + (i + 1));
-        g.addEventListener('click', function () { sel = i; draw(); });
+    var row = $('prps-row'); if (!row) return;
+    var key = 'xds';
+    function bars(p) {
+      var svg = el('svg', { viewBox: '0 0 120 54', role: 'img', 'aria-label': 'normalized coordinates' });
+      el('line', { x1: 0, y1: 40, x2: 120, y2: 40, class: 'ax' }, svg);
+      p.slice(0, 5).forEach(function (v, d) {
+        var x = 4 + d * 23, hgt = 34 * v;
+        el('rect', { x: x, y: 6, width: 16, height: 34, fill: '#f1f1ee', rx: 1.5 }, svg);
+        el('rect', { x: x, y: 40 - hgt, width: 16, height: hgt, fill: C.ours, rx: 1.5 }, svg);
+        var t = el('text', { x: x + 8, y: 51, 'font-size': 8.5, fill: C.mute, 'text-anchor': 'middle', 'font-style': 'italic' }, svg, 'r');
+        el('tspan', { 'font-size': 6.5, dy: 2 }, t, String(d + 1));
       });
-      var p = P[sel];
-      $('prps-img').src = 'static/img/prps/' + PRPS[key].img + '_' + (sel + 1) + '.jpg';
-      $('prps-img').style.borderColor = PCOL[sel];
-      $('prps-cap').innerHTML = '<b style="color:' + PCOL[sel] + '">P' + (sel + 1) + '</b> = (' + p.slice(0, D).map(function (v) { return v.toFixed(2); }).join(', ') + ') &middot; <b>' + p[D] + ' ms</b>';
+      return svg;
+    }
+    function draw() {
+      row.innerHTML = '';
+      PRPS[key].pts.forEach(function (p, i) {
+        var d = document.createElement('div');
+        d.innerHTML = '<img alt="Render at PRPS point P' + (i + 1) + '" src="static/img/prps/' + PRPS[key].img + '_' + (i + 1) + '.jpg">' +
+          '<div class="pmeta"><span><b>P' + (i + 1) + '</b><br>' + p[5].toFixed(1) + ' ms</span></div>';
+        d.querySelector('.pmeta').appendChild(bars(p));
+        row.appendChild(d);
+      });
     }
     [].forEach.call($('prps-shader').querySelectorAll('button'), function (b) {
       b.addEventListener('click', function () {
-        key = b.dataset.k; sel = 0;
+        key = b.dataset.k;
         [].forEach.call(b.parentNode.children, function (c) { c.classList.toggle('on', c === b); });
         draw();
       });
     });
     draw();
+  }
+
+  /* ================= code tabs ================= */
+  function initTabs() {
+    var t = $('edit-tabs'); if (!t) return;
+    var panes = t.parentNode.querySelectorAll('.code');
+    [].forEach.call(t.querySelectorAll('button'), function (b) {
+      b.addEventListener('click', function () {
+        [].forEach.call(t.children, function (c) { c.classList.toggle('on', c === b); });
+        [].forEach.call(panes, function (p) { p.hidden = p.dataset.t !== b.dataset.t; });
+      });
+    });
   }
 
   /* ================= Bayesian sequential test ================= */
@@ -390,8 +399,7 @@
     });
     var yb = T + 8 + S.length * rh + 6;
     [0, 50, 100].forEach(function (t) { el('text', { x: X(t), y: yb + 4, class: 'tick', 'text-anchor': 'middle' }, svg, t + '%'); });
-    el('text', { x: 4, y: yb + 22, 'font-size': 10.5, fill: C.mute }, svg, 'Disagreements: bad candidates accepted, against conservative replay labels.');
-    svg.setAttribute('viewBox', '0 0 470 ' + (yb + 30));
+    svg.setAttribute('viewBox', '0 0 470 ' + (yb + 10));
   }
 
   /* ================= live runs dumbbell ================= */
@@ -463,5 +471,5 @@
     });
   }
 
-  initPlayer(); initPRPS(); initFrames(); initSeq(); initSpeed(); initSave(); initLive(); initLOD(); initBib();
+  initPlayer(); initPRPS(); initTabs(); initFrames(); initSeq(); initSpeed(); initSave(); initLive(); initLOD(); initBib();
 })();
