@@ -73,7 +73,15 @@ figure { margin: 0; }
 .player .cols { display: grid; grid-template-columns: repeat(3, 1fr); font-size: 13.5px; font-weight: 600; text-align: center; margin-bottom: 4px; }
 .player .cols .o { color: var(--ours); }
 .player .stage { position: relative; background: #000; border-radius: 6px; overflow: hidden; line-height: 0; }
-.player video { width: 100%; height: auto; }
+.player video { position: absolute; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+.player canvas { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.player .stage.wipe canvas { cursor: ew-resize; }
+.ptools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: flex-end; font-size: 13px; margin-bottom: 8px; }
+.chk { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--mute); }
+.chk input { accent-color: var(--ours); }
+.player .cols.two { grid-template-columns: 1fr 1fr; }
+.player .cols.two span:first-child { text-align: left; padding-left: 4px; }
+.player .cols.two span:last-child { text-align: right; padding-right: 4px; }
 .player .meta { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; justify-content: space-between; margin: 10px 2px 0; font-size: 14.5px; }
 .player .meta .name { font-weight: 600; }
 .player .meta .name small { color: var(--mute); font-weight: 400; margin-left: 6px; }
@@ -213,3 +221,5 @@ figure.wide { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .dims { grid-template-columns: 1fr; }
   .player .meta .links a { margin: 0 12px 0 0; }
 }
+.player .stage.wipe { max-width: 760px; margin: 0 auto; }
+.player .cols.two { max-width: 760px; margin-left: auto; margin-right: auto; }

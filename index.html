@@ -59,8 +59,12 @@
 <section id="results">
   <div class="container">
     <div class="player" id="player">
-      <div class="cols"><span>Original</span><span class="o">Optimized (LLM + validation)</span><span>FLIP error</span></div>
-      <div class="stage"><video id="pv" autoplay muted loop playsinline preload="auto"></video></div>
+      <div class="ptools">
+        <span class="seg" id="pmode"><button class="on" data-m="tri">Side by side</button><button data-m="wipe">Wipe compare</button></span>
+        <label class="chk"><input type="checkbox" id="pamp"> Amplify error &times;8</label>
+      </div>
+      <div class="cols" id="pcols"><span>Original</span><span class="o">Optimized (LLM + validation)</span><span>FLIP error</span></div>
+      <div class="stage" id="pstage"><video id="pv" autoplay muted loop playsinline preload="auto"></video><canvas id="pc" aria-label="Original, optimized and FLIP error video"></canvas></div>
       <div class="meta">
         <div class="name" id="pname"></div>
         <div class="nums" id="pnums"></div>
@@ -68,7 +72,7 @@
       </div>
       <div class="chips" id="pchips"></div>
       <p class="caption">Each clip is rendered at the <b>worst sampled point</b> of the render-parameter space, the configuration with the highest FLIP error the validator saw.
-        A black error panel means no visible difference. Click a scene to switch; times are mean GPU render times over the sampled space.</p>
+        A black error panel means no visible difference (amplify it to see the faint residue). Click a scene to switch, or use the wipe to drag between original and optimized; times are mean GPU render times over the sampled space.</p>
     </div>
 
     <div class="tldr"><span class="tldr-tag">TL;DR</span>
@@ -396,7 +400,7 @@
             <figure><img id="lod-r" alt="Optimized render" src="static/img/lod/render_1.jpg"><figcaption>optimized</figcaption></figure>
             <figure><img id="lod-f" alt="FLIP error map" src="static/img/lod/flip_1.jpg"><figcaption id="lod-fc">FLIP</figcaption></figure>
           </div>
-          <svg id="lod-plot" class="plot" viewBox="0 0 300 220"></svg>
+          <svg id="lod-plot" class="plot" viewBox="0 0 300 240"></svg>
         </div>
       </div>
     </div>
