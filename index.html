@@ -64,14 +64,11 @@
         <div class="name" id="pname"></div>
         <div class="nums" id="pnums"></div>
         <div class="ptools">
-          <span class="seg sm" id="pmode"><button class="on" data-m="tri">Side by side</button><button data-m="wipe">Wipe</button></span>
+          <button class="icon-btn" id="pplay" aria-label="Pause video" title="Pause / play"><svg viewBox="0 0 24 24"><path d="M7 5h3v14H7zm7 0h3v14h-3z"/></svg></button>
           <label class="chk"><input type="checkbox" id="pamp"> Error &times;8</label>
         </div>
       </div>
       <div class="chips" id="pchips"></div>
-      <figcaption><b>Figure 1.</b> Shader rewrites proposed by an LLM and accepted only after Bayesian validation across the render-parameter space.
-        Every clip is rendered at the <i>worst</i> sampled condition, i.e. the one with the highest FLIP error the validator saw. A black error panel means no visible difference.
-        Use <i>Wipe</i> to drag between original and optimized, or <i>Error &times;8</i> to see the residual.</figcaption>
     </figure>
 
     <div class="numbers">
@@ -98,9 +95,8 @@
 <!-- ======================= VIDEO ======================= -->
 <section id="video">
   <div class="container">
-    <h2>Video</h2>
     <div class="video-wrap">
-      <video controls preload="metadata" playsinline poster="static/videos/overview_poster.jpg">
+      <video id="ov" controls muted preload="metadata" playsinline poster="static/videos/overview_poster.jpg">
         <source src="static/videos/overview.mp4" type="video/mp4">
       </video>
     </div>
@@ -115,7 +111,7 @@
       For rendering, correctness is perceptual, depends on viewing conditions, and can only be sampled. So we build the system around the validator.</p>
 
     <figure class="fig wide">
-      <svg viewBox="0 0 1000 320" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator with trust-guided threshold, profiler, feedback to population">
+      <svg viewBox="0 0 1000 326" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator with trust-guided threshold, profiler, feedback to population">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker>
           <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d9711c"/></marker>
@@ -138,7 +134,7 @@
           <text x="396" y="112">SEARCH / REPLACE</text>
           <text x="396" y="127">patch &#8594; candidate</text>
           <!-- validator -->
-          <rect x="496" y="18" width="344" height="168" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
+          <rect x="496" y="18" width="344" height="172" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
           <text x="668" y="42" font-size="14" font-weight="600" fill="#1f2328">Bayesian sequential validator <tspan fill="#d9711c">(ours)</tspan></text>
           <g>
             <rect x="508" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
@@ -159,12 +155,15 @@
             <path d="M798 102 V116 H546 V106" fill="none" stroke="#c9a47c" stroke-dasharray="3 3" marker-end="url(#aho)"/>
             <text x="672" y="129" font-size="10.5" fill="#9a7a58">undecided: render the next batch</text>
           </g>
-          <rect x="508" y="142" width="104" height="32" rx="7" fill="#e6f4ea" stroke="#2e8b57"/>
-          <text x="560" y="162" fill="#1d5e35" font-weight="600">SAFE &#8594; accept</text>
-          <rect x="620" y="142" width="104" height="32" rx="7" fill="#fbe9e7" stroke="#c8423b"/>
-          <text x="672" y="162" fill="#8d2a24" font-weight="600">BAD &#8594; reject</text>
-          <rect x="732" y="142" width="104" height="32" rx="7" fill="#f1f1ef" stroke="#a9adb3"/>
-          <text x="784" y="162" fill="#4b4f55" font-size="10.5">no decision &#8594; reject</text>
+          <rect x="508" y="140" width="130" height="38" rx="7" fill="#e6f4ea" stroke="#2e8b57" stroke-width="1.5"/>
+          <text x="573" y="155" fill="#1d5e35" font-weight="600">SAFE &#8594; accept</text>
+          <text x="573" y="170" fill="#1d5e35" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8805; <tspan fill="#d9711c" font-weight="700" font-style="italic">&#947;<tspan font-size="8" dy="2">safe</tspan><tspan dy="-2">(i)</tspan></tspan></text>
+          <rect x="644" y="140" width="100" height="38" rx="7" fill="#fbe9e7" stroke="#c8423b"/>
+          <text x="694" y="155" fill="#8d2a24" font-weight="600">BAD &#8594; reject</text>
+          <text x="694" y="170" fill="#8d2a24" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8804; 0.01</text>
+          <rect x="750" y="140" width="86" height="38" rx="7" fill="#f1f1ef" stroke="#a9adb3"/>
+          <text x="793" y="155" fill="#4b4f55" font-weight="600">budget out</text>
+          <text x="793" y="170" fill="#4b4f55" font-size="10.5">&#8594; reject</text>
           <!-- profiler -->
           <rect x="870" y="50" width="122" height="96" rx="10" fill="#fdf6dc" stroke="#e2c86b"/>
           <text x="931" y="90" font-size="14" font-weight="600" fill="#1f2328">Profiler</text>
@@ -180,18 +179,24 @@
           <path d="M296 98 H323" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M466 98 H493" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M840 98 H867" stroke="#2e8b57" stroke-width="1.5" marker-end="url(#ah)"/>
-          <path d="M668 220 V190" stroke="#d9711c" stroke-width="1.5" marker-end="url(#aho)"/>
-          <text x="676" y="208" text-anchor="start" fill="#d9711c" font-style="italic">&#947;<tspan font-size="8" dy="3">safe</tspan><tspan dy="-3">(i)</tspan></text>
-          <path d="M820 186 V253 H783" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M590 220 V182" stroke="#d9711c" stroke-width="2" marker-end="url(#aho)"/>
+          <text x="598" y="208" text-anchor="start" fill="#d9711c" font-style="italic" font-weight="600">sets &#947;<tspan font-size="8" dy="3">safe</tspan><tspan dy="-3">(i) per candidate</tspan></text>
+          <path d="M820 190 V253 H783" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
           <text x="826" y="222" text-anchor="start">labels, rates</text>
-          <path d="M396 146 V253 H553" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
-          <text x="402" y="222" text-anchor="start">diff</text>
-          <path d="M931 146 V306 H226 V149" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
-          <text x="420" y="300">accepted program, render time and error &#8594; population; prior programs guide later mutations</text>
+          <g>
+            <rect x="346" y="158" width="100" height="50" rx="5" fill="#fff" stroke="#d9d9d4"/>
+            <rect x="347" y="165" width="98" height="8" fill="#fde8e7"/><rect x="352" y="167.5" width="52" height="3" rx="1.5" fill="#d98b85"/>
+            <rect x="347" y="173" width="98" height="8" fill="#fde8e7"/><rect x="352" y="175.5" width="38" height="3" rx="1.5" fill="#d98b85"/>
+            <rect x="347" y="181" width="98" height="8" fill="#e6f4ea"/><rect x="352" y="183.5" width="60" height="3" rx="1.5" fill="#7fb48f"/>
+            <rect x="352" y="193.5" width="44" height="3" rx="1.5" fill="#c9ccd1"/>
+            <text x="396" y="221" font-size="10.5">patch</text>
+          </g>
+          <path d="M396 146 V156" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M396 226 V253 H553" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M931 146 V300 H226 V149" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+          <text x="578" y="318">accepted program with its render time and error &#8594; population</text>
         </g>
       </svg>
-      <figcaption><b>Figure 2.</b> Pipeline overview. The validator and orchestration are shared across backends; only the PRPS adapter and the rendering hooks are backend-specific.
-        Distributed GPU workers report errors after every batch, so a candidate stops as soon as the evidence is decisive. Only accepted candidates are profiled.</figcaption>
     </figure>
 
     <div class="ideas" id="ideas">
@@ -213,13 +218,11 @@
     </div>
 
     <figure class="fig" id="prps">
-      <div class="fig-tools">
-        <button class="pill" id="cube-sample">Sample a point</button>
-        <button class="pill" id="cube-clear">Clear samples</button>
-        <span class="cube-status" id="cube-status"></span>
-      </div>
       <div class="cube-grid">
-        <svg id="cube-svg" class="plot" viewBox="0 0 320 290" role="img" aria-label="PRPS unit cube with the selected point; drag to move it"></svg>
+        <div class="cube-left">
+          <svg id="cube-svg" class="plot" viewBox="0 0 320 290" role="img" aria-label="PRPS unit cube with the selected point; drag to move it"></svg>
+          <div class="cube-btns"><button class="ghost" id="cube-sample">Sample a point</button><button class="ghost" id="cube-clear">Clear</button><span class="cube-status" id="cube-status"></span></div>
+        </div>
         <div class="cube-view" id="cube-view">
           <canvas id="cube-gl" width="640" height="360"></canvas>
           <img id="cube-fallback" src="static/img/thumbs/XdsGDB.jpg" alt="Buoy render">
@@ -227,10 +230,6 @@
         </div>
       </div>
       <div class="cube-rows" id="cube-rows"></div>
-      <figcaption><b>Figure 3.</b> The Primary Render Parameters Space of <span class="mono">XdsGDB</span> (Buoy by TekF, CC BY-NC-SA 3.0), rendered live in your browser from the original and the LLM-optimized shader of the released session.
-        A point <i>r</i> in the unit cube maps to the renderer's dynamic inputs through the session's PRPS ranges. Drag the point in the cube or use the sliders; <i>Sample a point</i> draws uniformly, as the validator does.
-        Drag the two diagonal dividers to compare original, optimized and their pixel difference (&times;20), which shows the effect of the shorter ray march (at most 80 steps instead of 100, a shorter range, no march for upward rays).
-        The session's PRPS has two more dimensions (the mouse click state) that this shader does not read; they are omitted here. The noise texture is regenerated in the browser, so waves differ in detail from Shadertoy.</figcaption>
     </figure>
   </div>
 </section>
@@ -239,22 +238,12 @@
 <section id="trust">
   <div class="container">
     <h2>Where validation time goes</h2>
-    <p class="lead">Most bad candidates fail on a large fraction of frames and are rejected within tens of frames. A thin tail of borderline ones, failing on 1&ndash;5% of conditions, needs hundreds.
-      Under one fixed 99% policy, every <i>safe</i> candidate pays for ruling out that tail: 916 renders each.</p>
+    <p class="lead">Clearly bad candidates are rejected within tens of frames. A few borderline ones, failing on 1&ndash;5% of conditions, need hundreds &mdash;
+      and under one fixed 99% threshold every <i>safe</i> candidate pays that price: 916 renders.</p>
 
-    <figure class="fig">
-      <div class="two">
-        <div>
-          <p class="panel-title">(a) Renders to accept a clean candidate</p>
-          <svg id="frames-plot" class="plot" viewBox="0 0 470 280"></svg>
-        </div>
-        <div>
-          <p class="panel-title">(b) Exceedance rates of rejected candidates</p>
-          <img src="static/fig/justification.svg" alt="Histogram of exceedance rates of bad candidates for lsf3zr and 4sX3Rn, with frames needed to detect them" loading="lazy">
-        </div>
-      </div>
-      <figcaption><b>Figure 4.</b> (a) The SAFE threshold <i>&gamma;</i> sets the price of every accepted candidate (log scale); the curve is exact, 2&lfloor;ln(1&minus;<i>&gamma;</i>)/ln(1&minus;<i>&tau;</i>)&rfloor; renders at <i>&tau;</i> = 1%.
-        Orange dots: <i>&gamma;</i><sub>low</sub> learned online per session (34&ndash;140 renders). (b) From the paper: borderline bad candidates (orange) need 180&ndash;610 frames to detect, the clear ones (red) far fewer.</figcaption>
+    <figure class="fig narrow-fig">
+      <p class="panel-title">Renders needed to accept a clean candidate</p>
+      <svg id="frames-plot" class="plot" viewBox="0 0 470 280"></svg>
     </figure>
 
     <figure class="fig wide">
@@ -327,13 +316,10 @@
             <text x="890" y="222" text-anchor="middle" font-style="italic" fill="#1f2328">&#947;<tspan font-size="8" dy="3">eff</tspan><tspan dy="-3"> = &#947;</tspan><tspan font-size="8" dy="3">high</tspan><tspan dy="-3"> + (&#947;</tspan><tspan font-size="8" dy="3">low</tspan><tspan dy="-3"> &#8722; &#947;</tspan><tspan font-size="8" dy="3">high</tspan><tspan dy="-3">) &#183; trust</tspan><tspan font-size="8" dy="-5">p</tspan></text>
           </g>
         </svg>
-      <figcaption><b>Figure 5.</b> Trust estimation. An LLM describes each diff from four views; each view is embedded and compared with already validated candidates (nearest safe vs. three nearest bad, weighted by their exceedance rate).
-        The fused score is ranked into a trust value that interpolates the SAFE threshold between the learned <i>&gamma;</i><sub>low</sub> and the conservative <i>&gamma;</i><sub>high</sub>.
-        A candidate's posterior holds only its own frames. Leave-one-out AUC of the trust ranking is 0.92.</figcaption>
     </figure>
 
     <figure class="fig try" id="seq">
-      <div class="try-head"><span class="try-tag">Try it</span><span>The decision rule on a simulated candidate. Change the trust or the candidate and the run updates; <i>Replay</i> animates it.</span></div>
+      <div class="try-head"><span class="try-tag">Try it</span><span>Change the trust or the candidate.</span></div>
       <div class="controls">
         <span class="seg sm" id="seq-p">
           <button data-p="0.001">safe &middot; 0.1%</button>
@@ -349,9 +335,6 @@
         <div><p class="panel-title">P(<i>p</i> &lt; &tau;) as frames arrive</p><svg id="seq-trace" class="plot" viewBox="0 0 460 220"></svg></div>
       </div>
       <div class="readout" id="seq-read"></div>
-      <figcaption><b>Figure 6.</b> Interactive version of the decision rule (<i>&tau;</i> = 1%, <i>&gamma;</i><sub>high</sub> = 0.99, <i>&gamma;</i><sub>low</sub> = 0.16 as learned on <span class="mono">XtyGWD</span>, trust exponent 2); both axes are fixed and logarithmic in <i>p</i> and <i>n</i>.
-        The default is a borderline candidate failing on 1.5% of conditions: under conservative validation it never settles and is rejected when the 1024-sample budget runs out, the expensive tail from Figure 4.
-        Raise its trust and it is accepted. In 500 simulated draws of this candidate, conservative validation accepts one; at trust 1, 76% slip through. That is why trust must come from each candidate's own neighborhood, not from one global setting.</figcaption>
     </figure>
   </div>
 </section>
@@ -375,96 +358,52 @@
           <svg id="live-plot" class="plot" viewBox="0 0 470 150"></svg>
         </div>
       </div>
-      <figcaption><b>Figure 7.</b> (a) Mean GPU-time speedup over the sampled space at each setting's error threshold. (b) Replay fixes the candidate stream and changes only the stopping policy;
-        disagreements count bad candidates accepted relative to conservative labels. (c) Full pipeline runs: GPU validation work drops 73%, while the extra LLM calls raise total cost per candidate by 34&ndash;45%.</figcaption>
     </figure>
 
+    <h3 class="sub">Level of detail</h3>
     <figure class="fig" id="lod">
-      <div class="fig-tools"><label class="slider">error threshold &epsilon; <input id="lod-s" type="range" min="0" max="3" step="1" value="1" style="width:200px"><output id="lod-o"></output></label><span class="readout" id="lod-read" style="margin:0"></span></div>
+      <div class="fig-tools"><label class="slider">level of detail <input id="lod-s" type="range" min="0" max="3" step="1" value="1" style="width:200px"><output id="lod-o"></output></label><span class="readout" id="lod-read" style="margin:0"></span></div>
       <div class="lod-grid">
-        <div class="lod-imgs">
+        <div class="lod-imgs" id="lod-imgs" title="Swipe to change the level of detail">
           <figure><img id="lod-r" alt="Optimized render" src="static/img/lod/render_1.jpg"><figcaption>optimized</figcaption></figure>
           <figure><img id="lod-f" alt="FLIP error map" src="static/img/lod/flip_1.jpg"><figcaption id="lod-fc">FLIP</figcaption></figure>
         </div>
         <svg id="lod-plot" class="plot" viewBox="0 0 300 240"></svg>
       </div>
-      <figcaption><b>Figure 8.</b> The error threshold works as a quality knob. On <span class="mono">XtyGWD</span> (reference 11.5&nbsp;ms), raising &epsilon; from 0.01 to 0.25 raises the best speedup from 1.26&times; to 3.38&times; and the share of accepted candidates from 41% to 89%.</figcaption>
     </figure>
 
     <figure class="fig" id="edits">
       <div class="tabs" id="edit-tabs" role="tablist">
-        <button class="on" data-t="0">Negligible noise</button><button data-t="1">Beat-conditional geometry</button><button data-t="2">Fewer taps (Godot)</button><button data-t="3">Chebyshev polynomial</button>
+        <button class="on" data-t="1">Beat-conditional geometry</button><button data-t="2">Fewer taps (Godot)</button><button data-t="3">Chebyshev polynomial</button>
       </div>
-      <div class="code" data-t="0">
-<pre><span class="c">// NtlSDs: SDF distance computation</span><span class="d">-  float fb = fbm(vec3(10.1*x+offx, 10.1*y, 10.1*z));</span><span class="d">-  if( fb&gt;0.0 )</span><span class="d">-      di = di + 0.00000003*fb;</span><span class="a">+  // 3e-8 perturbation is below float precision</span><span class="a">+  // at this scale: skip the FBM entirely</span><span>   return sqrt(di);</span></pre>
-        <p class="why">Numerical reasoning: an expensive noise call that cannot change the result.</p>
-      </div>
-      <div class="code" data-t="1" hidden>
+      <div class="code" data-t="1">
 <pre><span class="c">// 4ltfDr (1.69&times;): audio-reactive second stage</span><span class="d">-  intersectStage(surface, pp,</span><span class="d">-      rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  if (beat &gt;= 32.0) {</span><span class="a">+      intersectStage(surface, pp,</span><span class="a">+          rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  }</span></pre>
         <p class="why">Domain reasoning: the second stage is invisible before beat 32, so it is skipped there. The same patch hoists loop invariants out of the fractal.</p>
       </div>
       <div class="code" data-t="2" hidden>
 <pre><span class="c">// Godot SSIL (1.66&times;): taps per quality preset, 2 depth samples each</span><span class="d">-  const int num_taps[5] = { 3, 5, 12, 0, 0 };</span><span class="a">+  const int num_taps[5] = { 2, 3, 6, 0, 0 };</span><span class="c">   // plus: merged max/clamp pairs, reciprocal multiplies,</span><span class="c">   // shared subexpressions across the sampling kernel</span></pre>
-        <p class="why">Approximate by design: about half the samples per pixel; worst sampled FLIP 0.106 at &epsilon; = 0.1, inside the 1% exceedance budget.</p>
+        <p class="why">Approximate by design: about half the samples per pixel, within the error budget.</p>
       </div>
       <div class="code" data-t="3" hidden>
 <pre><span class="c">// lighthouse stripe pattern (example from the paper)</span><span class="d">-  cos(atan(pos.x, pos.z) * 6.0)</span><span class="a">+  float r_inv = inversesqrt(dot(pos.xz, pos.xz));</span><span class="a">+  float c = pos.z * r_inv, c2 = c*c, c4 = c2*c2;</span><span class="a">+  // T_6(x) = 32x^6 - 48x^4 + 18x^2 - 1</span><span class="a">+  32.*c4*c2 - 48.*c4 + 18.*c2 - 1.;</span></pre>
         <p class="why">Math reasoning: cos 6&theta; is the Chebyshev polynomial T<sub>6</sub>(cos&nbsp;&theta;), so atan and cos disappear.</p>
       </div>
-      <figcaption><b>Figure 9.</b> Accepted patches, trimmed. Edits range from numerical and algebraic rewrites to domain-level shortcuts. In MaterialX, the search replaced a 64-sample Monte Carlo albedo with a fitted polynomial.</figcaption>
     </figure>
 
     <figure class="fig" id="tree">
       <div class="fig-tools">
         <span class="seg sm" id="tree-pick"><button class="on" data-k="4ltfDr">traveler. (Shadertoy)</button><button data-k="ssil">SSIL pass (Godot)</button></span>
         <button class="pill" id="tree-best">Show best</button>
-        <span class="cube-status" id="tree-hint">Hover or tap a dot to see its lineage and patch.</span>
+        <span class="cube-status" id="tree-hint">Hover a dot to see its lineage.</span>
       </div>
       <svg id="tree-svg" class="plot" viewBox="0 0 1000 382" role="img" aria-label="Search tree: accepted candidates by speedup over the run, rejected candidates as a strip below"></svg>
       <div class="tree-detail">
         <div class="tree-info" id="tree-info"></div>
         <div class="code"><pre id="tree-diff"></pre></div>
       </div>
-      <figcaption><b>Figure 10.</b> One full search, from the released session. Each dot is an accepted program at its proposal order (x) and speedup over the original (y), colored by island; the orange line is the best so far.
-        The strip below marks every rejected proposal. Selecting a program draws its lineage, the chain of accepted parents it was mutated from, and shows its accumulated change relative to the original shader (trimmed).</figcaption>
     </figure>
 
-    <details class="more">
-      <summary>More analysis <span>Pareto fronts, uniform-threshold sweep, held-out audit, ablations, paper search figure, scaling</span></summary>
-      <div class="inner">
-        <h4>Trust-guided vs. static blending, per replay session</h4>
-        <img src="static/fig/bayesian_pareto.svg" alt="EMA convergence of gamma_low, Pareto fronts and cumulative frames for five replay sessions" loading="lazy">
-        <p class="caption">Top: &gamma;<sub>low</sub> converges to session-specific values. Middle: trust-guided (orange) dominates a static global blend (red), using 19&ndash;42% fewer frames at equal disagreement. Bottom: cumulative frames.</p>
-        <div class="two" style="margin-top:14px">
-          <div>
-            <h4>One global threshold is not enough</h4>
-            <img src="static/fig/flat_policy.svg" alt="Uniform confidence sweep across five replay sessions" loading="lazy">
-            <p class="caption left">At &gamma; = 0.80 a uniform policy saves 65% of renders with 0.10% bad-to-SAFE disagreements, but the zero-disagreement point stays at full cost for two sessions.</p>
-          </div>
-          <div>
-            <h4>Held-out audit of accepted candidates</h4>
-            <img src="static/fig/heldout.svg" alt="Held-out validation of accepted Shadertoy candidates on 20k to 102.6k fresh samples" loading="lazy">
-            <p class="caption left">Re-rendering on 20k&ndash;102.6k fresh samples keeps 9 of 10 SAFE labels; the one change is a borderline <span class="mono">4ltfDr</span> candidate at the tolerance boundary.</p>
-          </div>
-        </div>
-        <h4>Ablation of the trust estimate (leave-one-out AUC-ROC, 7 sessions, 5,491 shaders)</h4>
-        <div class="tbl-wrap"><table class="abl">
-          <tr><th>Representations</th><th>AUC</th><th>Contrast scoring</th><th>AUC</th><th>Fusion weights</th><th>AUC</th></tr>
-          <tr><td>visual</td><td class="v">0.781</td><td>bad only</td><td class="v">0.698</td><td>best single view</td><td class="v">0.901</td></tr>
-          <tr><td>mechanism</td><td class="v">0.871</td><td>&minus;safe only</td><td class="v">0.837</td><td>uniform</td><td class="v">0.913</td></tr>
-          <tr><td>guard</td><td class="v">0.889</td><td></td><td></td><td></td><td></td></tr>
-          <tr><td>mechcal</td><td class="v">0.898</td><td></td><td></td><td></td><td></td></tr>
-          <tr><td>three zero-shot views</td><td class="v">0.902</td><td></td><td></td><td></td><td></td></tr>
-          <tr class="best"><td>all four views</td><td class="v">0.920</td><td>bad &minus; safe</td><td class="v">0.920</td><td>KTA-learned</td><td class="v">0.920</td></tr>
-        </table></div>
-        <h4>Search dynamics as shown in the paper (4ltfDr, another run)</h4>
-        <img src="static/fig/evolution.svg" alt="Evolution of 4ltfDr over 957 mutations across 4 islands, with the ancestry of the best shader" loading="lazy">
-        <p class="caption">Best speedup over 957 mutations (top), four islands with migrations (middle), and the ancestry of the best program (bottom); on average the best program appears at 68% of a run.</p>
-        <h4>Prompt augmentation and multi-GPU scaling</h4>
-        <img src="static/fig/scalability.svg" alt="Prompt strategies with hardware metrics and scaling to 24 GPUs" loading="lazy">
-        <p class="caption">(a) Hardware-counter prompts find early wins; mixed prompting is more reliable over long runs. (b) Sub-linear but useful scaling to 24 RTX 3060 GPUs.</p>
-      </div>
-    </details>
+
   </div>
 </section>
 
@@ -472,10 +411,9 @@
 <section id="reports">
   <div class="container">
     <h2>Interactive reports</h2>
-    <p class="lead">Each released session has a live report (timings, FLIP distribution, full diff, generation history) and its complete mutation tree.</p>
+    <p class="lead">Each released session has a live report with timings, error distribution, the full diff and its generation history.</p>
     <div class="tbl-wrap"><table class="rep" id="rep-table"></table></div>
-    <p class="caption">Numbers are from the released sessions; the paper's MaterialX figure uses other runs (Bricks 1.79&times;, Car Paint 1.47&times;).
-      <span class="mono">NtlSDs</span> is a limitation case in the paper: FLIP accepts it, while LPIPS and DISTS would reject it.</p>
+
   </div>
 </section>
 

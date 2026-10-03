@@ -19,7 +19,6 @@
   /* ================= scene player ================= */
   var SCENES = [
     { id: '4ltfDr', name: 'traveler.', by: 'kaneta', g: 'Shadertoy', o: 7.944, n: 4.701, flip: 0.0060, eps: 0.01, d: '1D' },
-    { id: 'NtlSDs', name: 'Protean Clouds', by: 'iq', g: 'Shadertoy', o: 7.875, n: 5.032, flip: 0.0099, eps: 0.01, d: '1D', note: 'limitation case: FLIP accepts, LPIPS/DISTS reject' },
     { id: 'Xds3zN', name: 'Raymarching Primitives', by: 'iq', g: 'Shadertoy', o: 6.625, n: 5.168, flip: 0.0090, eps: 0.01, d: '5D' },
     { id: '3lsSzf', name: 'Happy Jumping', by: 'iq', g: 'Shadertoy', o: 5.602, n: 4.560, flip: 0.0021, eps: 0.01, d: '1D' },
     { id: 'XdsGDB', name: 'Buoy', by: 'TekF', g: 'Shadertoy', o: 3.694, n: 3.059, flip: 0.0111, eps: 0.01, d: '5D' },
@@ -35,7 +34,6 @@
   SCENES.forEach(function (s) { s.sp = s.o / s.n; });
 
   function report(s) { return 'sup/' + s.id + '/live_report.html'; }
-  function tree(s) { return 'sup/' + s.id + '/mutation_tree.html'; }
 
   function initPlayer() {
     var v = $('pv'), chips = $('pchips');
@@ -48,7 +46,8 @@
         chips.appendChild(g); groups[s.g] = g.lastChild;
       }
       var b = document.createElement('button'); b.className = 'chip'; b.dataset.i = i;
-      b.innerHTML = '<img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""><span>' + s.name + ' <b>' + fmt(s.sp, 2) + '&times;</b></span>';
+      var nm = s.name.length > 9 ? s.name.slice(0, 8).replace(/\s+$/, '') + '\u2026' : s.name;
+      b.title = s.name; b.innerHTML = '<img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""><span>' + nm + ' <b>' + fmt(s.sp, 2) + '&times;</b></span>';
       b.addEventListener('click', function () { show(i); });
       groups[s.g].appendChild(b);
     });
@@ -88,16 +87,11 @@
     cv.addEventListener('pointerdown', function (e) { dragging = true; setSplit(e); });
     window.addEventListener('pointerup', function () { dragging = false; });
     cv.addEventListener('pointermove', function (e) { if (dragging || e.pointerType === 'mouse') setSplit(e); });
-    [].forEach.call($('pmode').querySelectorAll('button'), function (b) {
-      b.addEventListener('click', function () {
-        mode = b.dataset.m;
-        [].forEach.call(b.parentNode.children, function (c) { c.classList.toggle('on', c === b); });
-        stage.classList.toggle('wipe', mode === 'wipe');
-        var cols = $('pcols');
-        cols.classList.toggle('two', mode === 'wipe');
-        cols.innerHTML = mode === 'wipe' ? '<span>&larr; Original</span><span class="o">Optimized &rarr;</span>' : '<span>Original</span><span class="o">Optimized</span><span>FLIP error</span>';
-        $('pamp').disabled = mode === 'wipe';
-      });
+    var playing = true, PAUSE = '<path d="M7 5h3v14H7zm7 0h3v14h-3z"/>', PLAY = '<path d="M8 5v14l11-7z"/>';
+    $('pplay').addEventListener('click', function () {
+      playing = !playing;
+      if (playing) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } else v.pause();
+      this.querySelector('svg').innerHTML = playing ? PAUSE : PLAY; this.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
     });
     $('pamp').addEventListener('change', function (e) { amp = e.target.checked; });
     requestAnimationFrame(draw);
@@ -105,24 +99,23 @@
       var s = SCENES[i];
       v.poster = poster.src = 'static/videos/clips/' + s.id + '.jpg';
       v.src = 'static/videos/clips/' + s.id + '.mp4';
-      var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
-      $('pname').innerHTML = s.name + '<small>' + s.g + (s.g === 'Shadertoy' ? ' ' + s.id + ' by ' + s.by : ' &middot; ' + s.by) + '</small>';
-      $('pnums').innerHTML = '<span><b>' + fmt(s.o, 2) + '</b> &rarr; <b>' + fmt(s.n, 2) + ' ms</b></span>' +
+      if (playing) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      $('pname').innerHTML = s.name + '<small>' + s.g + '</small>';
+      $('pnums').innerHTML = '<span>' + fmt(s.o, 2) + ' &rarr; <b>' + fmt(s.n, 2) + ' ms</b></span>' +
         '<span><b class="sp">' + fmt(s.sp, 2) + '&times;</b></span>' +
-        '<span>worst FLIP <b>' + fmt(s.flip, 4) + '</b> at &epsilon; = ' + s.eps + '</span>' +
-        (s.note ? '<span class="bad" style="font-weight:400">' + s.note + '</span>' : '') +
-        '<span><a href="' + report(s) + '">report</a> &middot; <a href="' + tree(s) + '">tree</a></span>';
+        '<span>FLIP <b>' + fmt(s.flip, 3) + '</b></span>' +
+        '<span><a href="' + report(s) + '">report</a></span>';
       [].forEach.call(chips.querySelectorAll('.chip'), function (c) { c.classList.toggle('on', +c.dataset.i === i); });
     }
     show(0);
 
     var tb = $('rep-table'), last = '';
-    var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th>Open</th></tr>';
+    var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th></th></tr>';
     SCENES.forEach(function (s) {
       if (s.g !== last) { h += '<tr class="grp"><td colspan="7">' + s.g + ' <span style="text-transform:none;letter-spacing:0">&middot; &epsilon; = ' + s.eps + '</span></td></tr>'; last = s.g; }
       h += '<tr><td><img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""></td><td>' + s.name + ' <span class="mono" style="color:var(--faint)">' + (s.g === 'Shadertoy' ? s.id : '') + '</span></td>' +
         '<td class="num">' + fmt(s.o, 2) + ' ms</td><td class="num">' + fmt(s.n, 2) + ' ms</td><td class="num sp">' + fmt(s.sp, 2) + '&times;</td><td class="num">' + fmt(s.flip, 4) + '</td>' +
-        '<td><a href="' + report(s) + '">report</a><a href="' + tree(s) + '">mutation tree</a></td></tr>';
+        '<td><a href="' + report(s) + '">report</a></td></tr>';
     });
     tb.innerHTML = h;
   }
@@ -136,7 +129,7 @@
       { u: 'iMouse.x', f: function (r) { return Math.round(640 * r) + ' px'; }, note: 'orbits the camera around the buoy' },
       { u: 'iMouse.y', f: function (r) { return Math.round(360 * r) + ' px'; }, note: 'raises or lowers the camera' }
     ];
-    var r = [0.30, 0.12, 0.30], samples = [], split = [0.40, 0.70];
+    var r = [0.30, 0.12, 0.30], samples = [], split = [0.40, 0.70], touched = false, sweep = null;
     // oblique projection of the first three axes
     var O = [62, 236], EX = [196, 0], EZ = [62, -46], EY = [0, -170];
     function P(a, b, c) { return [O[0] + a * EX[0] + b * EZ[0] + c * EY[0], O[1] + a * EX[1] + b * EZ[1] + c * EY[1]]; }
@@ -177,6 +170,11 @@
       el('line', { x1: fl[0], y1: fl[1], x2: az[0], y2: az[1], stroke: C.ours, 'stroke-opacity': 0.5, 'stroke-dasharray': '3 2' }, svg);
       el('circle', { cx: fl[0], cy: fl[1], r: 2.5, fill: C.ours, 'fill-opacity': 0.5 }, svg);
       el('circle', { cx: p[0], cy: p[1], r: 7, fill: C.ours, stroke: '#fff', 'stroke-width': 2 }, svg);
+      if (!touched) {
+        var hx = p[0] + 9, hy = p[1] + 6, hg = el('g', { transform: 'translate(' + hx + ',' + hy + ') scale(0.9)', opacity: 0.85 }, svg);
+        el('path', { d: 'M0 0 L0 15 L4 11 L7 18 L10 17 L7 10 L12 10 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 1.2, 'stroke-linejoin': 'round' }, hg);
+        el('text', { x: 15, y: 15, 'font-size': 11, fill: C.mute }, hg, 'drag');
+      }
     }
     // one row per coordinate: slider, value, renderer uniform, meaning
     var rows = $('cube-rows');
@@ -184,7 +182,7 @@
       var row = document.createElement('label'); row.className = 'cube-row';
       row.innerHTML = '<i>r<sub>' + (i + 1) + '</sub></i><input type="range" min="0" max="1" step="0.001" id="cube-r' + i + '" aria-label="r' + (i + 1) + '"><output></output><span class="u"></span><span class="n">' + d.note + '</span>';
       rows.appendChild(row);
-      row.querySelector('input').addEventListener('input', function (e) { r[i] = +e.target.value; update(); });
+      row.querySelector('input').addEventListener('input', function (e) { touch(); r[i] = +e.target.value; update(); });
     });
     function updateUI() {
       DIMS.forEach(function (d, i) {
@@ -204,10 +202,12 @@
       var a = (bx * EZ[1] - by * EZ[0]) / det, c = (EX[0] * by - EX[1] * bx) / det;
       r[0] = Math.max(0, Math.min(1, a)); r[1] = Math.max(0, Math.min(1, c)); update();
     }
-    svg.addEventListener('pointerdown', function (e) { dragging = true; svg.classList.add('drag'); svg.setPointerCapture(e.pointerId); toCube(e); });
+    function touch() { touched = true; if (sweep) { cancelAnimationFrame(sweep); sweep = null; } }
+    svg.addEventListener('pointerdown', function (e) { touch(); dragging = true; svg.classList.add('drag'); svg.setPointerCapture(e.pointerId); toCube(e); });
     svg.addEventListener('pointermove', function (e) { if (dragging) toCube(e); });
     svg.addEventListener('pointerup', function () { dragging = false; svg.classList.remove('drag'); });
     $('cube-sample').addEventListener('click', function () {
+      touch();
       samples.push(r.slice(0, 3)); if (samples.length > 40) samples.shift();
       for (var i = 0; i < 3; i++) r[i] = Math.random();
       update();
@@ -300,7 +300,7 @@
             try {
               progs[0] = program(wrap(src[0])); progs[1] = program(wrap(src[1])); show = program(SHOW);
               fbs = [target(), target()]; noise = noiseTex(); ready = true; status('');
-              $('cube-fallback').hidden = true; placeLabels(); requestRender();
+              $('cube-fallback').hidden = true; placeLabels(); requestRender(); intro();
             } catch (err) { status('Could not compile the shader here; showing a pre-rendered frame.'); }
           }, 30);
         }).catch(function () { status('Could not load the shader; showing a pre-rendered frame.'); });
@@ -331,6 +331,20 @@
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
     function requestRender() { if (!pending) { pending = true; requestAnimationFrame(render); } }
+    // first view: move the point along the time axis for a few seconds, then hand over to the reader
+    function intro() {
+      if (touched || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+      var r0 = r[0], t0 = null, last = -1e9, DUR = 5000;
+      function f(ts) {
+        if (touched) return;
+        if (t0 === null) t0 = ts;
+        var k = Math.min(1, (ts - t0) / DUR);
+        // about 8 updates per second: each update renders two ray-marched frames
+        if (ts - last > 120 || k === 1) { last = ts; r[0] = r0 + 0.22 * Math.sin(Math.PI * k); update(); }
+        sweep = k < 1 ? requestAnimationFrame(f) : null;
+      }
+      sweep = requestAnimationFrame(f);
+    }
     update(); placeLabels();
     // compile lazily, once the figure is close to the viewport
     if ('IntersectionObserver' in window) {
@@ -400,7 +414,8 @@
       clear(over);
       if (sel < 0) return;
       var c = chain(sel), pts = c.map(function (i) { return [X(D[i].s), Y(D[i].b)]; });
-      el('polyline', { points: pts.map(function (q) { return q.join(','); }).join(' '), fill: 'none', stroke: C.ink, 'stroke-width': 1.6 }, over);
+      var sp = 'M' + pts[0][0] + ',' + pts[0][1]; for (var q = 1; q < pts.length; q++) sp += ' H' + pts[q][0].toFixed(1) + ' V' + pts[q][1].toFixed(1);
+      el('path', { d: sp, fill: 'none', stroke: C.ink, 'stroke-width': 1.6 }, over);
       c.forEach(function (i, k) {
         var d = D[i], last = k === c.length - 1;
         el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 7 : 4.5, fill: last ? C.ours : '#fff', stroke: C.ink, 'stroke-width': last ? 2 : 1.6 }, over);
@@ -589,6 +604,12 @@
     });
     $('seq-reset').addEventListener('click', function () { seed = 1 + Math.floor(Math.random() * 1e6); complete(); });
     complete();
+    if ('IntersectionObserver' in window) {
+      var seen = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { seen.disconnect(); if (!timer) $('seq-run').click(); }
+      }, { threshold: 0.5 });
+      seen.observe($('seq'));
+    }
   }
 
   /* ================= renders needed vs gamma ================= */
@@ -712,11 +733,11 @@
     var svg = $('lod-plot');
     function draw(i) {
       var d = D[i];
-      $('lod-o').textContent = d[0].toFixed(2);
+      $('lod-o').textContent = 'LOD ' + i;
       $('lod-r').src = 'static/img/lod/render_' + i + '.jpg';
       $('lod-f').src = 'static/img/lod/flip_' + i + '.jpg';
       $('lod-fc').textContent = 'FLIP error · ' + d[4].toFixed(4);
-      $('lod-read').innerHTML = '<span>11.5 &rarr; <b>' + d[1] + ' ms</b></span><span><b style="color:var(--ours)">' + d[2].toFixed(2) + '&times;</b></span><span>accepted <b>' + d[3] + '%</b> of candidates</span>';
+      $('lod-read').innerHTML = '<span>&epsilon; = <b>' + d[0].toFixed(2) + '</b></span><span>11.5 &rarr; <b>' + d[1] + ' ms</b></span><span><b style="color:var(--ours)">' + d[2].toFixed(2) + '&times;</b></span><span>accepted <b>' + d[3] + '%</b> of candidates</span>';
       clear(svg);
       var L = 40, R = 290, T1 = 26, B1 = 108, T2 = 140, B2 = 200, bw = 36;
       function X(j) { return L + 24 + (R - L - 48) * j / 3; }
@@ -741,6 +762,15 @@
       el('text', { x: (L + R) / 2, y: B2 + 31, class: 'tick', 'text-anchor': 'middle' }, svg, 'error threshold \u03B5');
     }
     s.addEventListener('input', function () { draw(+s.value); });
+    // swipe or drag across the images to step through the levels of detail
+    var imgs = $('lod-imgs'), x0 = null, v0 = 0;
+    imgs.addEventListener('pointerdown', function (e) { x0 = e.clientX; v0 = +s.value; imgs.setPointerCapture(e.pointerId); });
+    imgs.addEventListener('pointermove', function (e) {
+      if (x0 === null) return;
+      var step = Math.round((e.clientX - x0) / Math.max(40, imgs.clientWidth / 8)), nv = Math.max(0, Math.min(3, v0 + step));
+      if (nv !== +s.value) { s.value = nv; draw(nv); }
+    });
+    imgs.addEventListener('pointerup', function () { x0 = null; });
     draw(+s.value);
   }
 
@@ -753,5 +783,18 @@
     });
   }
 
+  (function () {
+    var ov = $('ov'); if (!ov || !('IntersectionObserver' in window)) return;
+    var userCtl = false;
+    ov.addEventListener('pause', function () { if (!auto) userCtl = true; });
+    ov.addEventListener('play', function () { if (!auto) userCtl = true; });
+    var auto = false;
+    new IntersectionObserver(function (es) {
+      if (userCtl) return;
+      auto = true;
+      if (es[0].isIntersecting) { var pr = ov.play(); if (pr && pr.catch) pr.catch(function () {}); } else ov.pause();
+      setTimeout(function () { auto = false; }, 300);
+    }, { threshold: 0.5 }).observe(ov);
+  })();
   initPlayer(); initCube(); initTabs(); initTree(); initFrames(); initSeq(); initSpeed(); initSave(); initLive(); initLOD(); initBib();
 })();
