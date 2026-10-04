@@ -111,10 +111,15 @@
       For rendering, correctness is perceptual, depends on viewing conditions, and can only be sampled. So we build the system around the validator.</p>
 
     <figure class="fig wide">
-      <svg viewBox="0 0 1000 326" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator with trust-guided threshold, profiler, feedback to population">
+      <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker>
           <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d9711c"/></marker>
+          <clipPath id="mc-ref"><rect x="578" y="50" width="72" height="40.5" rx="4"/></clipPath>
+          <clipPath id="mc-cand"><rect x="578" y="96" width="72" height="40.5" rx="4"/></clipPath>
+          <clipPath id="mc-flip"><rect x="672" y="73" width="72" height="40.5" rx="4"/></clipPath>
+          <clipPath id="mc-tau"><rect x="760" y="50" width="42" height="80"/></clipPath>
+          <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3366b0"/><stop offset="1" stop-color="#d9711c"/></linearGradient>
         </defs>
         <g font-size="11.5" fill="#5b616b" text-anchor="middle">
           <!-- program -->
@@ -134,54 +139,104 @@
           <text x="396" y="112">proposes a</text>
           <text x="396" y="127">code patch</text>
           <!-- validator -->
-          <rect x="496" y="18" width="344" height="172" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
-          <text x="668" y="42" font-size="14" font-weight="600" fill="#1f2328">Bayesian sequential validator <tspan fill="#d9711c">(ours)</tspan></text>
+          <rect x="496" y="14" width="344" height="214" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
+          <text x="668" y="36" font-size="14" font-weight="600" fill="#1f2328">Bayesian sequential validator <tspan fill="#d9711c">(ours)</tspan></text>
           <g>
-            <rect x="508" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
-            <text x="546" y="75" fill="#1f2328">sample <tspan font-style="italic">r</tspan></text>
-            <text x="546" y="91">&#8712; [0,1]<tspan font-size="8" dy="-5">D</tspan></text>
-            <rect x="592" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
-            <text x="630" y="75" fill="#1f2328">render ref.</text>
-            <text x="630" y="91">+ candidate</text>
-            <rect x="676" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
-            <text x="714" y="75" fill="#1f2328">FLIP &gt; <tspan font-style="italic">&#949;</tspan> ?</text>
-            <text x="714" y="91">exceedance</text>
-            <rect x="760" y="56" width="76" height="46" rx="7" fill="#fff" stroke="#e6cfb4"/>
-            <text x="798" y="75" fill="#1f2328">posterior</text>
-            <text x="798" y="91">over rate <tspan font-style="italic">p</tspan></text>
-            <path d="M584 79 H590" stroke="#b78a5c" marker-end="url(#aho)"/>
-            <path d="M668 79 H674" stroke="#b78a5c" marker-end="url(#aho)"/>
-            <path d="M752 79 H758" stroke="#b78a5c" marker-end="url(#aho)"/>
-            <path d="M798 102 V116 H546 V106" fill="none" stroke="#c9a47c" stroke-dasharray="3 3" marker-end="url(#aho)"/>
-            <text x="672" y="129" font-size="10.5" fill="#9a7a58">undecided: render the next batch</text>
+            <!-- PRPS cube with a sampled point -->
+            <g fill="none" stroke="#9a7a58" stroke-width="1.1">
+              <path d="M510 80 h30 v30 h-30z" fill="#fff"/>
+              <path d="M510 80 l12 -10 h30 l-12 10 M540 80 l12 -10 v30 l-12 10"/>
+              <path d="M522 70 v30 h30 M522 100 l-12 10" stroke-dasharray="2 2" stroke-opacity=".6"/>
+              <path d="M533 91 v11 M533 91 l-8 7" stroke="#d9711c" stroke-dasharray="2 2" stroke-width="1"/>
+            </g>
+            <circle cx="533" cy="91" r="4" fill="#d9711c" stroke="#fff" stroke-width="1.2"/>
+            <text x="531" y="128" fill="#1f2328">sample <tspan font-style="italic">r</tspan></text>
+            <text x="531" y="142">&#8712; [0,1]<tspan font-size="8" dy="-5">D</tspan></text>
+            <path d="M556 86 L574 72" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <path d="M556 96 L574 112" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <!-- two renders at r -->
+            <image href="static/img/lod/render_0.jpg" x="578" y="50" width="72" height="40.5" preserveAspectRatio="xMidYMid slice" clip-path="url(#mc-ref)"/>
+            <image href="static/img/lod/render_3.jpg" x="578" y="96" width="72" height="40.5" preserveAspectRatio="xMidYMid slice" clip-path="url(#mc-cand)"/>
+            <rect x="578" y="50" width="72" height="40.5" rx="4" fill="none" stroke="#e6cfb4"/>
+            <rect x="578" y="96" width="72" height="40.5" rx="4" fill="none" stroke="#d9711c" stroke-width="1.4"/>
+            <text x="614" y="47" font-size="10" fill="#1f2328">reference</text>
+            <text x="614" y="149" font-size="10" fill="#d9711c" font-weight="600">candidate</text>
+            <path d="M652 72 L668 86" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <path d="M652 114 L668 100" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <!-- FLIP map -->
+            <image href="static/img/lod/flip_3.jpg" x="672" y="73" width="72" height="40.5" preserveAspectRatio="xMidYMid slice" clip-path="url(#mc-flip)"/>
+            <rect x="672" y="73" width="72" height="40.5" rx="4" fill="none" stroke="#e6cfb4"/>
+            <text x="708" y="67" font-size="10" fill="#1f2328">FLIP error</text>
+            <text x="708" y="128" fill="#1f2328">&gt; <tspan font-style="italic">&#949;</tspan> ?</text>
+            <text x="708" y="142" font-size="10.5">exceedance</text>
+            <path d="M746 93 H756" stroke="#b78a5c" marker-end="url(#aho)"/>
+            <!-- posterior -->
+            <path d="M760 118 C766 118 770 62 778 62 C788 62 796 116 832 117 V118 Z" fill="#7fb48f" fill-opacity=".55" clip-path="url(#mc-tau)"/>
+            <path d="M760 118 C766 118 770 62 778 62 C788 62 796 116 832 117" fill="none" stroke="#1f2328" stroke-width="1.3"/>
+            <path d="M758 118.5 H834" stroke="#9a7a58"/>
+            <path d="M802 56 V118" stroke="#1f2328" stroke-dasharray="2 2"/>
+            <text x="805" y="62" font-size="10" text-anchor="start" font-style="italic" fill="#1f2328">&#964;</text>
+            <text x="796" y="128" fill="#1f2328">posterior</text>
+            <text x="796" y="142" font-size="10.5">over rate <tspan font-style="italic">p</tspan></text>
+            <path d="M836 134 V156 H531 V150" fill="none" stroke="#c9a47c" stroke-dasharray="3 3" marker-end="url(#aho)"/>
+            <text x="684" y="168" font-size="10.5" fill="#9a7a58">undecided: sample and render the next batch</text>
           </g>
-          <rect x="508" y="140" width="130" height="38" rx="7" fill="#e6f4ea" stroke="#2e8b57" stroke-width="1.5"/>
-          <text x="573" y="155" fill="#1d5e35" font-weight="600">SAFE &#8594; accept</text>
-          <text x="573" y="170" fill="#1d5e35" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8805; <tspan fill="#d9711c" font-weight="700" font-style="italic">&#947;<tspan font-size="8" dy="2">safe</tspan><tspan dy="-2">(i)</tspan></tspan></text>
-          <rect x="644" y="140" width="100" height="38" rx="7" fill="#fbe9e7" stroke="#c8423b"/>
-          <text x="694" y="155" fill="#8d2a24" font-weight="600">BAD &#8594; reject</text>
-          <text x="694" y="170" fill="#8d2a24" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8804; 0.01</text>
-          <rect x="750" y="140" width="86" height="38" rx="7" fill="#f1f1ef" stroke="#a9adb3"/>
-          <text x="793" y="155" fill="#4b4f55" font-weight="600">budget out</text>
-          <text x="793" y="170" fill="#4b4f55" font-size="10.5">&#8594; reject</text>
+          <rect x="508" y="178" width="130" height="38" rx="7" fill="#e6f4ea" stroke="#2e8b57" stroke-width="1.5"/>
+          <text x="573" y="193" fill="#1d5e35" font-weight="600">SAFE &#8594; accept</text>
+          <text x="573" y="208" fill="#1d5e35" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8805; <tspan fill="#d9711c" font-weight="700" font-style="italic">&#947;<tspan font-size="8" dy="2">safe</tspan><tspan dy="-2">(i)</tspan></tspan></text>
+          <rect x="644" y="178" width="100" height="38" rx="7" fill="#fbe9e7" stroke="#c8423b"/>
+          <text x="694" y="193" fill="#8d2a24" font-weight="600">BAD &#8594; reject</text>
+          <text x="694" y="208" fill="#8d2a24" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8804; 0.01</text>
+          <rect x="750" y="178" width="86" height="38" rx="7" fill="#f1f1ef" stroke="#a9adb3"/>
+          <text x="793" y="193" fill="#4b4f55" font-weight="600">budget out</text>
+          <text x="793" y="208" fill="#4b4f55" font-size="10.5">&#8594; reject</text>
           <!-- profiler -->
           <rect x="870" y="50" width="122" height="96" rx="10" fill="#fdf6dc" stroke="#e2c86b"/>
           <text x="931" y="90" font-size="14" font-weight="600" fill="#1f2328">Profiler</text>
           <text x="931" y="112">timing for SAFE</text>
           <text x="931" y="127">candidates only</text>
-          <!-- trust -->
-          <rect x="556" y="220" width="224" height="66" rx="10" fill="#fff" stroke="#d9711c" stroke-dasharray="5 3"/>
-          <text x="668" y="243" font-size="13" font-weight="600" fill="#1f2328">Trust-guided threshold <tspan fill="#d9711c">(ours)</tspan></text>
-          <text x="668" y="261">LLM mutation embeddings vs. history</text>
-          <text x="668" y="276">&#8594; per-candidate SAFE threshold</text>
+          <!-- trust: compact version of the figure in the next section -->
+          <rect x="520" y="262" width="300" height="96" rx="10" fill="#fff" stroke="#d9711c" stroke-dasharray="5 3"/>
+          <text x="670" y="281" font-size="13" font-weight="600" fill="#1f2328">Trust-guided threshold <tspan fill="#d9711c">(ours)</tspan></text>
+          <g>
+            <!-- diff -->
+            <rect x="532" y="292" width="44" height="40" rx="4" fill="#fff" stroke="#d9d9d4"/>
+            <rect x="533" y="297" width="42" height="7" fill="#fde8e7"/><rect x="536" y="299.5" width="24" height="2.5" rx="1.2" fill="#d98b85"/>
+            <rect x="533" y="304" width="42" height="7" fill="#e6f4ea"/><rect x="536" y="306.5" width="30" height="2.5" rx="1.2" fill="#7fb48f"/>
+            <rect x="536" y="316" width="20" height="2.5" rx="1.2" fill="#c9ccd1"/>
+            <rect x="533" y="321" width="42" height="7" fill="#e6f4ea"/><rect x="536" y="323.5" width="18" height="2.5" rx="1.2" fill="#7fb48f"/>
+            <text x="554" y="348" font-size="10">diff</text>
+            <path d="M578 312 H590" stroke="#7d8188" marker-end="url(#ah)"/>
+            <!-- four LLM views -->
+            <circle cx="600" cy="297" r="4" fill="#8a6bbf"/><circle cx="600" cy="307" r="4" fill="#3a8fc4"/>
+            <circle cx="600" cy="317" r="4" fill="#2e8b57"/><circle cx="600" cy="327" r="4" fill="#d9711c"/>
+            <text x="600" y="348" font-size="10">LLM views</text>
+            <path d="M610 312 H624" stroke="#7d8188" marker-end="url(#ah)"/>
+            <!-- contrast with history -->
+            <rect x="628" y="290" width="74" height="44" rx="4" fill="#fafaf8" stroke="#e1e1dc"/>
+            <line x1="656" y1="313" x2="645" y2="303" stroke="#2e8b57" stroke-width="1.3"/>
+            <line x1="656" y1="313" x2="684" y2="322" stroke="#c8423b" stroke-dasharray="2 2"/>
+            <g fill="#2e8b57"><circle cx="645" cy="303" r="2.8"/><circle cx="638" cy="314" r="2.8"/><circle cx="647" cy="324" r="2.8"/><circle cx="637" cy="298" r="2.8"/></g>
+            <g fill="#c8423b" fill-opacity=".85"><circle cx="684" cy="322" r="3.6"/><circle cx="690" cy="302" r="3"/><circle cx="677" cy="297" r="2.6"/><circle cx="694" cy="327" r="2.6"/></g>
+            <path d="M656 308 l1.6 3.4 3.7 .4 -2.8 2.5 .8 3.7 -3.3-1.9 -3.3 1.9 .8-3.7 -2.8-2.5 3.7-.4z" fill="#1f2328"/>
+            <text x="665" y="348" font-size="10">vs. <tspan fill="#2e8b57" font-weight="600">safe</tspan> / <tspan fill="#c8423b" font-weight="600">bad</tspan></text>
+            <path d="M704 312 H716" stroke="#7d8188" marker-end="url(#ah)"/>
+            <!-- threshold gauge -->
+            <rect x="722" y="291" width="9" height="44" rx="3" fill="url(#mg)"/>
+            <path d="M716 323 l6 3 -6 3z" fill="#1f2328"/>
+            <text x="737" y="299" text-anchor="start" font-size="10" fill="#3366b0">low trust &#183; 99%</text>
+            <text x="737" y="333" text-anchor="start" font-size="10" fill="#d9711c">high trust &#183; early</text>
+            <text x="776" y="316" font-size="10" font-style="italic" fill="#1f2328">&#947;<tspan font-size="7" dy="2">safe</tspan><tspan dy="-2">(i)</tspan></text>
+          </g>
           <!-- arrows -->
           <path d="M126 98 H153" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M296 98 H323" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M840 98 H867" stroke="#2e8b57" stroke-width="1.5" marker-end="url(#ah)"/>
-          <path d="M590 220 V182" stroke="#d9711c" stroke-width="2" marker-end="url(#aho)"/>
-          <text x="598" y="208" text-anchor="start" fill="#d9711c" font-style="italic" font-weight="600">sets &#947;<tspan font-size="8" dy="3">safe</tspan><tspan dy="-3">(i) per candidate</tspan></text>
-          <path d="M820 190 V253 H783" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
-          <text x="826" y="222" text-anchor="start">labels, rates</text>
+          <path d="M573 262 V220" stroke="#d9711c" stroke-width="2" marker-end="url(#aho)"/>
+          <text x="581" y="246" text-anchor="start" fill="#d9711c" font-style="italic" font-weight="600">sets &#947;<tspan font-size="8" dy="3">safe</tspan><tspan dy="-3">(i) per candidate</tspan></text>
+          <path d="M830 228 V310 H823" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
+          <text x="836" y="262" text-anchor="start">labels,</text>
+          <text x="836" y="276" text-anchor="start">rates</text>
           <g>
             <rect x="346" y="158" width="100" height="50" rx="5" fill="#fff" stroke="#d9d9d4"/>
             <rect x="347" y="165" width="98" height="8" fill="#fde8e7"/><rect x="352" y="167.5" width="52" height="3" rx="1.5" fill="#d98b85"/>
@@ -193,9 +248,9 @@
           <path d="M396 146 V156" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M446 183 H478 V98 H493" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
           <circle cx="446" cy="183" r="2.5" fill="#7d8188"/>
-          <path d="M396 226 V253 H553" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
-          <path d="M931 146 V300 H226 V149" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
-          <text x="578" y="318">accepted program with its render time and error &#8594; population</text>
+          <path d="M396 226 V312 H517" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M931 146 V378 H226 V149" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+          <text x="578" y="394">accepted program with its render time and error &#8594; population</text>
         </g>
       </svg>
     </figure>
