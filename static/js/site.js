@@ -110,7 +110,7 @@
     show(0);
 
     var tb = $('rep-table'), last = '';
-    var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th class="num">LLM</th><th class="num">GPU</th></tr>';
+    var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th class="num">LLM</th><th class="num">GPUs</th></tr>';
     SCENES.forEach(function (s) {
       if (s.g !== last) { h += '<tr class="grp"><td colspan="8">' + s.g + ' <span style="text-transform:none;letter-spacing:0">&middot; &epsilon; = ' + s.eps + '</span></td></tr>'; last = s.g; }
       h += '<tr><td><img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""></td><td>' + s.name + ' <span class="mono" style="color:var(--faint)">' + (s.g === 'Shadertoy' ? s.id : '') + '</span><span class="by">by ' + s.by + '</span></td>' +
