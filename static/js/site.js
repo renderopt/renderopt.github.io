@@ -104,7 +104,7 @@
       $('pnums').innerHTML = '<span>' + fmt(s.o, 2) + ' &rarr; <b>' + fmt(s.n, 2) + ' ms</b></span>' +
         '<span><b class="sp">' + fmt(s.sp, 2) + '&times;</b></span>' +
         '<span>FLIP <b>' + fmt(s.flip, 3) + '</b></span>' +
-        '<span title="Cost of the whole optimization session">' + usd(s.llm) + ' LLM &middot; ' + usd(s.gpu) + ' GPU</span>';
+        '<span title="Cost of the whole optimization session">' + usd(s.llm) + ' LLM &middot; ' + usd(s.gpu) + ' GPUs</span>';
       [].forEach.call(chips.querySelectorAll('.chip'), function (c) { c.classList.toggle('on', +c.dataset.i === i); });
     }
     show(0);
