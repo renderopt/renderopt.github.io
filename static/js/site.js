@@ -18,22 +18,22 @@
 
   /* ================= scene player ================= */
   var SCENES = [
-    { id: '4ltfDr', name: 'traveler.', by: 'kaneta', g: 'Shadertoy', o: 7.944, n: 4.701, flip: 0.0060, eps: 0.01, d: '1D' },
-    { id: 'Xds3zN', name: 'Raymarching Primitives', by: 'iq', g: 'Shadertoy', o: 6.625, n: 5.168, flip: 0.0090, eps: 0.01, d: '5D' },
-    { id: '3lsSzf', name: 'Happy Jumping', by: 'iq', g: 'Shadertoy', o: 5.602, n: 4.560, flip: 0.0021, eps: 0.01, d: '1D' },
-    { id: 'XdsGDB', name: 'Buoy', by: 'TekF', g: 'Shadertoy', o: 3.694, n: 3.059, flip: 0.0111, eps: 0.01, d: '5D' },
-    { id: '3sc3z4', name: 'GLSL Ray Tracing Test', by: 'colin299', g: 'Shadertoy', o: 7.280, n: 6.408, flip: 0.0093, eps: 0.01, d: '5D' },
-    { id: 'Mss3zM', name: 'Insect', by: 'iq', g: 'Shadertoy', o: 6.856, n: 6.131, flip: 0.0195, eps: 0.01, d: '5D' },
-    { id: '4sX3Rn', name: 'Menger Sponge', by: 'iq', g: 'Shadertoy', o: 2.205, n: 2.004, flip: 0.0000, eps: 0.01, d: '5D' },
-    { id: 'lsf3zr', name: 'Columns and Lights', by: 'iq', g: 'Shadertoy', o: 4.552, n: 4.229, flip: 0.0088, eps: 0.01, d: '5D' },
-    { id: 'ssil', name: 'SSIL render pass', by: 'Godot TPS demo, 4 GLSL stages', g: 'Godot', o: 4.036, n: 2.433, flip: 0.1065, eps: 0.1, d: '7D' },
-    { id: 'black_hole_2', name: 'Black hole shader', by: 'Godot planets scene', g: 'Godot', o: 5.598, n: 4.780, flip: 0.0878, eps: 0.1, d: '7D' },
-    { id: 'brick', name: 'Bricks', by: 'procedural MaterialX', g: 'MaterialX', o: 1.337, n: 0.926, flip: 0.0737, eps: 0.05, d: 'up to 34D' },
-    { id: 'carpaint', name: 'Car Paint', by: 'MaterialX', g: 'MaterialX', o: 2.152, n: 1.676, flip: 0.0592, eps: 0.05, d: 'up to 34D' }
+    { id: '4ltfDr', llm: 2.95, gpu: 1.58, name: 'traveler.', by: 'kaneta', g: 'Shadertoy', o: 7.944, n: 4.701, flip: 0.0060, eps: 0.01, d: '1D' },
+    { id: 'Xds3zN', llm: 3.44, gpu: 1.27, name: 'Raymarching Primitives', by: 'iq', g: 'Shadertoy', o: 6.625, n: 5.168, flip: 0.0090, eps: 0.01, d: '5D' },
+    { id: '3lsSzf', llm: 2.90, gpu: 0.94, name: 'Happy Jumping', by: 'iq', g: 'Shadertoy', o: 5.602, n: 4.560, flip: 0.0021, eps: 0.01, d: '1D' },
+    { id: 'XdsGDB', llm: 2.94, gpu: 1.29, name: 'Buoy', by: 'TekF', g: 'Shadertoy', o: 3.694, n: 3.059, flip: 0.0111, eps: 0.01, d: '5D' },
+    { id: '3sc3z4', llm: 3.21, gpu: 0.69, name: 'GLSL Ray Tracing Test', by: 'colin299', g: 'Shadertoy', o: 7.280, n: 6.408, flip: 0.0093, eps: 0.01, d: '5D' },
+    { id: 'Mss3zM', llm: 2.31, gpu: 0.57, name: 'Insect', by: 'iq', g: 'Shadertoy', o: 6.856, n: 6.131, flip: 0.0195, eps: 0.01, d: '5D' },
+    { id: '4sX3Rn', llm: 2.47, gpu: 0.77, name: 'Menger Sponge', by: 'iq', g: 'Shadertoy', o: 2.205, n: 2.004, flip: 0.0000, eps: 0.01, d: '5D' },
+    { id: 'lsf3zr', llm: 3.44, gpu: 1.13, name: 'Columns and Lights', by: 'iq', g: 'Shadertoy', o: 4.552, n: 4.229, flip: 0.0088, eps: 0.01, d: '5D' },
+    { id: 'ssil', llm: 3.58, gpu: 1.20, name: 'SSIL render pass', by: 'Godot Engine', g: 'Godot', o: 4.036, n: 2.433, flip: 0.1065, eps: 0.1, d: '7D' },
+    { id: 'black_hole_2', llm: 1.79, gpu: 0.85, name: 'Black hole shader', by: 'HyperJragon', g: 'Godot', o: 5.598, n: 4.780, flip: 0.0878, eps: 0.1, d: '7D' },
+    { id: 'brick', llm: 7.74, gpu: 7.44, name: 'Bricks', by: 'MaterialX Project', g: 'MaterialX', o: 1.337, n: 0.926, flip: 0.0737, eps: 0.05, d: 'up to 34D' },
+    { id: 'carpaint', llm: 8.75, gpu: 7.28, name: 'Car Paint', by: 'MaterialX Project', g: 'MaterialX', o: 2.152, n: 1.676, flip: 0.0592, eps: 0.05, d: 'up to 34D' }
   ];
   SCENES.forEach(function (s) { s.sp = s.o / s.n; });
 
-  function report(s) { return 'sup/' + s.id + '/live_report.html'; }
+  function usd(x) { return '$' + x.toFixed(2); }
 
   function initPlayer() {
     var v = $('pv'), chips = $('pchips');
@@ -104,18 +104,18 @@
       $('pnums').innerHTML = '<span>' + fmt(s.o, 2) + ' &rarr; <b>' + fmt(s.n, 2) + ' ms</b></span>' +
         '<span><b class="sp">' + fmt(s.sp, 2) + '&times;</b></span>' +
         '<span>FLIP <b>' + fmt(s.flip, 3) + '</b></span>' +
-        '<span><a href="' + report(s) + '">report</a></span>';
+        '<span title="Cost of the whole optimization session">' + usd(s.llm) + ' LLM &middot; ' + usd(s.gpu) + ' GPU</span>';
       [].forEach.call(chips.querySelectorAll('.chip'), function (c) { c.classList.toggle('on', +c.dataset.i === i); });
     }
     show(0);
 
     var tb = $('rep-table'), last = '';
-    var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th></th></tr>';
+    var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th class="num">LLM</th><th class="num">GPU</th></tr>';
     SCENES.forEach(function (s) {
-      if (s.g !== last) { h += '<tr class="grp"><td colspan="7">' + s.g + ' <span style="text-transform:none;letter-spacing:0">&middot; &epsilon; = ' + s.eps + '</span></td></tr>'; last = s.g; }
-      h += '<tr><td><img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""></td><td>' + s.name + ' <span class="mono" style="color:var(--faint)">' + (s.g === 'Shadertoy' ? s.id : '') + '</span></td>' +
+      if (s.g !== last) { h += '<tr class="grp"><td colspan="8">' + s.g + ' <span style="text-transform:none;letter-spacing:0">&middot; &epsilon; = ' + s.eps + '</span></td></tr>'; last = s.g; }
+      h += '<tr><td><img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""></td><td>' + s.name + ' <span class="mono" style="color:var(--faint)">' + (s.g === 'Shadertoy' ? s.id : '') + '</span><span class="by">by ' + s.by + '</span></td>' +
         '<td class="num">' + fmt(s.o, 2) + ' ms</td><td class="num">' + fmt(s.n, 2) + ' ms</td><td class="num sp">' + fmt(s.sp, 2) + '&times;</td><td class="num">' + fmt(s.flip, 4) + '</td>' +
-        '<td><a href="' + report(s) + '">report</a></td></tr>';
+        '<td class="num">' + usd(s.llm) + '</td><td class="num">' + usd(s.gpu) + '</td></tr>';
     });
     tb.innerHTML = h;
   }
@@ -654,7 +654,7 @@
   function initSpeed() {
     var svg = $('speed-plot'); if (!svg) return;
     var data = [
-      ['Shadertoy', [['Multiple Transparency', 'XtyGWD', 2.19], ['traveler.', '4ltfDr', 1.68], ['Journey Desert', 'ldlcRf', 1.51], ['Raymarching Primitives', 'Xds3zN', 1.28], ['Happy Jumping', '3lsSzf', 1.23], ['Buoy', 'XdsGDB', 1.21], ['GLSL Ray Tracing Test', '3sc3z4', 1.14], ['Insect', 'Mss3zM', 1.12], ['Menger Sponge', '4sX3Rn', 1.10], ['Columns and Lights', 'lsf3zr', 1.07]], 'ε = 0.01'],
+      ['Shadertoy', [['Multiple Transparency', 'XtyGWD', 2.19], ['traveler.', '4ltfDr', 1.68], ['Tribute - Journey!', 'ldlcRf', 1.51], ['Raymarching Primitives', 'Xds3zN', 1.28], ['Happy Jumping', '3lsSzf', 1.23], ['Buoy', 'XdsGDB', 1.21], ['GLSL Ray Tracing Test', '3sc3z4', 1.14], ['Insect', 'Mss3zM', 1.12], ['Menger Sponge', '4sX3Rn', 1.10], ['Columns and Lights', 'lsf3zr', 1.07]], 'ε = 0.01'],
       ['MaterialX', [['Linen', '', 1.89], ['Bricks', '', 1.79], ['Car Paint', '', 1.47]], 'ε = 0.05'],
       ['Godot', [['SSIL render pass', 'engine', 1.70], ['Black hole shader', 'artistic', 1.17]], 'ε = 0.1']
     ];

@@ -274,3 +274,12 @@ button.ghost { border: 0; background: none; padding: 2px 0; font: inherit; font-
 button.ghost:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .lod-imgs { cursor: ew-resize; touch-action: pan-y; user-select: none; }
 .lod-imgs img { pointer-events: none; }
+
+/* credits */
+.credits { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 8px; font-size: 14px; line-height: 1.55; color: #33383e; }
+.credits h3 { font-size: 15px; margin: 0 0 6px; }
+.credits ul { margin: 0 0 16px; padding-left: 18px; }
+.credits li { margin-bottom: 5px; }
+.credits .note { font-size: 13px; color: var(--mute); margin: 0; }
+table.rep td .by { display: block; font-size: 12px; color: var(--faint); }
+@media (max-width: 820px) { .credits { grid-template-columns: 1fr; gap: 6px; } }

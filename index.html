@@ -44,14 +44,14 @@
   <div class="buttons">
     <span class="btn disabled" title="Coming soon"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6zM14 3v5h5"/></svg>Paper <small>(soon)</small></span>
     <a class="btn" href="#video"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Video</a>
-    <a class="btn" href="#reports"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg>Reports</a>
+    <a class="btn" href="#reports"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg>Scenes</a>
     <a class="btn" href="https://bwsyncandshare.kit.edu/s/AoYJ4XGpS4JPqcR"><svg viewBox="0 0 24 24"><path d="M11 3h2v10l3.5-3.5 1.4 1.4L12 16.8l-5.9-5.9 1.4-1.4L11 13zM4 18h16v3H4z"/></svg>Supplementary <small>(326 MB)</small></a>
     <a class="btn" href="#bibtex"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5zm3 6h8v2H8zm0 4h8v2H8z"/></svg>BibTeX</a>
   </div>
 </header>
 
 <nav class="topnav"><div class="container">
-  <a href="#abstract">Abstract</a><a href="#video">Video</a><a href="#method">Method</a><a href="#trust">Trust</a><a href="#results">Results</a><a href="#reports">Reports</a><a href="#bibtex">BibTeX</a>
+  <a href="#abstract">Abstract</a><a href="#video">Video</a><a href="#method">Method</a><a href="#trust">Trust</a><a href="#results">Results</a><a href="#reports">Scenes</a><a href="#ack">Credits</a><a href="#bibtex">BibTeX</a>
 </div></nav>
 
 <!-- ======================= FIGURE 1: PLAYER ======================= -->
@@ -108,7 +108,8 @@
   <div class="container">
     <h2>Method</h2>
     <p class="lead">The search loop follows FunSearch and AlphaEvolve: an LLM proposes patches, and an island-based evolution keeps the fast ones.
-      For rendering, correctness is perceptual, depends on viewing conditions, and can only be sampled. So we build the system around the validator.</p>
+      For rendering, correctness is perceptual, depends on viewing conditions, and can only be sampled. So we build the system around the validator.
+      Rendering runs on our own distributed render system, scaled to up to 64 RTX&nbsp;3060 GPUs rented on <a href="https://vast.ai">Vast.ai</a>.</p>
 
     <figure class="fig wide">
       <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
@@ -297,7 +298,7 @@
     <p class="lead">Clearly bad candidates are rejected within tens of frames. A few borderline ones, failing on 1&ndash;5% of conditions, need hundreds &mdash;
       and under one fixed 99% threshold every <i>safe</i> candidate pays that price: 916 renders.</p>
 
-    <figure class="fig narrow-fig">
+    <figure class="fig narrow-fig" hidden>
       <p class="panel-title">Renders needed to accept a clean candidate</p>
       <svg id="frames-plot" class="plot" viewBox="0 0 470 280"></svg>
     </figure>
@@ -466,13 +467,56 @@
 <!-- ======================= REPORTS ======================= -->
 <section id="reports">
   <div class="container">
-    <h2>Interactive reports</h2>
-    <p class="lead">Each released session has a live report with timings, error distribution, the full diff and its generation history.</p>
+    <h2>Per-scene results</h2>
+    <p class="lead">Best accepted program per scene, with what the whole optimization session cost: LLM API calls and rented GPU time for rendering and validation.</p>
     <div class="tbl-wrap"><table class="rep" id="rep-table"></table></div>
 
   </div>
 </section>
 
+
+<!-- ======================= ACKNOWLEDGEMENTS ======================= -->
+<section id="ack">
+  <div class="container">
+    <h2>Acknowledgements</h2>
+    <p class="lead">We thank Jo for taking part in the discussions that shaped this project, our student Ilya for the early studies,
+      Kirill Bazhenov for his help in connecting us with industry, and Angelo Pesce (Roblox) for his feedback from the industry perspective.</p>
+    <p class="lead">We are especially grateful to <b>Inigo Quilez</b>, who kindly granted us permission to use his shaders in this work,
+      and to all Shadertoy, Godot and MaterialX authors whose work we build on. All shaders remain the property of their authors;
+      their licenses are listed below.</p>
+
+    <div class="credits">
+      <div>
+        <h3>Shadertoy</h3>
+        <ul>
+          <li><b>Inigo Quilez</b> (iq): <a href="https://www.shadertoy.com/view/Xds3zN">Raymarching Primitives</a> and <a href="https://www.shadertoy.com/view/4sX3Rn">Menger Sponge</a> (MIT);
+            <a href="https://www.shadertoy.com/view/3lsSzf">Happy Jumping</a>, <a href="https://www.shadertoy.com/view/Mss3zM">Insect</a>, <a href="https://www.shadertoy.com/view/lsf3zr">Columns and Lights</a>, <a href="https://www.shadertoy.com/view/NtlSDs">Slisesix</a> (&copy; Inigo Quilez, all rights reserved; used with his permission)</li>
+          <li><b>kaneta</b>: <a href="https://www.shadertoy.com/view/4ltfDr">traveler.</a></li>
+          <li><b>TekF</b>: <a href="https://www.shadertoy.com/view/XdsGDB">Buoy</a> (CC BY-NC-SA 3.0)</li>
+          <li><b>Colin Leung</b> (colin299): <a href="https://www.shadertoy.com/view/3sc3z4">GLSL ray tracing test</a></li>
+          <li><b>P_Malin</b>: <a href="https://www.shadertoy.com/view/XtyGWD">Multiple Transparency</a></li>
+          <li><b>Shakemayster</b>: <a href="https://www.shadertoy.com/view/ldlcRf">Tribute &ndash; Journey!</a></li>
+        </ul>
+        <p class="note">Shadertoy shaders without an explicit license fall under Shadertoy's default CC BY-NC-SA 3.0 Unported.</p>
+      </div>
+      <div>
+        <h3>Godot</h3>
+        <ul>
+          <li><b>SSIL render pass</b>: <a href="https://github.com/godotengine/godot">Godot Engine</a> (MIT, &copy; Godot Engine contributors), ported to Godot by Clay John from Intel's ASSAO (MIT, &copy; 2016 Intel Corporation). Scene: <a href="https://github.com/godotengine/tps-demo">Godot TPS demo</a>.</li>
+          <li><b>Black hole</b>: <a href="https://godotshaders.com/shader/black-hole-extended/">Black Hole Extended</a> by HyperJragon, godotshaders.com (MIT).</li>
+        </ul>
+        <h3>MaterialX</h3>
+        <ul>
+          <li><b>Linen, Bricks, Car Paint</b>: Standard Surface example materials from <a href="https://github.com/AcademySoftwareFoundation/MaterialX">MaterialX</a> (Apache 2.0, &copy; Contributors to the MaterialX Project); the generated GLSL includes OSL-derived code (BSD-3-Clause, &copy; Sony Pictures Imageworks).</li>
+        </ul>
+        <h3>Metric</h3>
+        <ul>
+          <li><a href="https://github.com/NVlabs/flip">NVIDIA FLIP</a> (BSD-3-Clause) for all image-error measurements.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ======================= BIBTEX ======================= -->
 <section id="bibtex">
@@ -492,7 +536,7 @@
 </section>
 
 <footer class="site"><div class="container">
-  Karlsruhe Institute of Technology &middot; Shadertoy shaders belong to their authors; IDs link to shadertoy.com in the reports.
+  Karlsruhe Institute of Technology &middot; All shaders remain the property of their authors; see <a href="#ack">credits and licenses</a>.
 </div></footer>
 
 <script src="static/js/site.js"></script>
