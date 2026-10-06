@@ -131,7 +131,7 @@
     ];
     var r = [0.30, 0.12, 0.30], samples = [], split = [0.40, 0.70], touched = false, sweep = null;
     // oblique projection of the first three axes
-    var O = [62, 236], EX = [196, 0], EZ = [62, -46], EY = [0, -170];
+    var O = [96, 236], EX = [170, 0], EZ = [52, -40], EY = [0, -165];
     function P(a, b, c) { return [O[0] + a * EX[0] + b * EZ[0] + c * EY[0], O[1] + a * EX[1] + b * EZ[1] + c * EY[1]]; }
     function drawCube() {
       clear(svg);
@@ -192,15 +192,13 @@
       });
     }
     function update() { drawCube(); updateUI(); requestRender(); }
-    // dragging in the (r1, r2) plane at the current r3
+    // dragging in the screen-facing (r1, r3) plane at the current depth r2, so the point follows the cursor
     var dragging = false;
     function toCube(e) {
       var b = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
       var x = (e.clientX - b.left) * vb.width / b.width, y = (e.clientY - b.top) * vb.height / b.height;
-      var bx = x - O[0] - r[2] * EY[0], by = y - O[1] - r[2] * EY[1];
-      var det = EX[0] * EZ[1] - EX[1] * EZ[0];
-      var a = (bx * EZ[1] - by * EZ[0]) / det, c = (EX[0] * by - EX[1] * bx) / det;
-      r[0] = Math.max(0, Math.min(1, a)); r[1] = Math.max(0, Math.min(1, c)); update();
+      var a = (x - O[0] - r[1] * EZ[0]) / EX[0], c = (y - O[1] - r[1] * EZ[1]) / EY[1];
+      r[0] = Math.max(0, Math.min(1, a)); r[2] = Math.max(0, Math.min(1, c)); update();
     }
     function touch() { touched = true; if (sweep) { cancelAnimationFrame(sweep); sweep = null; } }
     svg.addEventListener('pointerdown', function (e) { touch(); dragging = true; svg.classList.add('drag'); svg.setPointerCapture(e.pointerId); toCube(e); });
