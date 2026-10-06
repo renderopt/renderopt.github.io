@@ -356,12 +356,13 @@
   /* ================= search tree ================= */
   function initTree() {
     var svg = $('tree-svg'); if (!svg) return;
-    var ISL = ['#4c78b5', '#c8524a', '#4f9a63', '#d19a2b'];
+    var ISL = ['#8a6bbf', '#2f9c95', '#c46a9e', '#7d8a9c'];
     var L = 64, R = 984, T = 26, B = 262, Y0 = 0.9, Y1 = 1.8, XMAX = 1000;  // XMAX: fixed per session
     var RUG = [['V', 'rejected by validation', C.bad, 0.55], ['C', 'did not compile', '#8b9098', 0.55], ['L', 'LLM failure or duplicate', '#c3c6cb', 0.7]];
     var cache = {}, D = null, key = '4ltfDr', sel = -1, best = -1, acc = [];
     function X(s) { return L + (R - L) * s / XMAX; }
     function Y(b) { return B - (B - T) * (Math.max(Y0, Math.min(Y1, b)) - Y0) / (Y1 - Y0); }
+    function edge(a, b) { return 'M' + X(a.s).toFixed(1) + ',' + Y(a.b).toFixed(1) + 'L' + X(b.s).toFixed(1) + ',' + Y(b.b).toFixed(1); }
     function chain(i) { var c = []; while (i >= 0 && c.length < 200) { c.unshift(i); var p = D[i].p; if (p < 0 || !D[p] || D[p].t !== 'A') break; i = p; } return c; }
     var base = el('g', {}, svg), over = el('g', {}, svg);
     function drawBase() {
@@ -382,15 +383,19 @@
         var x0 = k === 0 ? X(0) : X(firstOfGen[g]), x1 = k + 1 < gs.length + 1 && gs[k] != null ? X(firstOfGen[gs[k]]) : X(D.length);
         if (x1 - x0 > 34) el('text', { x: (x0 + x1) / 2, y: T - 10, class: 'tick', 'text-anchor': 'middle' }, base, 'gen ' + g);
       });
-      // running best
-      var bestSoFar = 1, path = 'M' + X(0) + ',' + Y(1);
-      D.slice().sort(function (a, b) { return a.s - b.s; }).forEach(function (d) {
-        if (d.t === 'A' && d.b > bestSoFar) { path += ' H' + X(d.s).toFixed(1) + ' V' + Y(d.b).toFixed(1); bestSoFar = d.b; }
-      });
-      path += ' H' + X(D.length).toFixed(1);
-      el('path', { d: path, fill: 'none', stroke: C.ours, 'stroke-width': 2 }, base);
+      // parent -> child edges: the search tree itself
+      var eg = '';
+      var byIsl = [[], [], [], []];
+      acc.forEach(function (i) { var d = D[i], p = D[d.p]; if (!p || p.b == null) return; byIsl[Math.max(0, d.i) % 4].push(edge(p, d)); });
+      byIsl.forEach(function (ps, k) { if (ps.length) el('path', { d: ps.join(''), fill: 'none', stroke: ISL[k], 'stroke-opacity': 0.2, 'stroke-width': 0.8 }, base); });
+      // best lineage
+      if (best >= 0) {
+        var bc = chain(best), bp = '';
+        for (var q = 1; q < bc.length; q++) bp += edge(D[bc[q - 1]], D[bc[q]]);
+        el('path', { d: bp, fill: 'none', stroke: C.ours, 'stroke-width': 2.4 }, base);
+      }
       // accepted dots
-      acc.forEach(function (i) { var d = D[i]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 2.8, fill: d.i >= 0 ? ISL[d.i % 4] : C.ink, 'fill-opacity': 0.5 }, base); });
+      acc.forEach(function (i) { var d = D[i]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 2.8, fill: d.i >= 0 ? ISL[d.i % 4] : C.ink, 'fill-opacity': 0.75 }, base); });
       // rejected strip
       RUG.forEach(function (r, k) {
         var y = B + 22 + k * 15, n = 0, dpath = '';
@@ -405,17 +410,17 @@
       });
       ISL.forEach(function (c, k) { el('circle', { cx: lx + 4 + k * 10, cy: B + 67.5, r: 3.5, fill: c, 'fill-opacity': 0.7 }, base); });
       el('text', { x: lx + 44, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'accepted, by island');
-      el('line', { x1: lx + 166, y1: B + 67.5, x2: lx + 182, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2 }, base);
-      el('text', { x: lx + 186, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'best so far');
+      el('line', { x1: lx + 166, y1: B + 67.5, x2: lx + 182, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2.4 }, base);
+      el('text', { x: lx + 186, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'lineage of the best program');
       [0, 0.2, 0.4, 0.6, 0.8, 1].map(function (f) { return Math.round(f * XMAX); }).forEach(function (t) { el('text', { x: X(t), y: B + 96, class: 'tick', 'text-anchor': 'middle' }, base, t); });
       el('text', { x: (L + R) / 2, y: B + 110, class: 'tick', 'text-anchor': 'middle' }, base, 'candidate, in order of proposal');
     }
     function drawSel() {
       clear(over);
       if (sel < 0) return;
-      var c = chain(sel), pts = c.map(function (i) { return [X(D[i].s), Y(D[i].b)]; });
-      var sp = 'M' + pts[0][0] + ',' + pts[0][1]; for (var q = 1; q < pts.length; q++) sp += ' H' + pts[q][0].toFixed(1) + ' V' + pts[q][1].toFixed(1);
-      el('path', { d: sp, fill: 'none', stroke: C.ink, 'stroke-width': 1.6 }, over);
+      var c = chain(sel), sp = '';
+      for (var q = 1; q < c.length; q++) sp += edge(D[c[q - 1]], D[c[q]]);
+      if (sp) el('path', { d: sp, fill: 'none', stroke: sel === best ? C.ours : C.ink, 'stroke-width': sel === best ? 2.4 : 1.6 }, over);
       c.forEach(function (i, k) {
         var d = D[i], last = k === c.length - 1;
         el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 7 : 4.5, fill: last ? C.ours : '#fff', stroke: C.ink, 'stroke-width': last ? 2 : 1.6 }, over);
@@ -432,6 +437,14 @@
         return '<span class="' + cls + '">' + l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\t/g, '    ') + '</span>';
       }).join('');
     }
+    function funnel() {
+      var f = $('tree-funnel'); if (!f) return;
+      var n = { A: 0, V: 0, C: 0, L: 0 }; D.forEach(function (d) { if (d.s > 0 && n[d.t] != null) n[d.t]++; });
+      var tot = n.A + n.V + n.C + n.L, parts = [['A', 'accepted', '#4f9a63'], ['V', 'rejected by validation', C.bad], ['C', 'did not compile', '#8b9098'], ['L', 'LLM failure or duplicate', '#c3c6cb']];
+      f.innerHTML = '<div class="fn-head"><b>' + tot + '</b> programs proposed by the LLM in this run</div><div class="fn-bar">' +
+        parts.map(function (q) { return '<span style="flex:' + n[q[0]] + ';background:' + q[2] + '" title="' + n[q[0]] + ' ' + q[1] + '"></span>'; }).join('') + '</div><div class="fn-leg">' +
+        parts.map(function (q) { return '<span><i style="background:' + q[2] + '"></i><b>' + n[q[0]] + '</b> ' + q[1] + '</span>'; }).join('') + '</div>';
+    }
     function pick(e) {
       if (!D) return;
       var b = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
@@ -446,7 +459,7 @@
       function go(data) {
         D = data; cache[k] = data; acc = []; best = -1; XMAX = Math.ceil(D.length / 100) * 100;
         D.forEach(function (d, i) { if (d.t === 'A' && d.b != null) acc.push(i); if (d.best) best = i; });
-        sel = best; drawBase(); drawSel();
+        sel = best; drawBase(); drawSel(); funnel();
       }
       if (cache[k]) go(cache[k]);
       else fetch('static/data/tree_' + k + '.json').then(function (r) { return r.json(); }).then(go).catch(function () { $('tree-hint').textContent = 'Could not load the search data.'; });
@@ -464,7 +477,7 @@
   /* ================= code tabs ================= */
   function initTabs() {
     var t = $('edit-tabs'); if (!t) return;
-    var panes = t.parentNode.querySelectorAll('.code');
+    var panes = t.parentNode.querySelectorAll('.edit');
     [].forEach.call(t.querySelectorAll('button'), function (b) {
       b.addEventListener('click', function () {
         [].forEach.call(t.children, function (c) { c.classList.toggle('on', c === b); });
@@ -538,7 +551,7 @@
         pts.push([p, ld]); if (i === 0 || ld > ymax) ymax = ld;
       }
       pts.forEach(function (q) { q[1] = Math.exp(q[1] - ymax); });
-      [1e-4, 1e-3, 1e-2, 1e-1, 1].forEach(function (t) { el('line', { x1: X(t), y1: T, x2: X(t), y2: B, class: 'grid' }, post); el('text', { x: X(t), y: B + 15, class: 'tick', 'text-anchor': 'middle' }, post, (t * 100 >= 1 ? (t * 100).toFixed(0) : (t * 100).toFixed(t < 1e-3 ? 2 : 1)) + '%'); });
+      [1e-4, 1e-3, 1e-2, 1e-1, 1].forEach(function (t) { el('line', { x1: X(t), y1: T, x2: X(t), y2: B, class: 'grid' }, post); el('text', { x: X(t), y: B + 15, class: 'tick', 'text-anchor': t === 1 ? 'end' : 'middle' }, post, (t * 100 >= 1 ? (t * 100).toFixed(0) : (t * 100).toFixed(t < 1e-3 ? 2 : 1)) + '%'); });
       [0, 0.5, 1].forEach(function (t) { el('text', { x: L - 6, y: Y(t) + 4, class: 'tick', 'text-anchor': 'end' }, post, t); });
       el('line', { x1: L, y1: B, x2: R, y2: B, class: 'ax' }, post);
       el('text', { x: (L + R) / 2, y: B + 31, class: 'tick', 'text-anchor': 'middle' }, post, 'exceedance rate p (log scale)');
@@ -577,6 +590,22 @@
         var last = hist[hist.length - 1];
         el('circle', { cx: X2(last[0]), cy: Y2(last[1]), r: 5, fill: state === 'SAFE' ? C.safe : C.bad }, trace);
       }
+
+      /* frames: one square per sampled condition */
+      var fr = $('seq-frames');
+      if (fr) {
+        clear(fr);
+        var cw = 1000 / 128, ex = {}, pc = '', pe = '', pu = '';
+        exc.forEach(function (e) { ex[e] = 1; });
+        for (var f = 1; f <= NMAX; f++) {
+          var cx = ((f - 1) % 128) * cw, cy = Math.floor((f - 1) / 128) * 8.2, sq = 'M' + cx.toFixed(1) + ',' + cy.toFixed(1) + 'h' + (cw - 1.2).toFixed(1) + 'v7h-' + (cw - 1.2).toFixed(1) + 'z';
+          if (f > n) pu += sq; else if (ex[f]) pe += sq; else pc += sq;
+        }
+        if (pu) el('path', { d: pu, fill: '#efefeb' }, fr);
+        if (pc) el('path', { d: pc, fill: '#9fd0b0' }, fr);
+        if (pe) el('path', { d: pe, fill: C.bad }, fr);
+      }
+      $('seq-beta').innerHTML = 'Beta(1 + <b>' + k + '</b>, 1 + <b>' + (n - k) + '</b>)';
 
       var P = hist[hist.length - 1][1];
       var lbl = { UNDET: 'UNDETERMINED', SAFE: 'SAFE', BAD: 'BAD', REJECT: 'BUDGET OUT' }[state];
@@ -658,7 +687,7 @@
       ['MaterialX', [['Linen', '', 1.89], ['Bricks', '', 1.79], ['Car Paint', '', 1.47]], 'ε = 0.05'],
       ['Godot', [['SSIL render pass', 'engine', 1.70], ['Black hole shader', 'artistic', 1.17]], 'ε = 0.1']
     ];
-    var L = 168, R = 440, rowH = 21, y = 10, lo = 1, hi = 2.3;
+    var L = 202, R = 430, rowH = 21, y = 10, lo = 1, hi = 2.3;
     function X(v) { return L + (R - L) * (v - lo) / (hi - lo); }
     var rows = [];
     data.forEach(function (g) { rows.push(['h', g[0], g[2]]); g[1].forEach(function (r) { rows.push(['r', r]); }); });

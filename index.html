@@ -8,10 +8,17 @@
 <link rel="canonical" href="https://renderopt.github.io/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
-<meta property="og:description" content="LLM-generated shader optimizations, validated over the rendering conditions an application exposes, with 47-85% fewer validation frames.">
+<meta property="og:description" content="An LLM rewrites shaders to run faster. We check that every rewrite still looks right: up to 2.19x faster shaders with 47-85% fewer test renders.">
 <meta property="og:url" content="https://renderopt.github.io/">
-<meta property="og:image" content="https://renderopt.github.io/static/videos/overview_poster.jpg">
+<meta property="og:site_name" content="renderopt.github.io">
+<meta property="og:image" content="https://renderopt.github.io/static/img/social.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Efficient Validation for LLM-Generated Rendering Optimizations: up to 2.19x faster shaders, 47-85% fewer test renders">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
+<meta name="twitter:description" content="An LLM rewrites shaders to run faster. We check that every rewrite still looks right: up to 2.19x faster, 47-85% fewer test renders.">
+<meta name="twitter:image" content="https://renderopt.github.io/static/img/social.jpg">
 <meta name="citation_title" content="Efficient Validation for LLM-Generated Rendering Optimizations">
 <meta name="citation_author" content="Dereviannykh, Mikhail">
 <meta name="citation_author" content="Klepikov, Dmitrii">
@@ -25,7 +32,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Castoro&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/site.css">
+<link rel="stylesheet" href="static/css/site.css?v=12">
 </head>
 <body>
 
@@ -37,8 +44,8 @@
     <span>Hendrik Brucker</span>
     <span>Dominik Wüst</span>
     <span>Benedikt Krimmel</span>
-    <span>Reiner Dolp</span>
-    <span>Carsten Dachsbacher</span>
+    <span><a href="https://cg.ivd.kit.edu/english/staff/research/dolp/index_dolp.php">Reiner Dolp</a></span>
+    <span><a href="https://cg.ivd.kit.edu/english/staff/prof/dachsbacher/index_dachsbacher.php">Carsten Dachsbacher</a></span>
   </div>
   <div class="affils"><a href="https://www.kit.edu">Karlsruhe Institute of Technology</a></div>
   <div class="buttons">
@@ -51,12 +58,13 @@
 </header>
 
 <nav class="topnav"><div class="container">
-  <a href="#abstract">Abstract</a><a href="#video">Video</a><a href="#method">Method</a><a href="#trust">Trust</a><a href="#results">Results</a><a href="#reports">Scenes</a><a href="#ack">Credits</a><a href="#bibtex">BibTeX</a>
+  <a href="#abstract">TL;DR</a><a href="#video">Video</a><a href="#method">Method</a><a href="#trust">Trust</a><a href="#results">Results</a><a href="#reports">Scenes</a><a href="#ack">Credits</a><a href="#bibtex">BibTeX</a>
 </div></nav>
 
 <!-- ======================= FIGURE 1: PLAYER ======================= -->
 <section id="teaser" class="first">
   <div class="container">
+    <p class="tagline">An LLM rewrites shaders to run faster. We check that every rewrite still <i>looks</i> right, with <b>47&ndash;85% fewer test renders</b>.</p>
     <figure class="fig player" id="player">
       <div class="cols" id="pcols"><span>Original</span><span class="o">Optimized</span><span>FLIP error</span></div>
       <div class="stage" id="pstage"><video id="pv" autoplay muted loop playsinline preload="auto"></video><canvas id="pc" aria-label="Original, optimized and FLIP error video"></canvas></div>
@@ -79,16 +87,24 @@
   </div>
 </section>
 
-<!-- ======================= ABSTRACT ======================= -->
+<!-- ======================= TL;DR ======================= -->
 <section id="abstract">
-  <div class="container prose">
-    <h2>Abstract</h2>
-    <p>LLM-driven evolutionary search can propose many rendering-code optimizations, but each approximate candidate must still be validated across dynamic viewing, lighting, material, and temporal conditions.
+  <div class="container">
+    <h2>TL;DR</h2>
+    <div class="tldr">
+      <div><span class="k">Problem</span><p>An LLM-driven search proposes hundreds of faster shader variants. Most are approximations, and each must look right for every camera, time and light the app can produce &mdash; which can only be sampled.</p></div>
+      <div><span class="k">Idea</span><p>Sample those conditions from a unit cube, render original and candidate, and stop a <b>Bayesian test</b> as soon as it is sure. Edits that resemble ones already proven safe may stop earlier.</p></div>
+      <div><span class="k o">Result</span><p><b>Up to 2.19&times;</b> faster Shadertoy shaders, 1.89&times; on MaterialX, 1.70&times; on a Godot render pass, with <b>47&ndash;85% fewer</b> validation frames.</p></div>
+    </div>
+    <details class="abstract">
+      <summary>Read the full abstract</summary>
+      <p>LLM-driven evolutionary search can propose many rendering-code optimizations, but each approximate candidate must still be validated across dynamic viewing, lighting, material, and temporal conditions.
       We use a backend-specific <b>Primary Render Parameters Space</b> (PRPS) to sample rendering conditions, and formulate candidate acceptance as a <b>Bayesian sequential test</b> over the rate at which FLIP error exceeds a user threshold.
       To reduce rendering work, the validator adapts an empirical SAFE decision threshold: globally from the observed distribution of rejected candidates, and per candidate from <b>LLM-derived mutation embeddings</b> compared with previously validated neighbors.
       Rendered evidence remains the acceptance basis; previous candidates only modulate how strict the sampled-evidence threshold must be before acceptance.
       Across Shadertoy shaders, MaterialX-generated GLSL materials, and two Godot shader settings, the pipeline finds 1.12&times;&ndash;2.28&times; speedups under stated error thresholds, while replay and live-pipeline studies reduce validation frames by 47&ndash;85% relative to conservative validation with few disagreements against conservative replay labels.
       The resulting contribution is an efficient sampled-validation mechanism for open-ended rendering optimizers, with guarantees defined over sampled PRPS evidence.</p>
+    </details>
   </div>
 </section>
 
@@ -109,7 +125,7 @@
     <h2>Method</h2>
     <p class="lead">The search loop follows FunSearch and AlphaEvolve: an LLM proposes patches, and an island-based evolution keeps the fast ones.
       For rendering, correctness is perceptual, depends on viewing conditions, and can only be sampled. So we build the system around the validator.
-      Rendering runs on our own distributed render system, scaled to up to 64 RTX&nbsp;3060 GPUs rented on <a href="https://vast.ai">Vast.ai</a>.</p>
+</p>
 
     <figure class="fig wide">
       <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
@@ -250,8 +266,62 @@
           <path d="M446 183 H478 V98 H493" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
           <circle cx="446" cy="183" r="2.5" fill="#7d8188"/>
           <path d="M396 226 V312 H517" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
-          <path d="M931 146 V378 H226 V149" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+          <path d="M982 146 V378 H226 V149" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+          <!-- distributed render farm -->
+          <path d="M842 190 H912 M912 148 V286" fill="none" stroke="#7d8188" stroke-dasharray="3 2"/>
+          <path d="M912 270 V286" stroke="#7d8188" marker-end="url(#ah)"/>
+          <circle cx="912" cy="190" r="2.5" fill="#7d8188"/>
+          <text x="918" y="214" text-anchor="start" font-size="10.5">renders,</text>
+          <text x="918" y="227" text-anchor="start" font-size="10.5">timings</text>
+          <rect x="852" y="290" width="116" height="78" rx="9" fill="#f4f6f8" stroke="#a9b4c2"/>
+          <text x="910" y="306" font-size="12.5" font-weight="600" fill="#1f2328">Our render farm</text>
+          <g fill="#5b6b80">
+            <rect x="864" y="314" width="10" height="7" rx="1.5"/><rect x="877.5" y="314" width="10" height="7" rx="1.5"/><rect x="891" y="314" width="10" height="7" rx="1.5"/><rect x="904.5" y="314" width="10" height="7" rx="1.5"/><rect x="918" y="314" width="10" height="7" rx="1.5"/><rect x="931.5" y="314" width="10" height="7" rx="1.5"/><rect x="945" y="314" width="10" height="7" rx="1.5"/>
+            <rect x="864" y="324" width="10" height="7" rx="1.5"/><rect x="877.5" y="324" width="10" height="7" rx="1.5"/><rect x="891" y="324" width="10" height="7" rx="1.5"/><rect x="904.5" y="324" width="10" height="7" rx="1.5"/><rect x="918" y="324" width="10" height="7" rx="1.5"/><rect x="931.5" y="324" width="10" height="7" rx="1.5"/><rect x="945" y="324" width="10" height="7" rx="1.5"/>
+          </g>
+          <text x="910" y="346" font-size="10.5" fill="#1f2328">up to 64 &#215; RTX 3060</text>
+          <text x="910" y="360" font-size="10">rented on Vast.ai</text>
           <text x="578" y="394">accepted program with its render time and error &#8594; population</text>
+        </g>
+      </svg>
+    </figure>
+
+    <figure class="fig wide" id="evo">
+      <p class="fig-title">How the evolutionary search works</p>
+      <svg viewBox="0 0 1000 200" role="img" aria-label="Evolution loop: four islands of programs; pick a parent and prior programs, the LLM writes a patch, the validator checks it on sampled renders, the profiler times it, accepted programs join an island">
+        <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker></defs>
+        <g font-size="11.5" fill="#5b616b" text-anchor="middle">
+          <text x="127" y="18" font-size="13" font-weight="600" fill="#1f2328">Population: 4 islands</text>
+          <rect x="14" y="30" width="108" height="62" rx="9" fill="#fff" stroke="#8a6bbf" stroke-opacity=".55"/><text x="22" y="44" font-size="10" fill="#8a6bbf" text-anchor="start" font-weight="600">island 0</text><circle cx="53" cy="76" r="3" fill="#8a6bbf" fill-opacity=".7"/><circle cx="41" cy="56" r="4.5" fill="#8a6bbf" fill-opacity=".7"/><circle cx="73" cy="63" r="4.5" fill="#8a6bbf" fill-opacity=".7"/><circle cx="46" cy="70" r="2.5" fill="#8a6bbf" fill-opacity=".7"/><circle cx="92" cy="79" r="3.5" fill="#8a6bbf" fill-opacity=".7"/><circle cx="46" cy="82" r="3.5" fill="#8a6bbf" fill-opacity=".7"/><circle cx="94" cy="60" r="3.5" fill="#8a6bbf" fill-opacity=".7"/><rect x="132" y="30" width="108" height="62" rx="9" fill="#fff" stroke="#2f9c95" stroke-opacity=".55"/><text x="140" y="44" font-size="10" fill="#2f9c95" text-anchor="start" font-weight="600">island 1</text><circle cx="170" cy="80" r="3.5" fill="#2f9c95" fill-opacity=".7"/><circle cx="153" cy="72" r="3.5" fill="#2f9c95" fill-opacity=".7"/><circle cx="187" cy="59" r="4.5" fill="#2f9c95" fill-opacity=".7"/><circle cx="169" cy="82" r="4.5" fill="#2f9c95" fill-opacity=".7"/><circle cx="215" cy="54" r="5.5" fill="#2f9c95" fill-opacity=".7"/><circle cx="193" cy="80" r="3.5" fill="#2f9c95" fill-opacity=".7"/><circle cx="162" cy="67" r="5.5" fill="#2f9c95" fill-opacity=".7"/><rect x="14" y="104" width="108" height="62" rx="9" fill="#fff" stroke="#c46a9e" stroke-opacity=".55"/><text x="22" y="118" font-size="10" fill="#c46a9e" text-anchor="start" font-weight="600">island 2</text><circle cx="63" cy="133" r="3.5" fill="#c46a9e" fill-opacity=".7"/><circle cx="49" cy="152" r="3.5" fill="#c46a9e" fill-opacity=".7"/><circle cx="32" cy="147" r="2.5" fill="#c46a9e" fill-opacity=".7"/><circle cx="71" cy="147" r="3.5" fill="#c46a9e" fill-opacity=".7"/><circle cx="40" cy="148" r="3.5" fill="#c46a9e" fill-opacity=".7"/><circle cx="62" cy="134" r="2.5" fill="#c46a9e" fill-opacity=".7"/><circle cx="51" cy="139" r="4.5" fill="#c46a9e" fill-opacity=".7"/><rect x="132" y="104" width="108" height="62" rx="9" fill="#fff" stroke="#7d8a9c" stroke-opacity=".55"/><text x="140" y="118" font-size="10" fill="#7d8a9c" text-anchor="start" font-weight="600">island 3</text><circle cx="172" cy="145" r="5.5" fill="#7d8a9c" fill-opacity=".7"/><circle cx="154" cy="130" r="3.5" fill="#7d8a9c" fill-opacity=".7"/><circle cx="169" cy="145" r="3" fill="#7d8a9c" fill-opacity=".7"/><circle cx="156" cy="156" r="3" fill="#7d8a9c" fill-opacity=".7"/><circle cx="184" cy="129" r="3.5" fill="#7d8a9c" fill-opacity=".7"/><circle cx="219" cy="157" r="2.5" fill="#7d8a9c" fill-opacity=".7"/><circle cx="147" cy="137" r="3.5" fill="#7d8a9c" fill-opacity=".7"/>
+          <path d="M122 61 C127 50 127 50 132 61" fill="none" stroke="#9aa0a8" stroke-dasharray="2 2"/>
+          <text x="127" y="190" font-size="10.5">circle size = speedup</text>
+          <path d="M248 98 H282" stroke="#7d8188" marker-end="url(#ah3)"/>
+          <rect x="286" y="62" width="140" height="72" rx="9" fill="#eaf0fa" stroke="#9db5dd"/>
+          <text x="356" y="88" font-size="13" font-weight="600" fill="#1f2328">Pick a parent</text>
+          <text x="356" y="106">plus prior programs,</text>
+          <text x="356" y="121">their times and errors</text>
+          <path d="M426 98 H452" stroke="#7d8188" marker-end="url(#ah3)"/>
+          <rect x="456" y="62" width="120" height="72" rx="9" fill="#fbecec" stroke="#e3a9a9"/>
+          <text x="516" y="92" font-size="13" font-weight="600" fill="#1f2328">LLM writes</text>
+          <text x="516" y="110" font-size="13" font-weight="600" fill="#1f2328">a patch</text>
+          <path d="M576 98 H602" stroke="#7d8188" marker-end="url(#ah3)"/>
+          <rect x="606" y="62" width="148" height="72" rx="9" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
+          <text x="680" y="88" font-size="13" font-weight="600" fill="#1f2328">Validate <tspan fill="#d9711c">(ours)</tspan></text>
+          <text x="680" y="106">looks the same on</text>
+          <text x="680" y="121">sampled conditions?</text>
+          <path d="M754 98 H780" stroke="#2e8b57" stroke-width="1.5" marker-end="url(#ah3)"/>
+          <text x="767" y="90" font-size="10" fill="#2e8b57">safe</text>
+          <rect x="784" y="62" width="96" height="72" rx="9" fill="#fdf6dc" stroke="#e2c86b"/>
+          <text x="832" y="92" font-size="13" font-weight="600" fill="#1f2328">Time it</text>
+          <text x="832" y="110">on the GPU</text>
+          <path d="M880 98 H906" stroke="#7d8188" marker-end="url(#ah3)"/>
+          <rect x="910" y="62" width="82" height="72" rx="9" fill="#e6f4ea" stroke="#2e8b57"/>
+          <text x="951" y="92" font-size="13" font-weight="600" fill="#1d5e35">Joins an</text>
+          <text x="951" y="110" font-size="13" font-weight="600" fill="#1d5e35">island</text>
+          <path d="M951 134 V170 H250" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah3)"/>
+          <text x="600" y="164" font-size="10.5">repeat every generation: accepted programs can be picked as parents later</text>
+          <path d="M680 62 V44" stroke="#c8423b" marker-end="url(#ah3)"/>
+          <text x="680" y="36" font-size="10.5" fill="#8d2a24">bad, failed to compile, or duplicate: discarded</text>
         </g>
       </svg>
     </figure>
@@ -387,9 +457,11 @@
         <button class="pill dark" id="seq-run">&#9654; Replay</button>
         <button class="pill" id="seq-reset">New draw</button>
       </div>
-      <div class="two" style="gap:18px">
-        <div><p class="panel-title">Posterior over the exceedance rate <i>p</i></p><svg id="seq-post" class="plot" viewBox="0 0 460 220"></svg></div>
-        <div><p class="panel-title">P(<i>p</i> &lt; &tau;) as frames arrive</p><svg id="seq-trace" class="plot" viewBox="0 0 460 220"></svg></div>
+      <p class="panel-title"><span class="step">1</span>Each square is one sampled condition, rendered by the original and the candidate: <span class="sw clean"></span>FLIP within &epsilon; or <span class="sw exc"></span>an exceedance</p>
+      <svg id="seq-frames" class="plot" viewBox="0 0 1000 66" aria-label="Sampled frames, colored by whether FLIP exceeded epsilon"></svg>
+      <div class="two" style="gap:18px;margin-top:14px">
+        <div><p class="panel-title"><span class="step">2</span>Counts give a belief about the rate <i>p</i>: <span id="seq-beta"></span></p><svg id="seq-post" class="plot" viewBox="0 0 460 220"></svg></div>
+        <div><p class="panel-title"><span class="step">3</span>Stop once P(<i>p</i> &lt; &tau;) crosses a threshold</p><svg id="seq-trace" class="plot" viewBox="0 0 460 220"></svg></div>
       </div>
       <div class="readout" id="seq-read"></div>
     </figure>
@@ -430,24 +502,33 @@
     </figure>
 
     <figure class="fig" id="edits">
-      <div class="tabs" id="edit-tabs" role="tablist">
-        <button class="on" data-t="1">Beat-conditional geometry</button><button data-t="2">Fewer taps (Godot)</button><button data-t="3">Chebyshev polynomial</button>
+      <p class="fig-title">What the LLM actually changes</p>
+      <div class="tabs" id="edit-tabs" role="tablist"><button class="on" data-t="1">Skip rays that miss</button><button data-t="2">Drop invisible noise</button><button data-t="3">Beat-conditional geometry</button><button data-t="4">Fewer taps</button><button data-t="5">Chebyshev polynomial</button></div>
+      <div class="edit" data-t="1">
+        <div class="edit-side"><img loading="lazy" src="static/img/edits/XdsGDB.jpg" alt="Buoy"><div class="edit-meta"><b>Buoy</b> <span>by TekF</span><br><b class="sp">1.21&times;</b> <span>FLIP 0.011</span></div></div>
+        <div class="code"><pre><span class="c">// ocean ray-march</span><span class="a">+  if (ray.y &gt;= 0.0) return 0.0;   // looking up: no ocean</span><span class="d">-  for (int i = 0; i &lt; 100; i++) {</span><span class="d">-    if (h &lt; .01 || t &gt; 100.0) break;</span><span class="a">+  for (int i = 0; i &lt; 80; i++) {</span><span class="a">+    if (t &gt; 40.0 || h &lt; .01) break;   // far ocean: stop at 40</span></pre><p class="why">Rays aimed at the sky skip the ocean march, and the march gives up past 40 units instead of 100. Only the far horizon can change, so the validator decides.</p></div>
       </div>
-      <div class="code" data-t="1">
-<pre><span class="c">// 4ltfDr (1.69&times;): audio-reactive second stage</span><span class="d">-  intersectStage(surface, pp,</span><span class="d">-      rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  if (beat &gt;= 32.0) {</span><span class="a">+      intersectStage(surface, pp,</span><span class="a">+          rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  }</span></pre>
-        <p class="why">Domain reasoning: the second stage is invisible before beat 32, so it is skipped there. The same patch hoists loop invariants out of the fractal.</p>
+      <div class="edit" data-t="2" hidden>
+        <div class="edit-side"><img loading="lazy" src="static/img/edits/NtlSDs.jpg" alt="Slisesix"><div class="edit-meta"><b>Slisesix</b> <span>by iq</span><br><b class="sp">7.9&rarr;5.0 ms</b> <span>session report</span></div></div>
+        <div class="code"><pre><span class="c">// distance to the tentacles</span><span class="d">-  float fb = fbm(vec3(10.1*x+offx, 10.1*y, 10.1*z));</span><span class="d">-  if (fb &gt; 0.0)</span><span class="d">-      di = di + 0.00000003*fb;</span><span class="a">+  // a 3e-8 bump is below float precision here: skip the FBM</span><span class="c">   return sqrt(di);</span></pre><p class="why">A noise call adds a bump of 3&middot;10<sup>&minus;8</sup>, far below what a pixel can show. Removing it changes nothing visible and saves about a third of the frame time.</p></div>
       </div>
-      <div class="code" data-t="2" hidden>
-<pre><span class="c">// Godot SSIL (1.66&times;): taps per quality preset, 2 depth samples each</span><span class="d">-  const int num_taps[5] = { 3, 5, 12, 0, 0 };</span><span class="a">+  const int num_taps[5] = { 2, 3, 6, 0, 0 };</span><span class="c">   // plus: merged max/clamp pairs, reciprocal multiplies,</span><span class="c">   // shared subexpressions across the sampling kernel</span></pre>
-        <p class="why">Approximate by design: about half the samples per pixel, within the error budget.</p>
+      <div class="edit" data-t="3" hidden>
+        <div class="edit-side"><img loading="lazy" src="static/img/edits/4ltfDr.jpg" alt="traveler."><div class="edit-meta"><b>traveler.</b> <span>by kaneta</span><br><b class="sp">1.69&times;</b> <span>FLIP 0.006</span></div></div>
+        <div class="code"><pre><span class="c">// audio-reactive second stage</span><span class="d">-  intersectStage(surface, pp,</span><span class="d">-      rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  if (beat &gt;= 32.0) {</span><span class="a">+      intersectStage(surface, pp,</span><span class="a">+          rotateMat(angle.x, angle.y, angle.z) * rot, scale);</span><span class="a">+  }</span></pre><p class="why">The second stage is invisible before beat 32, so it is skipped there. Only a time-aware validator can accept this: it has to sample frames on both sides of the beat.</p></div>
       </div>
-      <div class="code" data-t="3" hidden>
-<pre><span class="c">// lighthouse stripe pattern (example from the paper)</span><span class="d">-  cos(atan(pos.x, pos.z) * 6.0)</span><span class="a">+  float r_inv = inversesqrt(dot(pos.xz, pos.xz));</span><span class="a">+  float c = pos.z * r_inv, c2 = c*c, c4 = c2*c2;</span><span class="a">+  // T_6(x) = 32x^6 - 48x^4 + 18x^2 - 1</span><span class="a">+  32.*c4*c2 - 48.*c4 + 18.*c2 - 1.;</span></pre>
-        <p class="why">Math reasoning: cos 6&theta; is the Chebyshev polynomial T<sub>6</sub>(cos&nbsp;&theta;), so atan and cos disappear.</p>
+      <div class="edit" data-t="4" hidden>
+        <div class="edit-side"><img loading="lazy" src="static/img/edits/ssil.jpg" alt="SSIL pass"><div class="edit-meta"><b>SSIL pass</b> <span>by Godot</span><br><b class="sp">1.66&times;</b> <span>FLIP 0.107</span></div></div>
+        <div class="code"><pre><span class="c">// samples per quality preset, 2 depth samples each</span><span class="d">-  const int num_taps[5] = { 3, 5, 12, 0, 0 };</span><span class="a">+  const int num_taps[5] = { 2, 3, 6, 0, 0 };</span><span class="c">   // plus: merged max/clamp pairs, reciprocal multiplies</span></pre><p class="why">Approximate by design: half the samples per pixel in an engine render pass, kept because the error stays within the &epsilon; = 0.1 budget.</p></div>
+      </div>
+      <div class="edit" data-t="5" hidden>
+        <div class="edit-side"><div class="edit-math">cos 6&theta; = T<sub>6</sub>(cos&nbsp;&theta;)</div><div class="edit-meta"><b>Lighthouse stripes</b> <span>example from the paper</span></div></div>
+        <div class="code"><pre><span class="c">// stripe pattern around the lighthouse</span><span class="d">-  cos(atan(pos.x, pos.z) * 6.0)</span><span class="a">+  float r_inv = inversesqrt(dot(pos.xz, pos.xz));</span><span class="a">+  float c = pos.z * r_inv, c2 = c*c, c4 = c2*c2;</span><span class="a">+  32.*c4*c2 - 48.*c4 + 18.*c2 - 1.;   // T_6(c)</span></pre><p class="why">Exact math, not an approximation: cos&nbsp;6&theta; is the Chebyshev polynomial T<sub>6</sub>(cos&nbsp;&theta;), so atan and cos disappear.</p></div>
       </div>
     </figure>
 
     <figure class="fig" id="tree">
+      <p class="fig-title">One run, as a search tree</p>
+      <div class="funnel" id="tree-funnel"></div>
       <div class="fig-tools">
         <span class="seg sm" id="tree-pick"><button class="on" data-k="4ltfDr">traveler. (Shadertoy)</button><button data-k="ssil">SSIL pass (Godot)</button></span>
         <button class="pill" id="tree-best">Show best</button>
@@ -479,31 +560,31 @@
 <section id="ack">
   <div class="container">
     <h2>Acknowledgements</h2>
-    <p class="lead">We thank Johannes Schudeiske for taking part in the discussions that shaped this project, our student Ilya for the early studies,
+    <p class="lead">We thank <a href="https://cg.ivd.kit.edu/english/staff/postdoc/hanika/index_index.php">Johannes Schudeiske</a> for taking part in the discussions that shaped this project, our student Ilya for the early studies,
       Kirill Bazhenov for his help in connecting us with industry, and Angelo Pesce (Roblox) and Brian Karis (Epic Games) for their feedback from the industry perspective.</p>
     <p class="lead">We are especially grateful to <b>Inigo Quilez</b>, who kindly granted us permission to use his shaders in this work,
-      and to all Shadertoy, Godot and MaterialX authors whose work we build on. All shaders remain the property of their authors;
+      and to all <a href="https://www.shadertoy.com">Shadertoy</a>, <a href="https://godotengine.org">Godot</a> and <a href="https://materialx.org">MaterialX</a> authors whose work we build on. All shaders remain the property of their authors;
       their licenses are listed below.</p>
 
     <div class="credits">
       <div>
         <h3>Shadertoy</h3>
         <ul>
-          <li><b>Inigo Quilez</b> (iq): <a href="https://www.shadertoy.com/view/Xds3zN">Raymarching Primitives</a> and <a href="https://www.shadertoy.com/view/4sX3Rn">Menger Sponge</a> (MIT);
+          <li><a class="who" href="https://iquilezles.org/">Inigo Quilez</a> (iq): <a href="https://www.shadertoy.com/view/Xds3zN">Raymarching Primitives</a> and <a href="https://www.shadertoy.com/view/4sX3Rn">Menger Sponge</a> (MIT);
             <a href="https://www.shadertoy.com/view/3lsSzf">Happy Jumping</a>, <a href="https://www.shadertoy.com/view/Mss3zM">Insect</a>, <a href="https://www.shadertoy.com/view/lsf3zr">Columns and Lights</a>, <a href="https://www.shadertoy.com/view/NtlSDs">Slisesix</a> (&copy; Inigo Quilez, all rights reserved; used with his permission)</li>
-          <li><b>kaneta</b>: <a href="https://www.shadertoy.com/view/4ltfDr">traveler.</a></li>
-          <li><b>TekF</b>: <a href="https://www.shadertoy.com/view/XdsGDB">Buoy</a> (CC BY-NC-SA 3.0)</li>
-          <li><b>Colin Leung</b> (colin299): <a href="https://www.shadertoy.com/view/3sc3z4">GLSL ray tracing test</a></li>
-          <li><b>P_Malin</b>: <a href="https://www.shadertoy.com/view/XtyGWD">Multiple Transparency</a></li>
-          <li><b>Shakemayster</b>: <a href="https://www.shadertoy.com/view/ldlcRf">Tribute &ndash; Journey!</a></li>
+          <li><a class="who" href="https://www.shadertoy.com/user/kaneta">kaneta</a>: <a href="https://www.shadertoy.com/view/4ltfDr">traveler.</a></li>
+          <li><a class="who" href="https://www.shadertoy.com/user/TekF">TekF</a>: <a href="https://www.shadertoy.com/view/XdsGDB">Buoy</a> (CC BY-NC-SA 3.0)</li>
+          <li><a class="who" href="https://www.shadertoy.com/user/colin299">Colin Leung</a> (colin299): <a href="https://www.shadertoy.com/view/3sc3z4">GLSL ray tracing test</a></li>
+          <li><a class="who" href="https://www.shadertoy.com/user/P_Malin">P_Malin</a>: <a href="https://www.shadertoy.com/view/XtyGWD">Multiple Transparency</a></li>
+          <li><a class="who" href="https://www.shadertoy.com/user/Shakemayster">Shakemayster</a>: <a href="https://www.shadertoy.com/view/ldlcRf">Tribute &ndash; Journey!</a></li>
         </ul>
         <p class="note">Shadertoy shaders without an explicit license fall under Shadertoy's default CC BY-NC-SA 3.0 Unported.</p>
       </div>
       <div>
         <h3>Godot</h3>
         <ul>
-          <li><b>SSIL render pass</b>: <a href="https://github.com/godotengine/godot">Godot Engine</a> (MIT, &copy; Godot Engine contributors), ported to Godot by Clay John from Intel's ASSAO (MIT, &copy; 2016 Intel Corporation). Scene: <a href="https://github.com/godotengine/tps-demo">Godot TPS demo</a>.</li>
-          <li><b>Black hole</b>: <a href="https://godotshaders.com/shader/black-hole-extended/">Black Hole Extended</a> by HyperJragon, godotshaders.com (MIT).</li>
+          <li><b>SSIL render pass</b>: <a href="https://github.com/godotengine/godot">Godot Engine</a> (MIT, &copy; Godot Engine contributors), ported to Godot by <a class="who" href="https://github.com/clayjohn">Clay John</a> from Intel's ASSAO (MIT, &copy; 2016 Intel Corporation). Scene: <a href="https://github.com/godotengine/tps-demo">Godot TPS demo</a>.</li>
+          <li><b>Black hole</b>: <a href="https://godotshaders.com/shader/black-hole-extended/">Black Hole Extended</a> by <a class="who" href="https://godotshaders.com/author/hyperjragon/">HyperJragon</a>, godotshaders.com (MIT).</li>
         </ul>
         <h3>MaterialX</h3>
         <ul>
@@ -539,6 +620,6 @@
   Karlsruhe Institute of Technology &middot; All shaders remain the property of their authors; see <a href="#ack">credits and licenses</a>.
 </div></footer>
 
-<script src="static/js/site.js"></script>
+<script src="static/js/site.js?v=11"></script>
 </body>
 </html>
