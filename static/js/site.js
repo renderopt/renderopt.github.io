@@ -388,7 +388,15 @@
       var byIsl = [[], [], [], []];
       acc.forEach(function (i) { var d = D[i], p = D[d.p]; if (!p || p.b == null) return; byIsl[Math.max(0, d.i) % 4].push(edge(p, d)); });
       byIsl.forEach(function (ps, k) { if (ps.length) el('path', { d: ps.join(''), fill: 'none', stroke: ISL[k], 'stroke-opacity': 0.2, 'stroke-width': 0.8 }, base); });
-      // best lineage
+      // best program of each generation, each with its own lineage: they grow from different branches
+      var gb = {};
+      acc.forEach(function (i) { var d = D[i]; if (d.s > 0 && (gb[d.g] == null || d.b > D[gb[d.g]].b)) gb[d.g] = i; });
+      Object.keys(gb).forEach(function (g) {
+        var c = chain(gb[g]), lp = '';
+        for (var q = 1; q < c.length; q++) lp += edge(D[c[q - 1]], D[c[q]]);
+        if (lp) el('path', { d: lp, fill: 'none', stroke: C.ink, 'stroke-opacity': 0.45, 'stroke-width': 1.3 }, base);
+      });
+      // lineage of the overall best
       if (best >= 0) {
         var bc = chain(best), bp = '';
         for (var q = 1; q < bc.length; q++) bp += edge(D[bc[q - 1]], D[bc[q]]);
@@ -396,6 +404,7 @@
       }
       // accepted dots
       acc.forEach(function (i) { var d = D[i]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 2.8, fill: d.i >= 0 ? ISL[d.i % 4] : C.ink, 'fill-opacity': 0.75 }, base); });
+      Object.keys(gb).forEach(function (g) { var d = D[gb[g]]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 4.6, fill: '#fff', stroke: gb[g] === best ? C.ours : C.ink, 'stroke-width': 1.8 }, base); });
       // rejected strip
       RUG.forEach(function (r, k) {
         var y = B + 22 + k * 15, n = 0, dpath = '';
@@ -410,8 +419,11 @@
       });
       ISL.forEach(function (c, k) { el('circle', { cx: lx + 4 + k * 10, cy: B + 67.5, r: 3.5, fill: c, 'fill-opacity': 0.7 }, base); });
       el('text', { x: lx + 44, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'accepted, by island');
-      el('line', { x1: lx + 166, y1: B + 67.5, x2: lx + 182, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2.4 }, base);
-      el('text', { x: lx + 186, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'lineage of the best program');
+      el('line', { x1: lx + 166, y1: B + 67.5, x2: lx + 182, y2: B + 67.5, stroke: C.ink, 'stroke-opacity': 0.5, 'stroke-width': 1.3 }, base);
+      el('circle', { cx: lx + 174, cy: B + 67.5, r: 3.6, fill: '#fff', stroke: C.ink, 'stroke-width': 1.5 }, base);
+      el('text', { x: lx + 186, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'best of each generation, with lineage');
+      el('line', { x1: lx + 392, y1: B + 67.5, x2: lx + 408, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2.4 }, base);
+      el('text', { x: lx + 412, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'overall best');
       [0, 0.2, 0.4, 0.6, 0.8, 1].map(function (f) { return Math.round(f * XMAX); }).forEach(function (t) { el('text', { x: X(t), y: B + 96, class: 'tick', 'text-anchor': 'middle' }, base, t); });
       el('text', { x: (L + R) / 2, y: B + 110, class: 'tick', 'text-anchor': 'middle' }, base, 'candidate, in order of proposal');
     }
@@ -423,7 +435,7 @@
       if (sp) el('path', { d: sp, fill: 'none', stroke: sel === best ? C.ours : C.ink, 'stroke-width': sel === best ? 2.4 : 1.6 }, over);
       c.forEach(function (i, k) {
         var d = D[i], last = k === c.length - 1;
-        el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 7 : 4.5, fill: last ? C.ours : '#fff', stroke: C.ink, 'stroke-width': last ? 2 : 1.6 }, over);
+        el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 6.5 : 4.5, fill: last ? (sel === best ? C.ours : C.ink) : '#fff', stroke: C.ink, 'stroke-width': last ? 2 : 1.6 }, over);
       });
       var d = D[sel];
       $('tree-info').innerHTML = '<span class="big">' + d.b.toFixed(2) + '&times;</span>' +
@@ -440,7 +452,7 @@
     function funnel() {
       var f = $('tree-funnel'); if (!f) return;
       var n = { A: 0, V: 0, C: 0, L: 0 }; D.forEach(function (d) { if (d.s > 0 && n[d.t] != null) n[d.t]++; });
-      var tot = n.A + n.V + n.C + n.L, parts = [['A', 'accepted', '#4f9a63'], ['V', 'rejected by validation', C.bad], ['C', 'did not compile', '#8b9098'], ['L', 'LLM failure or duplicate', '#c3c6cb']];
+      var tot = n.A + n.V + n.C + n.L, parts = [['A', 'accepted', '#4f9a63'], ['V', 'rejected by validation', C.bad], ['C', 'did not compile', '#8b9098'], ['L', 'LLM failure or duplicate', '#c3c6cb']].filter(function (q) { return n[q[0]] > 0; });
       f.innerHTML = '<div class="fn-head"><b>' + tot + '</b> programs proposed by the LLM in this run</div><div class="fn-bar">' +
         parts.map(function (q) { return '<span style="flex:' + n[q[0]] + ';background:' + q[2] + '" title="' + n[q[0]] + ' ' + q[1] + '"></span>'; }).join('') + '</div><div class="fn-leg">' +
         parts.map(function (q) { return '<span><i style="background:' + q[2] + '"></i><b>' + n[q[0]] + '</b> ' + q[1] + '</span>'; }).join('') + '</div>';

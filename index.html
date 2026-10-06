@@ -32,7 +32,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Castoro&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/site.css?v=14">
+<link rel="stylesheet" href="static/css/site.css?v=15">
 </head>
 <body>
 
@@ -79,11 +79,6 @@
       <div class="chips" id="pchips"></div>
     </figure>
 
-    <div class="numbers">
-      <div><b>1.07&ndash;2.19&times;</b><span>faster Shadertoy shaders at FLIP threshold 0.01</span></div>
-      <div><b>1.89&times; / 1.70&times;</b><span>MaterialX material and a Godot engine render pass</span></div>
-      <div><b>47&ndash;85%</b><span>fewer validation frames than conservative validation</span></div>
-    </div>
   </div>
 </section>
 
@@ -128,7 +123,7 @@
 </p>
 
     <figure class="fig wide">
-      <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator prompted with few-shot example patches and profiling context, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
+      <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator optionally prompted with few-shot patches and profiling context, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker>
           <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d9711c"/></marker>
@@ -159,11 +154,11 @@
           <rect x="326" y="50" width="140" height="96" rx="10" fill="#fbecec" stroke="#e3a9a9"/>
           <text x="396" y="72" font-size="14" font-weight="600" fill="#1f2328">LLM mutator</text>
           <text x="396" y="88">proposes a code patch</text>
-          <text x="396" y="104" font-size="10" fill="#8b9098">prompted with</text>
-          <rect x="332" y="109" width="128" height="15" rx="7.5" fill="#fff" stroke="#e3a9a9"/>
-          <text x="396" y="120" font-size="10" fill="#1f2328">few-shot example patches</text>
-          <rect x="332" y="127" width="128" height="15" rx="7.5" fill="#fff" stroke="#e3a9a9"/>
-          <text x="396" y="138" font-size="10" fill="#1f2328">profiling context</text>
+          <text x="396" y="104" font-size="10" fill="#8b9098">optionally prompted with</text>
+          <rect x="346" y="109" width="100" height="15" rx="7.5" fill="#fff" stroke="#ecc9c9"/>
+          <text x="396" y="120" font-size="10" fill="#8b9098">few-shot patches</text>
+          <rect x="346" y="127" width="100" height="15" rx="7.5" fill="#fff" stroke="#ecc9c9"/>
+          <text x="396" y="138" font-size="10" fill="#8b9098">profiling context</text>
           <!-- validator -->
           <rect x="496" y="14" width="344" height="214" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
           <text x="668" y="36" font-size="14" font-weight="600" fill="#1f2328">Bayesian sequential validator <tspan fill="#d9711c">(ours)</tspan></text>
@@ -472,8 +467,12 @@
 
     <figure class="fig" id="edits">
       <p class="fig-title">What the LLM actually changes</p>
-      <div class="tabs" id="edit-tabs" role="tablist"><button class="on" data-t="1">Skip rays that miss</button><button data-t="2">Drop invisible noise</button><button data-t="3">Beat-conditional geometry</button><button data-t="4">Fewer taps</button><button data-t="5">Chebyshev polynomial</button></div>
-      <div class="edit" data-t="1">
+      <div class="tabs" id="edit-tabs" role="tablist"><button class="on" data-t="5">Chebyshev polynomial</button><button data-t="1">Skip rays that miss</button><button data-t="2">Drop invisible noise</button><button data-t="3">Beat-conditional geometry</button><button data-t="4">Fewer taps</button></div>
+      <div class="edit" data-t="5">
+        <div class="edit-side"><div class="edit-math">cos 6&theta; = T<sub>6</sub>(cos&nbsp;&theta;)</div><div class="edit-meta"><b>Lighthouse stripes</b> <span>example from the paper</span></div></div>
+        <div class="code"><pre><span class="c">// stripe pattern around the lighthouse</span><span class="d">-  cos(atan(pos.x, pos.z) * 6.0)</span><span class="a">+  float r_inv = inversesqrt(dot(pos.xz, pos.xz));</span><span class="a">+  float c = pos.z * r_inv, c2 = c*c, c4 = c2*c2;</span><span class="a">+  32.*c4*c2 - 48.*c4 + 18.*c2 - 1.;   // T_6(c)</span></pre><p class="why">Exact math, not an approximation: cos&nbsp;6&theta; is the Chebyshev polynomial T<sub>6</sub>(cos&nbsp;&theta;), so atan and cos disappear.</p></div>
+      </div>
+      <div class="edit" data-t="1" hidden>
         <div class="edit-side"><img loading="lazy" src="static/img/edits/XdsGDB.jpg" alt="Buoy"><div class="edit-meta"><b>Buoy</b> <span>by TekF</span><br><b class="sp">1.21&times;</b> <span>FLIP 0.011</span></div></div>
         <div class="code"><pre><span class="c">// ocean ray-march</span><span class="a">+  if (ray.y &gt;= 0.0) return 0.0;   // looking up: no ocean</span><span class="d">-  for (int i = 0; i &lt; 100; i++) {</span><span class="d">-    if (h &lt; .01 || t &gt; 100.0) break;</span><span class="a">+  for (int i = 0; i &lt; 80; i++) {</span><span class="a">+    if (t &gt; 40.0 || h &lt; .01) break;   // far ocean: stop at 40</span></pre><p class="why">Rays aimed at the sky skip the ocean march, and the march gives up past 40 units instead of 100. Only the far horizon can change, so the validator decides.</p></div>
       </div>
@@ -488,10 +487,6 @@
       <div class="edit" data-t="4" hidden>
         <div class="edit-side"><img loading="lazy" src="static/img/edits/ssil.jpg" alt="SSIL pass"><div class="edit-meta"><b>SSIL pass</b> <span>by Godot</span><br><b class="sp">1.66&times;</b> <span>FLIP 0.107</span></div></div>
         <div class="code"><pre><span class="c">// samples per quality preset, 2 depth samples each</span><span class="d">-  const int num_taps[5] = { 3, 5, 12, 0, 0 };</span><span class="a">+  const int num_taps[5] = { 2, 3, 6, 0, 0 };</span><span class="c">   // plus: merged max/clamp pairs, reciprocal multiplies</span></pre><p class="why">Approximate by design: half the samples per pixel in an engine render pass, kept because the error stays within the &epsilon; = 0.1 budget.</p></div>
-      </div>
-      <div class="edit" data-t="5" hidden>
-        <div class="edit-side"><div class="edit-math">cos 6&theta; = T<sub>6</sub>(cos&nbsp;&theta;)</div><div class="edit-meta"><b>Lighthouse stripes</b> <span>example from the paper</span></div></div>
-        <div class="code"><pre><span class="c">// stripe pattern around the lighthouse</span><span class="d">-  cos(atan(pos.x, pos.z) * 6.0)</span><span class="a">+  float r_inv = inversesqrt(dot(pos.xz, pos.xz));</span><span class="a">+  float c = pos.z * r_inv, c2 = c*c, c4 = c2*c2;</span><span class="a">+  32.*c4*c2 - 48.*c4 + 18.*c2 - 1.;   // T_6(c)</span></pre><p class="why">Exact math, not an approximation: cos&nbsp;6&theta; is the Chebyshev polynomial T<sub>6</sub>(cos&nbsp;&theta;), so atan and cos disappear.</p></div>
       </div>
     </figure>
 
@@ -589,6 +584,6 @@
   Karlsruhe Institute of Technology &middot; All shaders remain the property of their authors; see <a href="#ack">credits and licenses</a>.
 </div></footer>
 
-<script src="static/js/site.js?v=13"></script>
+<script src="static/js/site.js?v=16"></script>
 </body>
 </html>
