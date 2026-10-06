@@ -389,15 +389,15 @@
       // best program of each generation, each with its own lineage: they grow from different branches
       var gb = {};
       acc.forEach(function (i) { var d = D[i]; if (d.s > 0 && (gb[d.g] == null || d.b > D[gb[d.g]].b)) gb[d.g] = i; });
-      // lineage of the overall best
-      if (best >= 0) {
-        var bc = chain(best), bp = '';
-        for (var q = 1; q < bc.length; q++) bp += edge(D[bc[q - 1]], D[bc[q]]);
-        el('path', { d: bp, fill: 'none', stroke: C.ours, 'stroke-width': 2.4 }, base);
-      }
+      // best found so far: running maximum over proposal order, with the record-setting programs
+      var rec = [], bsf = 1, sp = 'M' + X(0) + ',' + Y(1);
+      acc.forEach(function (i) { var d = D[i]; if (d.s > 0 && d.b > bsf) { bsf = d.b; rec.push(i); sp += ' H' + X(d.s).toFixed(1) + ' V' + Y(d.b).toFixed(1); } });
+      sp += ' H' + X(D.length).toFixed(1);
+      el('path', { d: sp, fill: 'none', stroke: C.ours, 'stroke-width': 2.2 }, base);
       // accepted dots
       acc.forEach(function (i) { var d = D[i]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 2.8, fill: d.i >= 0 ? ISL[d.i % 4] : C.ink, 'fill-opacity': 0.75 }, base); });
-      Object.keys(gb).forEach(function (g) { var d = D[gb[g]]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 4.6, fill: '#fff', stroke: gb[g] === best ? C.ours : C.ink, 'stroke-width': 1.8 }, base); });
+      Object.keys(gb).forEach(function (g) { var d = D[gb[g]]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 4.6, fill: '#fff', stroke: C.ink, 'stroke-width': 1.6 }, base); });
+      rec.forEach(function (i) { var d = D[i]; el('circle', { cx: X(d.s), cy: Y(d.b), r: 3.6, fill: C.ours, stroke: '#fff', 'stroke-width': 1 }, base); });
       // rejected strip
       RUG.forEach(function (r, k) {
         var y = B + 22 + k * 15, n = 0, dpath = '';
@@ -415,7 +415,7 @@
       el('circle', { cx: lx + 174, cy: B + 67.5, r: 3.6, fill: '#fff', stroke: C.ink, 'stroke-width': 1.5 }, base);
       el('text', { x: lx + 182, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'best of each generation');
       el('line', { x1: lx + 314, y1: B + 67.5, x2: lx + 330, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2.4 }, base);
-      el('text', { x: lx + 334, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'overall best and its ancestors');
+      el('text', { x: lx + 334, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'best found so far');
       [0, 0.2, 0.4, 0.6, 0.8, 1].map(function (f) { return Math.round(f * XMAX); }).forEach(function (t) { el('text', { x: X(t), y: B + 96, class: 'tick', 'text-anchor': 'middle' }, base, t); });
       el('text', { x: (L + R) / 2, y: B + 110, class: 'tick', 'text-anchor': 'middle' }, base, 'candidate, in order of proposal');
     }
@@ -424,11 +424,10 @@
       if (sel < 0) return;
       var c = chain(sel), sp = '';
       for (var q = 1; q < c.length; q++) sp += edge(D[c[q - 1]], D[c[q]]);
-      if (sp && sel !== best) el('path', { d: sp, fill: 'none', stroke: C.mute, 'stroke-width': 1.4, 'stroke-dasharray': '4 3' }, over);
+      if (sp) el('path', { d: sp, fill: 'none', stroke: C.mute, 'stroke-width': 1.4, 'stroke-dasharray': '4 3' }, over);
       c.forEach(function (i, k) {
         var d = D[i], last = k === c.length - 1;
-        if (sel === best) { if (last) el('circle', { cx: X(d.s), cy: Y(d.b), r: 6.5, fill: C.ours, stroke: '#fff', 'stroke-width': 2 }, over); return; }
-        el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 5.5 : 3.2, fill: last ? C.mute : '#fff', stroke: C.mute, 'stroke-width': 1.4 }, over);
+        el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 6 : 3.2, fill: last ? (sel === best ? C.ours : C.mute) : '#fff', stroke: last ? C.ink : C.mute, 'stroke-width': 1.4 }, over);
       });
       var d = D[sel];
       $('tree-info').innerHTML = '<span class="big">' + d.b.toFixed(2) + '&times;</span>' +
