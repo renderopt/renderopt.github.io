@@ -360,3 +360,6 @@ details.abstract p { font-size: 15px; color: #2b2f35; margin-top: 12px; }
 @media (max-width: 680px) {
   figure.wide::after { content: "swipe to see the whole figure \2192"; display: block; text-align: right; font-size: 12px; color: var(--faint); padding-top: 4px; position: sticky; left: 0; }
 }
+.payoff { text-align: center; max-width: 760px; margin: -10px auto 30px; font-size: 16px; color: var(--mute); }
+.payoff b { color: var(--ours); font-weight: 600; }
+.payoff b:last-child { color: var(--cons); }

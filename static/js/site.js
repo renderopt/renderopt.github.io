@@ -518,7 +518,7 @@
   function initSeq() {
     var post = $('seq-post'), trace = $('seq-trace'); if (!post) return;
     var SEEDS = { '0.001': 6, '0.015': 9, '0.15': 1 };
-    var trueP = 0.015, trust = 0, seed = SEEDS['0.015'], hist = [], n = 0, k = 0, state = 'UNDET', timer = null;
+    var trueP = 0.001, trust = 0, seed = SEEDS['0.001'], hist = [], n = 0, k = 0, state = 'UNDET', timer = null;
     var exc = [];
     function reset(quiet) {
       if (timer) { clearInterval(timer); timer = null; }

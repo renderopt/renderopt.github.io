@@ -32,7 +32,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Castoro&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/site.css?v=15">
+<link rel="stylesheet" href="static/css/site.css?v=16">
 </head>
 <body>
 
@@ -409,12 +409,14 @@
         </svg>
     </figure>
 
+    <p class="payoff">At full trust, the learned thresholds accept a clean candidate after <b>34&ndash;140 renders</b> instead of <b>916</b>, depending on the session.</p>
+
     <figure class="fig try" id="seq">
       <div class="try-head"><span class="try-tag">Try it</span><span>Change the trust or the candidate.</span></div>
       <div class="controls">
         <span class="seg sm" id="seq-p">
-          <button data-p="0.001">safe &middot; 0.1%</button>
-          <button data-p="0.015" class="on">borderline &middot; 1.5%</button>
+          <button data-p="0.001" class="on">safe &middot; 0.1%</button>
+          <button data-p="0.015">borderline &middot; 1.5%</button>
           <button data-p="0.15">bad &middot; 15%</button>
         </span>
         <label class="slider">trust <input id="seq-trust" type="range" min="0" max="1" step="0.01" value="0"><output id="seq-trust-o">0.00</output></label>
@@ -588,6 +590,6 @@
   Karlsruhe Institute of Technology &middot; All shaders remain the property of their authors; see <a href="#ack">credits and licenses</a>.
 </div></footer>
 
-<script src="static/js/site.js?v=19"></script>
+<script src="static/js/site.js?v=20"></script>
 </body>
 </html>
