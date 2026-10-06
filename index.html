@@ -32,7 +32,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Castoro&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/site.css?v=16">
+<link rel="stylesheet" href="static/css/site.css?v=17">
 </head>
 <body>
 
@@ -329,13 +329,30 @@
 <section id="trust">
   <div class="container">
     <h2>Where validation time goes, and how trust cuts it</h2>
-    <p class="lead">Bad candidates are rejected within tens of frames. The expensive ones are the <i>safe</i> ones: under one fixed 99% threshold, each needs <b>916 renders</b> before it can be accepted.
-      Trust lowers that bar per candidate: an edit whose LLM description resembles edits already proven safe may stop after a few renders, while unfamiliar or risky edits keep the full 99%.</p>
+    <p class="lead">Bad candidates are rejected within tens of frames. The expensive ones are the <i>safe</i> ones: under one fixed 99% threshold, each needs <b>916 renders</b> before it can be accepted. Try it:</p>
 
-    <figure class="fig narrow-fig" hidden>
-      <p class="panel-title">Renders needed to accept a clean candidate</p>
-      <svg id="frames-plot" class="plot" viewBox="0 0 470 280"></svg>
+    <figure class="fig try" id="seq">
+      <div class="try-head"><span class="try-tag">Try it</span><span>Change the trust or the candidate.</span></div>
+      <div class="controls">
+        <span class="seg sm" id="seq-p">
+          <button data-p="0.001" class="on">safe &middot; 0.1%</button>
+          <button data-p="0.015">borderline &middot; 1.5%</button>
+          <button data-p="0.15">bad &middot; 15%</button>
+        </span>
+        <label class="slider">trust <input id="seq-trust" type="range" min="0" max="1" step="0.01" value="0"><output id="seq-trust-o">0.00</output></label>
+        <button class="pill dark" id="seq-run">&#9654; Replay</button>
+        <button class="pill" id="seq-reset">New draw</button>
+      </div>
+      <p class="panel-title"><span class="step">1</span>Each square is one sampled condition, rendered by the original and the candidate: <span class="sw clean"></span>FLIP within &epsilon; or <span class="sw exc"></span>an exceedance</p>
+      <svg id="seq-frames" class="plot" viewBox="0 0 1000 66" aria-label="Sampled frames, colored by whether FLIP exceeded epsilon"></svg>
+      <div class="two" style="gap:18px;margin-top:14px">
+        <div><p class="panel-title"><span class="step">2</span>Counts give a belief about the rate <i>p</i>: <span id="seq-beta"></span></p><svg id="seq-post" class="plot" viewBox="0 0 460 220"></svg></div>
+        <div><p class="panel-title"><span class="step">3</span>Stop once P(<i>p</i> &lt; &tau;) crosses a threshold</p><svg id="seq-trace" class="plot" viewBox="0 0 460 220"></svg></div>
+      </div>
+      <div class="readout" id="seq-read"></div>
     </figure>
+
+    <p class="lead step-lead">Trust lowers that bar per candidate. An edit whose LLM description resembles edits already proven safe may stop after a few renders; unfamiliar or risky edits keep the full 99%:</p>
 
     <figure class="fig wide">
       <svg viewBox="0 0 1000 250" role="img" aria-label="Trust pipeline: diff, four LLM representations, contrast against nearest safe and bad neighbors, fused rank, trust, interpolated SAFE threshold">
@@ -411,26 +428,14 @@
 
     <p class="payoff">At full trust, the learned thresholds accept a clean candidate after <b>34&ndash;140 renders</b> instead of <b>916</b>, depending on the session.</p>
 
-    <figure class="fig try" id="seq">
-      <div class="try-head"><span class="try-tag">Try it</span><span>Change the trust or the candidate.</span></div>
-      <div class="controls">
-        <span class="seg sm" id="seq-p">
-          <button data-p="0.001" class="on">safe &middot; 0.1%</button>
-          <button data-p="0.015">borderline &middot; 1.5%</button>
-          <button data-p="0.15">bad &middot; 15%</button>
-        </span>
-        <label class="slider">trust <input id="seq-trust" type="range" min="0" max="1" step="0.01" value="0"><output id="seq-trust-o">0.00</output></label>
-        <button class="pill dark" id="seq-run">&#9654; Replay</button>
-        <button class="pill" id="seq-reset">New draw</button>
-      </div>
-      <p class="panel-title"><span class="step">1</span>Each square is one sampled condition, rendered by the original and the candidate: <span class="sw clean"></span>FLIP within &epsilon; or <span class="sw exc"></span>an exceedance</p>
-      <svg id="seq-frames" class="plot" viewBox="0 0 1000 66" aria-label="Sampled frames, colored by whether FLIP exceeded epsilon"></svg>
-      <div class="two" style="gap:18px;margin-top:14px">
-        <div><p class="panel-title"><span class="step">2</span>Counts give a belief about the rate <i>p</i>: <span id="seq-beta"></span></p><svg id="seq-post" class="plot" viewBox="0 0 460 220"></svg></div>
-        <div><p class="panel-title"><span class="step">3</span>Stop once P(<i>p</i> &lt; &tau;) crosses a threshold</p><svg id="seq-trace" class="plot" viewBox="0 0 460 220"></svg></div>
-      </div>
-      <div class="readout" id="seq-read"></div>
+
+    <figure class="fig narrow-fig" hidden>
+      <p class="panel-title">Renders needed to accept a clean candidate</p>
+      <svg id="frames-plot" class="plot" viewBox="0 0 470 280"></svg>
     </figure>
+
+
+
   </div>
 </section>
 
