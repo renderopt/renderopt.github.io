@@ -328,9 +328,9 @@
 <!-- ======================= WHY / TRUST ======================= -->
 <section id="trust">
   <div class="container">
-    <h2>Where validation time goes</h2>
-    <p class="lead">Clearly bad candidates are rejected within tens of frames. A few borderline ones, failing on 1&ndash;5% of conditions, need hundreds &mdash;
-      and under one fixed 99% threshold every <i>safe</i> candidate pays that price: 916 renders.</p>
+    <h2>Where validation time goes, and how trust cuts it</h2>
+    <p class="lead">Bad candidates are rejected within tens of frames. The expensive ones are the <i>safe</i> ones: under one fixed 99% threshold, each needs <b>916 renders</b> before it can be accepted.
+      Trust lowers that bar per candidate: an edit whose LLM description resembles edits already proven safe may stop after a few renders, while unfamiliar or risky edits keep the full 99%.</p>
 
     <figure class="fig narrow-fig" hidden>
       <p class="panel-title">Renders needed to accept a clean candidate</p>
@@ -364,7 +364,7 @@
               <rect x="208" y="110" width="184" height="32" rx="7" fill="#eef7f1" stroke="#bcdcc7"/><circle cx="222" cy="126" r="5" fill="#2e8b57"/>
               <text x="234" y="123" fill="#1f2328" font-weight="600">visual</text><text x="234" y="136" font-size="10.5">what a viewer would see</text>
               <rect x="208" y="148" width="184" height="32" rx="7" fill="#fdf4ea" stroke="#f1d9bf"/><circle cx="222" cy="164" r="5" fill="#d9711c"/>
-              <text x="234" y="161" fill="#1f2328" font-weight="600">mechcal</text><text x="234" y="174" font-size="10.5">calibrated on validated neighbors</text>
+              <text x="234" y="161" fill="#1f2328" font-weight="600">mechcal</text><text x="234" y="174" font-size="10.5">calibrated on neighbors</text>
             </g>
             <text x="300" y="204" text-anchor="middle">one embedding per view</text>
             <path d="M394 109 H425" stroke="#7d8188" marker-end="url(#ah2)"/>
