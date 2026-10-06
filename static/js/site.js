@@ -389,11 +389,6 @@
       // best program of each generation, each with its own lineage: they grow from different branches
       var gb = {};
       acc.forEach(function (i) { var d = D[i]; if (d.s > 0 && (gb[d.g] == null || d.b > D[gb[d.g]].b)) gb[d.g] = i; });
-      Object.keys(gb).forEach(function (g) {
-        var c = chain(gb[g]), lp = '';
-        for (var q = 1; q < c.length; q++) lp += edge(D[c[q - 1]], D[c[q]]);
-        if (lp) el('path', { d: lp, fill: 'none', stroke: C.ink, 'stroke-opacity': 0.45, 'stroke-width': 1.3 }, base);
-      });
       // lineage of the overall best
       if (best >= 0) {
         var bc = chain(best), bp = '';
@@ -417,11 +412,10 @@
       });
       ISL.forEach(function (c, k) { el('circle', { cx: lx + 4 + k * 10, cy: B + 67.5, r: 3.5, fill: c, 'fill-opacity': 0.7 }, base); });
       el('text', { x: lx + 44, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'accepted, by island');
-      el('line', { x1: lx + 166, y1: B + 67.5, x2: lx + 182, y2: B + 67.5, stroke: C.ink, 'stroke-opacity': 0.5, 'stroke-width': 1.3 }, base);
       el('circle', { cx: lx + 174, cy: B + 67.5, r: 3.6, fill: '#fff', stroke: C.ink, 'stroke-width': 1.5 }, base);
-      el('text', { x: lx + 186, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'best of each generation, with lineage');
-      el('line', { x1: lx + 392, y1: B + 67.5, x2: lx + 408, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2.4 }, base);
-      el('text', { x: lx + 412, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'overall best');
+      el('text', { x: lx + 182, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'best of each generation');
+      el('line', { x1: lx + 314, y1: B + 67.5, x2: lx + 330, y2: B + 67.5, stroke: C.ours, 'stroke-width': 2.4 }, base);
+      el('text', { x: lx + 334, y: B + 71, 'font-size': 10.5, fill: C.mute }, base, 'overall best and its ancestors');
       [0, 0.2, 0.4, 0.6, 0.8, 1].map(function (f) { return Math.round(f * XMAX); }).forEach(function (t) { el('text', { x: X(t), y: B + 96, class: 'tick', 'text-anchor': 'middle' }, base, t); });
       el('text', { x: (L + R) / 2, y: B + 110, class: 'tick', 'text-anchor': 'middle' }, base, 'candidate, in order of proposal');
     }
@@ -430,10 +424,11 @@
       if (sel < 0) return;
       var c = chain(sel), sp = '';
       for (var q = 1; q < c.length; q++) sp += edge(D[c[q - 1]], D[c[q]]);
-      if (sp) el('path', { d: sp, fill: 'none', stroke: sel === best ? C.ours : C.ink, 'stroke-width': sel === best ? 2.4 : 1.6 }, over);
+      if (sp && sel !== best) el('path', { d: sp, fill: 'none', stroke: C.mute, 'stroke-width': 1.4, 'stroke-dasharray': '4 3' }, over);
       c.forEach(function (i, k) {
         var d = D[i], last = k === c.length - 1;
-        el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 6.5 : 4.5, fill: last ? (sel === best ? C.ours : C.ink) : '#fff', stroke: C.ink, 'stroke-width': last ? 2 : 1.6 }, over);
+        if (sel === best) { if (last) el('circle', { cx: X(d.s), cy: Y(d.b), r: 6.5, fill: C.ours, stroke: '#fff', 'stroke-width': 2 }, over); return; }
+        el('circle', { cx: X(d.s), cy: Y(d.b), r: last ? 5.5 : 3.2, fill: last ? C.mute : '#fff', stroke: C.mute, 'stroke-width': 1.4 }, over);
       });
       var d = D[sel];
       $('tree-info').innerHTML = '<span class="big">' + d.b.toFixed(2) + '&times;</span>' +
@@ -464,6 +459,7 @@
     }
     svg.addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse') pick(e); });
     svg.addEventListener('pointerdown', pick);
+    svg.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse' && sel !== best) { sel = best; drawSel(); } });
     function load(k) {
       key = k;
       function go(data) {
