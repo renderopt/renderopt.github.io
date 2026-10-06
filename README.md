@@ -1,7 +1,6 @@
 # renderopt.github.io
 
-Project page for **Efficient Validation for LLM-Generated Rendering Optimizations**
-(Dereviannykh, Klepikov, Brucker, Wüst, Krimmel, Dolp, Dachsbacher — Karlsruhe Institute of Technology).
+Project page for **Efficient Validation for LLM-Generated Rendering Optimizations**.
 
 Static site, no build step: `index.html`, `static/css/site.css`, `static/js/site.js`.
 
