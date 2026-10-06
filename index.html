@@ -128,7 +128,7 @@
 </p>
 
     <figure class="fig wide">
-      <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
+      <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator prompted with few-shot example patches and profiling context, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker>
           <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d9711c"/></marker>
@@ -157,9 +157,13 @@
           <text x="226" y="210">their times and errors</text>
           <!-- llm -->
           <rect x="326" y="50" width="140" height="96" rx="10" fill="#fbecec" stroke="#e3a9a9"/>
-          <text x="396" y="88" font-size="14" font-weight="600" fill="#1f2328">LLM mutator</text>
-          <text x="396" y="112">proposes a</text>
-          <text x="396" y="127">code patch</text>
+          <text x="396" y="72" font-size="14" font-weight="600" fill="#1f2328">LLM mutator</text>
+          <text x="396" y="88">proposes a code patch</text>
+          <text x="396" y="104" font-size="10" fill="#8b9098">prompted with</text>
+          <rect x="332" y="109" width="128" height="15" rx="7.5" fill="#fff" stroke="#e3a9a9"/>
+          <text x="396" y="120" font-size="10" fill="#1f2328">few-shot example patches</text>
+          <rect x="332" y="127" width="128" height="15" rx="7.5" fill="#fff" stroke="#e3a9a9"/>
+          <text x="396" y="138" font-size="10" fill="#1f2328">profiling context</text>
           <!-- validator -->
           <rect x="496" y="14" width="344" height="214" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
           <text x="668" y="36" font-size="14" font-weight="600" fill="#1f2328">Bayesian sequential validator <tspan fill="#d9711c">(ours)</tspan></text>
