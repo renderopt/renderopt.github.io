@@ -102,7 +102,7 @@
 </p>
 
     <figure class="fig wide">
-      <svg viewBox="0 0 1000 402" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator optionally prompted with few-shot patches and profiling context, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
+      <svg viewBox="0 0 1000 430" role="img" aria-label="Pipeline: render program, evolutionary search, LLM mutator optionally prompted with few-shot patches and profiling context, Bayesian sequential validator (sample a PRPS point, render reference and candidate, FLIP error, posterior over exceedance rate) with a trust-guided SAFE threshold from LLM mutation embeddings, profiler, feedback to population">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d8188"/></marker>
           <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d9711c"/></marker>
@@ -139,9 +139,9 @@
           <rect x="346" y="127" width="100" height="15" rx="7.5" fill="#fff" stroke="#ecc9c9"/>
           <text x="396" y="138" font-size="10" fill="#8b9098">profiling context</text>
           <!-- validator -->
-          <rect x="496" y="14" width="344" height="214" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
+          <rect x="496" y="14" width="344" height="242" rx="12" fill="#fdf4ea" stroke="#d9711c" stroke-width="2"/>
           <text x="668" y="36" font-size="14" font-weight="600" fill="#1f2328">Bayesian sequential validator <tspan fill="#d9711c">(ours)</tspan></text>
-          <g>
+          <g transform="translate(0 8)">
             <!-- PRPS cube with a sampled point -->
             <g fill="none" stroke="#9a7a58" stroke-width="1.1">
               <path d="M510 80 h30 v30 h-30z" fill="#fff"/>
@@ -178,24 +178,25 @@
             <text x="805" y="62" font-size="10" text-anchor="start" font-style="italic" fill="#1f2328">&#964;</text>
             <text x="796" y="128" fill="#1f2328">posterior</text>
             <text x="796" y="142" font-size="10.5">over rate <tspan font-style="italic">p</tspan></text>
-            <path d="M836 134 V156 H531 V150" fill="none" stroke="#c9a47c" stroke-dasharray="3 3" marker-end="url(#aho)"/>
-            <text x="684" y="168" font-size="10.5" fill="#9a7a58">undecided: sample and render the next batch</text>
+            <path d="M796 151 V166 H531 V150" fill="none" stroke="#c9a47c" stroke-dasharray="3 3" marker-end="url(#aho)"/>
+            <text x="664" y="184" font-size="10.5" fill="#9a7a58">undecided: sample and render the next batch</text>
           </g>
-          <rect x="508" y="178" width="130" height="38" rx="7" fill="#e6f4ea" stroke="#2e8b57" stroke-width="1.5"/>
-          <text x="573" y="193" fill="#1d5e35" font-weight="600">SAFE &#8594; accept</text>
-          <text x="573" y="208" fill="#1d5e35" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8805; <tspan fill="#d9711c" font-weight="700" font-style="italic">&#947;<tspan font-size="8" dy="2">safe</tspan><tspan dy="-2">(i)</tspan></tspan></text>
-          <rect x="644" y="178" width="100" height="38" rx="7" fill="#fbe9e7" stroke="#c8423b"/>
-          <text x="694" y="193" fill="#8d2a24" font-weight="600">BAD &#8594; reject</text>
-          <text x="694" y="208" fill="#8d2a24" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8804; 0.01</text>
-          <rect x="750" y="178" width="86" height="38" rx="7" fill="#f1f1ef" stroke="#a9adb3"/>
-          <text x="793" y="193" fill="#4b4f55" font-weight="600">budget out</text>
-          <text x="793" y="208" fill="#4b4f55" font-size="10.5">&#8594; reject</text>
+          <rect x="508" y="206" width="130" height="38" rx="7" fill="#e6f4ea" stroke="#2e8b57" stroke-width="1.5"/>
+          <text x="573" y="221" fill="#1d5e35" font-weight="600">SAFE &#8594; accept</text>
+          <text x="573" y="236" fill="#1d5e35" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8805; <tspan fill="#d9711c" font-weight="700" font-style="italic">&#947;<tspan font-size="8" dy="2">safe</tspan><tspan dy="-2">(i)</tspan></tspan></text>
+          <rect x="644" y="206" width="100" height="38" rx="7" fill="#fbe9e7" stroke="#c8423b"/>
+          <text x="694" y="221" fill="#8d2a24" font-weight="600">BAD &#8594; reject</text>
+          <text x="694" y="236" fill="#8d2a24" font-size="10.5">P(<tspan font-style="italic">p</tspan>&lt;<tspan font-style="italic">&#964;</tspan>) &#8804; 0.01</text>
+          <rect x="750" y="206" width="86" height="38" rx="7" fill="#f1f1ef" stroke="#a9adb3"/>
+          <text x="793" y="221" fill="#4b4f55" font-weight="600">budget out</text>
+          <text x="793" y="236" fill="#4b4f55" font-size="10.5">&#8594; reject</text>
           <!-- profiler -->
           <rect x="870" y="50" width="122" height="96" rx="10" fill="#fdf6dc" stroke="#e2c86b"/>
           <text x="931" y="90" font-size="14" font-weight="600" fill="#1f2328">Profiler</text>
           <text x="931" y="112">timing for SAFE</text>
           <text x="931" y="127">candidates only</text>
           <!-- trust: compact version of the figure in the next section -->
+          <g transform="translate(0 28)">
           <rect x="520" y="262" width="300" height="96" rx="10" fill="#fff" stroke="#d9711c" stroke-dasharray="5 3"/>
           <text x="670" y="281" font-size="13" font-weight="600" fill="#1f2328">Trust-guided threshold <tspan fill="#d9711c">(ours)</tspan></text>
           <g>
@@ -228,15 +229,15 @@
             <text x="737" y="333" text-anchor="start" font-size="10" fill="#d9711c">high trust &#183; early</text>
             <text x="776" y="316" font-size="10" font-style="italic" fill="#1f2328">&#947;<tspan font-size="7" dy="2">safe</tspan><tspan dy="-2">(i)</tspan></text>
           </g>
+          </g>
           <!-- arrows -->
           <path d="M126 98 H143" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M306 98 H323" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M840 98 H867" stroke="#2e8b57" stroke-width="1.5" marker-end="url(#ah)"/>
-          <path d="M573 262 V220" stroke="#d9711c" stroke-width="2" marker-end="url(#aho)"/>
-          <text x="581" y="246" text-anchor="start" fill="#d9711c" font-style="italic" font-weight="600">sets &#947;<tspan font-size="8" dy="3">safe</tspan><tspan dy="-3">(i) per candidate</tspan></text>
-          <path d="M830 228 V310 H823" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
-          <text x="836" y="262" text-anchor="start">labels,</text>
-          <text x="836" y="276" text-anchor="start">rates</text>
+          <path d="M573 290 V248" stroke="#d9711c" stroke-width="2" marker-end="url(#aho)"/>
+          <text x="581" y="274" text-anchor="start" fill="#d9711c" font-style="italic" font-weight="600">sets &#947;<tspan font-size="8" dy="3">safe</tspan><tspan dy="-3">(i) per candidate</tspan></text>
+          <path d="M746 256 V286" stroke="#7d8188" stroke-width="2" marker-end="url(#ah)"/>
+          <text x="758" y="274" text-anchor="start">exceedance rates</text>
           <g>
             <rect x="346" y="158" width="100" height="50" rx="5" fill="#fff" stroke="#d9d9d4"/>
             <rect x="347" y="165" width="98" height="8" fill="#fde8e7"/><rect x="352" y="167.5" width="52" height="3" rx="1.5" fill="#d98b85"/>
@@ -248,23 +249,23 @@
           <path d="M396 146 V156" stroke="#7d8188" marker-end="url(#ah)"/>
           <path d="M446 183 H478 V98 H493" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
           <circle cx="446" cy="183" r="2.5" fill="#7d8188"/>
-          <path d="M396 226 V312 H517" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
-          <path d="M982 146 V378 H226 V231" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+          <path d="M396 226 V340 H517" fill="none" stroke="#7d8188" marker-end="url(#ah)"/>
+          <path d="M982 146 V406 H226 V231" fill="none" stroke="#9aa0a8" stroke-dasharray="4 3" marker-end="url(#ah)"/>
           <!-- distributed render farm -->
           <path d="M842 190 H912 M912 148 V286" fill="none" stroke="#7d8188" stroke-dasharray="3 2"/>
           <path d="M912 270 V286" stroke="#7d8188" marker-end="url(#ah)"/>
           <circle cx="912" cy="190" r="2.5" fill="#7d8188"/>
           <text x="918" y="214" text-anchor="start" font-size="10.5">renders,</text>
           <text x="918" y="227" text-anchor="start" font-size="10.5">timings</text>
-          <rect x="852" y="290" width="116" height="78" rx="9" fill="#f4f6f8" stroke="#a9b4c2"/>
+          <rect x="852" y="290" width="116" height="78" rx="9" fill="#edf5ee" stroke="#a3bda8"/>
           <text x="910" y="306" font-size="12.5" font-weight="600" fill="#1f2328">Our render farm</text>
-          <g fill="#5b6b80">
+          <g fill="#5b7d64">
             <rect x="864" y="314" width="10" height="7" rx="1.5"/><rect x="877.5" y="314" width="10" height="7" rx="1.5"/><rect x="891" y="314" width="10" height="7" rx="1.5"/><rect x="904.5" y="314" width="10" height="7" rx="1.5"/><rect x="918" y="314" width="10" height="7" rx="1.5"/><rect x="931.5" y="314" width="10" height="7" rx="1.5"/><rect x="945" y="314" width="10" height="7" rx="1.5"/>
             <rect x="864" y="324" width="10" height="7" rx="1.5"/><rect x="877.5" y="324" width="10" height="7" rx="1.5"/><rect x="891" y="324" width="10" height="7" rx="1.5"/><rect x="904.5" y="324" width="10" height="7" rx="1.5"/><rect x="918" y="324" width="10" height="7" rx="1.5"/><rect x="931.5" y="324" width="10" height="7" rx="1.5"/><rect x="945" y="324" width="10" height="7" rx="1.5"/>
           </g>
           <text x="910" y="346" font-size="10.5" fill="#1f2328">up to 64 &#215; RTX 3060</text>
           <text x="910" y="360" font-size="10">rented on Vast.ai</text>
-          <text x="578" y="394">accepted program, with its render time and error, joins an island; repeat every generation</text>
+          <text x="578" y="422">accepted program, with its render time and error, joins an island; repeat every generation</text>
         </g>
       </svg>
     </figure>
@@ -514,7 +515,7 @@
 <section id="ack">
   <div class="container">
     <h2>Acknowledgements</h2>
-    <p class="lead">We thank <a href="https://cg.ivd.kit.edu/english/staff/postdoc/hanika/index_index.php">Johannes Schudeiske</a> for taking part in the discussions that shaped this project, our student Ilya for the early studies,
+    <p class="lead">We thank <a href="https://cg.ivd.kit.edu/english/staff/postdoc/hanika/index_index.php">Johannes Schudeiske</a> for taking part in the discussions that shaped this project, our student Ilia Bozhinov for the early studies,
       Kirill Bazhenov for his help in connecting us with industry, and Angelo Pesce, Brian Karis, Anton Kaplanyan, Max Strakhov and Harold Westlund for sharing their industry expertise and feedback.</p>
     <p class="lead">We are especially grateful to <b>Inigo Quilez</b>, who kindly granted us permission to use his shaders in this work,
       and to all <a href="https://www.shadertoy.com">Shadertoy</a>, <a href="https://godotengine.org">Godot</a> and <a href="https://materialx.org">MaterialX</a> authors whose work we build on. All shaders remain the property of their authors;
