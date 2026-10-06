@@ -48,7 +48,7 @@
       var b = document.createElement('button'); b.className = 'chip'; b.dataset.i = i;
       var nm = s.name.length > 9 ? s.name.slice(0, 8).replace(/\s+$/, '') + '\u2026' : s.name;
       b.title = s.name; b.innerHTML = '<img loading="lazy" src="static/img/thumbs/' + s.id + '.jpg" alt=""><span>' + nm + ' <b>' + fmt(s.sp, 2) + '&times;</b></span>';
-      b.addEventListener('click', function () { show(i); });
+      b.addEventListener('click', function () { go(i); });
       groups[s.g].appendChild(b);
     });
     var cv = $('pc'), cx = cv.getContext('2d'), stage = $('pstage'), mode = 'tri', amp = false, split = 0.5, cur = 0;
@@ -91,12 +91,13 @@
     $('pplay').addEventListener('click', function () {
       playing = !playing;
       if (playing) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } else v.pause();
+      arm();
       this.querySelector('svg').innerHTML = playing ? PAUSE : PLAY; this.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
     });
     $('pamp').addEventListener('change', function (e) { amp = e.target.checked; });
     requestAnimationFrame(draw);
     function show(i) {
-      var s = SCENES[i];
+      var s = SCENES[i]; cur = i;
       v.poster = poster.src = 'static/videos/clips/' + s.id + '.jpg';
       v.src = 'static/videos/clips/' + s.id + '.mp4';
       if (playing) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
@@ -105,9 +106,37 @@
         '<span><b class="sp">' + fmt(s.sp, 2) + '&times;</b></span>' +
         '<span>FLIP <b>' + fmt(s.flip, 3) + '</b></span>' +
         '<span title="Cost of the whole optimization session">' + usd(s.llm) + ' LLM &middot; ' + usd(s.gpu) + ' GPUs</span>';
-      [].forEach.call(chips.querySelectorAll('.chip'), function (c) { c.classList.toggle('on', +c.dataset.i === i); });
+      [].forEach.call(chips.querySelectorAll('.chip'), function (c) { c.classList.toggle('on', +c.dataset.i === i); c.classList.remove('auto'); });
+      // keep the active chip visible inside the chip strip without scrolling the page
+      var on = chips.querySelector('.chip.on');
+      if (on) { var cb = chips.getBoundingClientRect(), ob = on.getBoundingClientRect(); if (ob.left < cb.left || ob.right > cb.right) chips.scrollTo({ left: chips.scrollLeft + ob.left - cb.left - 24, behavior: 'smooth' }); }
     }
-    show(0);
+    // smooth switch: fade out, swap the clip once its first frame is ready, fade in
+    var busy = false;
+    function go(i) {
+      if (busy || i === cur) { arm(); return; }
+      busy = true; stage.classList.add('fading');
+      setTimeout(function () {
+        var done = false;
+        function reveal() { if (done) return; done = true; stage.classList.remove('fading'); busy = false; arm(); }
+        v.addEventListener('loadeddata', reveal, { once: true });
+        setTimeout(reveal, 1500);
+        show(i);
+      }, 380);
+    }
+    // advance to the next scene every 30 s while playing and on screen
+    var AUTO = 30000, timer = null, inView = true;
+    function arm() {
+      if (timer) { clearTimeout(timer); timer = null; }
+      var on = chips.querySelector('.chip.on');
+      if (on) { on.classList.remove('auto'); void on.offsetWidth; }
+      if (!playing || !inView || document.hidden) return;
+      if (on) on.classList.add('auto');
+      timer = setTimeout(function () { go((cur + 1) % SCENES.length); }, AUTO);
+    }
+    document.addEventListener('visibilitychange', arm);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; arm(); }, { threshold: 0.2 }).observe(stage);
+    show(0); arm();
 
     var tb = $('rep-table'), last = '';
     var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th class="num">LLM</th><th class="num">GPUs</th></tr>';
