@@ -467,7 +467,7 @@
 
     <figure class="fig" id="edits">
       <p class="fig-title">What the LLM actually changes</p>
-      <div class="tabs" id="edit-tabs" role="tablist"><button class="on" data-t="5">Chebyshev polynomial</button><button data-t="1">Skip rays that miss</button><button data-t="2">Drop invisible noise</button><button data-t="3">Beat-conditional geometry</button><button data-t="4">Fewer taps</button></div>
+      <div class="tabs" id="edit-tabs" role="tablist"><button class="on" data-t="5">Chebyshev polynomial</button><button data-t="1">Skip rays that miss</button><button data-t="6">Cut dim light paths</button><button data-t="2">Drop invisible noise</button><button data-t="3">Beat-conditional geometry</button><button data-t="4">Fewer taps</button></div>
       <div class="edit" data-t="5">
         <div class="edit-side"><div class="edit-math">cos 6&theta; = T<sub>6</sub>(cos&nbsp;&theta;)</div><div class="edit-meta"><b>Lighthouse stripes</b> <span>example from the paper</span></div></div>
         <div class="code"><pre><span class="c">// stripe pattern around the lighthouse</span><span class="d">-  cos(atan(pos.x, pos.z) * 6.0)</span><span class="a">+  float r_inv = inversesqrt(dot(pos.xz, pos.xz));</span><span class="a">+  float c = pos.z * r_inv, c2 = c*c, c4 = c2*c2;</span><span class="a">+  32.*c4*c2 - 48.*c4 + 18.*c2 - 1.;   // T_6(c)</span></pre><p class="why">Exact math, not an approximation: cos&nbsp;6&theta; is the Chebyshev polynomial T<sub>6</sub>(cos&nbsp;&theta;), so atan and cos disappear.</p></div>
@@ -475,6 +475,10 @@
       <div class="edit" data-t="1" hidden>
         <div class="edit-side"><img loading="lazy" src="static/img/edits/XdsGDB.jpg" alt="Buoy"><div class="edit-meta"><b>Buoy</b> <span>by TekF</span><br><b class="sp">1.21&times;</b> <span>FLIP 0.011</span></div></div>
         <div class="code"><pre><span class="c">// ocean ray-march</span><span class="a">+  if (ray.y &gt;= 0.0) return 0.0;   // looking up: no ocean</span><span class="d">-  for (int i = 0; i &lt; 100; i++) {</span><span class="d">-    if (h &lt; .01 || t &gt; 100.0) break;</span><span class="a">+  for (int i = 0; i &lt; 80; i++) {</span><span class="a">+    if (t &gt; 40.0 || h &lt; .01) break;   // far ocean: stop at 40</span></pre><p class="why">Rays aimed at the sky skip the ocean march, and the march gives up past 40 units instead of 100. Only the far horizon can change, so the validator decides.</p></div>
+      </div>
+      <div class="edit" data-t="6" hidden>
+        <div class="edit-side"><img loading="lazy" src="static/img/edits/3sc3z4.jpg" alt="GLSL ray tracing test"><div class="edit-meta"><b>GLSL ray tracing test</b> <span>by colin299</span><br><b class="sp">1.14&times;</b> <span>FLIP 0.009</span></div></div>
+        <div class="code"><pre><span class="c">// path tracer: one bounce per iteration</span><span class="c">   absorbMul *= 0.8;              // every bounce absorbs some light</span><span class="a">+  if (absorbMul &lt; 0.02) break;  // under 2% left: stop bouncing</span><span class="c">   rayStartPos += rayDir * h.rayLength;</span><span class="c">   rayDir = normalize(reflect(rayDir, h.normal) + jitter * roughness);</span></pre><p class="why">Each bounce keeps 80% of the light, so after 18 bounces a path carries under 2% and stops, instead of running to 32. A classic path-tracing approximation, accepted only because sampled frames stay within &epsilon;.</p></div>
       </div>
       <div class="edit" data-t="2" hidden>
         <div class="edit-side"><img loading="lazy" src="static/img/edits/NtlSDs.jpg" alt="Slisesix"><div class="edit-meta"><b>Slisesix</b> <span>by iq</span><br><b class="sp">7.9&rarr;5.0 ms</b> <span>session report</span></div></div>
