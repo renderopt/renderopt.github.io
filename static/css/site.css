@@ -366,9 +366,10 @@ details.abstract p { font-size: 15px; color: #2b2f35; margin-top: 12px; }
 .step-lead { margin-top: 10px; }
 
 /* teaser: crossfade between scenes, and a thin timer on the active chip */
-#pstage canvas { transition: opacity .38s ease; }
+#pstage canvas { transition: opacity .2s ease; }
 #pstage.fading canvas { opacity: 0; }
 .chip { position: relative; }
-.chip.auto::after { content: ""; position: absolute; left: 0; bottom: 18px; height: 2px; width: 0; background: var(--ours); border-radius: 1px; animation: chipfill 30s linear forwards; }
+.chip.auto::after { content: ""; position: absolute; left: 0; bottom: 18px; height: 2px; width: 0; background: var(--ours); border-radius: 1px; animation: chipfill 15s linear forwards; }
+.chip.auto.held::after { animation-play-state: paused; }
 @keyframes chipfill { to { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { #pstage canvas { transition: none; } .chip.auto::after { animation: none; } }

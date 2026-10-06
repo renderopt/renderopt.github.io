@@ -91,7 +91,7 @@
     $('pplay').addEventListener('click', function () {
       playing = !playing;
       if (playing) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } else v.pause();
-      arm();
+      arm(false);
       this.querySelector('svg').innerHTML = playing ? PAUSE : PLAY; this.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
     });
     $('pamp').addEventListener('change', function (e) { amp = e.target.checked; });
@@ -114,29 +114,32 @@
     // smooth switch: fade out, swap the clip once its first frame is ready, fade in
     var busy = false;
     function go(i) {
-      if (busy || i === cur) { arm(); return; }
+      if (busy || i === cur) { arm(true); return; }
       busy = true; stage.classList.add('fading');
       setTimeout(function () {
         var done = false;
-        function reveal() { if (done) return; done = true; stage.classList.remove('fading'); busy = false; arm(); }
+        function reveal() { if (done) return; done = true; stage.classList.remove('fading'); busy = false; arm(true); }
         v.addEventListener('loadeddata', reveal, { once: true });
         setTimeout(reveal, 1500);
         show(i);
-      }, 380);
+      }, 200);
     }
-    // advance to the next scene every 30 s while playing and on screen
-    var AUTO = 30000, timer = null, inView = true;
-    function arm() {
+    // advance to the next scene every 15 s; pausing (video paused, scrolled away, tab hidden) keeps the remaining time
+    var AUTO = 15000, timer = null, inView = true, left = AUTO, since = 0;
+    function arm(reset) {
       if (timer) { clearTimeout(timer); timer = null; }
+      if (since) { left -= Date.now() - since; since = 0; }
       var on = chips.querySelector('.chip.on');
-      if (on) { on.classList.remove('auto'); void on.offsetWidth; }
-      if (!playing || !inView || document.hidden) return;
-      if (on) on.classList.add('auto');
-      timer = setTimeout(function () { go((cur + 1) % SCENES.length); }, AUTO);
+      if (reset) { left = AUTO; if (on) { on.classList.remove('auto'); void on.offsetWidth; on.classList.add('auto'); } }
+      var run = playing && inView && !document.hidden;
+      if (on) on.classList.toggle('held', !run);
+      if (!run) return;
+      since = Date.now();
+      timer = setTimeout(function () { timer = null; since = 0; go((cur + 1) % SCENES.length); }, Math.max(0, left));
     }
-    document.addEventListener('visibilitychange', arm);
-    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; arm(); }, { threshold: 0.2 }).observe(stage);
-    show(0); arm();
+    document.addEventListener('visibilitychange', function () { arm(false); });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { var vis = es[0].isIntersecting; if (vis !== inView) { inView = vis; arm(false); } }, { threshold: 0.2 }).observe(stage);
+    show(0); arm(true);
 
     var tb = $('rep-table'), last = '';
     var h = '<tr><th></th><th>Scene</th><th class="num">Original</th><th class="num">Optimized</th><th class="num">Speedup</th><th class="num">Worst FLIP</th><th class="num">LLM</th><th class="num">GPUs</th></tr>';
